@@ -1,0 +1,40 @@
+{
+  "name": "space-fantasy-football",
+  "version": "0.0.1",
+  "description": "football",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.dev.js",
+    "watch": "webpack --watch --config webpack.dev.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RedAndBlu/space-fantasy-football.git"
+  },
+  "keywords": [
+    "football"
+  ],
+  "author": "David. D.",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/RedAndBlu/space-fantasy-football/issues"
+  },
+  "homepage": "https://github.com/RedAndBlu/space-fantasy-football#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "prettier": "2.6.2",
+    "ts-loader": "^9.2.9",
+    "typescript": "^4.6.3",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
+  }
+}
