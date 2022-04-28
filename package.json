@@ -4,9 +4,10 @@
   "description": "football",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build": "webpack --config webpack.dev.js",
-    "watch": "webpack --watch --config webpack.dev.js"
+    "watch": "webpack --watch --config webpack.dev.js",
+    "prettify": "prettier --write ./src"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   },
   "homepage": "https://github.com/RedAndBlu/space-fantasy-football#readme",
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
     "eslint": "^8.14.0",
@@ -31,7 +33,9 @@
     "eslint-plugin-n": "^15.2.0",
     "eslint-plugin-promise": "^6.0.0",
     "html-webpack-plugin": "^5.5.0",
+    "jest": "^27.5.1",
     "prettier": "2.6.2",
+    "ts-jest": "^27.1.4",
     "ts-loader": "^9.2.9",
     "typescript": "^4.6.3",
     "webpack": "^5.72.0",
