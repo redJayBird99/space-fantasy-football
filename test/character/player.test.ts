@@ -17,15 +17,17 @@ describe("createAge()", () => {
   xtest("30s should be less frequent of any 20s", () => {});
 });
 
-describe("createTalent()", () => {
-  const talents = Array.from({ length: 100 }, () => player.createTalent());
+describe("createPotential()", () => {
+  const potentials = Array.from({ length: 100 }, () =>
+    player.createPotential()
+  );
 
-  test("talent C should be return more frequently of A", () => {
-    expect(isMoreFrequent("C", "A", talents)).toBe(true);
+  test("potential C should be return more frequently of A", () => {
+    expect(isMoreFrequent("C", "A", potentials)).toBe(true);
   });
 
-  test("talent C should be return more frequently of E", () => {
-    expect(isMoreFrequent("C", "E", talents)).toBe(true);
+  test("potential C should be return more frequently of E", () => {
+    expect(isMoreFrequent("C", "E", potentials)).toBe(true);
   });
 });
 

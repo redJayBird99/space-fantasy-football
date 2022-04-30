@@ -2,6 +2,22 @@ import * as gen from "../../src/util/generator";
 
 const rdmAge = () => Math.floor(90 * Math.random()) + 1;
 
+describe("mean()", () => {
+  const sample = Array.from({ length: 10 }, (_, i) => i * 2 + 2);
+
+  test(`should return 11 for ${sample}`, () => {
+    expect(gen.mean(sample)).toBe(11);
+  });
+});
+
+describe("variance()", () => {
+  const sample = Array.from({ length: 10 }, (_, i) => i * 2 + 2);
+
+  test(`should return 40 for ${sample}`, () => {
+    expect(gen.variance(sample)).toBeCloseTo(36.67);
+  });
+});
+
 describe("isMoreFrequent()", () => {
   const bits = [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0];
 
@@ -24,6 +40,8 @@ describe("createId()", () => {
 });
 
 describe("randomGauss()", () => {
+  const sample = Array.from({ length: 1_000 }, () => gen.randomGauss());
+
   test("should return numbers greater or equal than 0", () => {
     expect(gen.randomGauss()).toBeGreaterThanOrEqual(0);
   });
@@ -33,14 +51,45 @@ describe("randomGauss()", () => {
   });
 
   test("should have a standard deviation around 0.144 (max diff 0.01)", () => {
-    const points = Array.from({ length: 1_000 }, () => gen.randomGauss());
-    const mean = points.reduce((a, v) => a + v) / points.length;
-    const variance =
-      points.reduce((a, v) => a + (v - mean) ** 2, 0) / (points.length - 1);
-    const stdDev = Math.sqrt(variance);
+    const stdDev = Math.sqrt(gen.variance(sample));
     expect(stdDev).toBeLessThan(0.144 + 0.1);
     expect(stdDev).toBeGreaterThan(0.144 - 0.1);
   });
+
+  test("around 64%-72% should be within one standard deviation", () => {
+    const count = sample.reduce((a, v) => {
+      if (v <= 0.5 + 0.144 && v >= 0.5 - 0.144) {
+        a++;
+      }
+
+      return a;
+    }, 0);
+
+    expect(count / sample.length).toBeLessThan(0.72);
+    expect(count / sample.length).toBeGreaterThan(0.64);
+  });
+});
+
+describe("customGaussian()", () => {
+  const sample = Array.from({ length: 1_000 }, () =>
+    gen.customGaussian(50, 50)
+  );
+
+  test("customGaussian(50, 50) should have a standard deviation around 0.144 (max diff 1)", () => {
+    const stdDev = Math.sqrt(gen.variance(sample));
+    expect(stdDev).toBeLessThan(14.4 + 1);
+    expect(stdDev).toBeGreaterThan(14.4 - 1);
+  });
+
+  test("customGaussian(50, 50) shouldn't return numbers greater than 100", () => {
+    expect(sample.some((n) => n > 100)).toBe(false);
+  });
+
+  test("customGaussian(50, 50) shouldn't return numbers smaller than 0", () => {
+    expect(sample.some((n) => n < 0)).toBe(false);
+  });
+
+  xtest("around 65%-70% should be within one standard deviation", () => {});
 });
 
 describe("getAgeAt()", () => {
@@ -83,4 +132,8 @@ describe("createBirthday()", () => {
       expect(distanceAge).toBe(age);
     });
   });
+});
+
+describe("createName", () => {
+  xtest("should depend on the nationality", () => {});
 });

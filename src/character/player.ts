@@ -4,18 +4,23 @@ import {
   randomGauss,
   createBirthday,
 } from "../util/generator";
+import { createSkills } from "./create-skills";
 
 export const MAX_AGE = 45;
 export const MIN_AGE = 16;
+export const MAX_SKILL = 99; // included
+export const MIN_SKILL = 0;
 
-export type Talent =
+export type Foot = "ambidextrous" | "left" | "right";
+type FootChance = { left: number; right: number };
+
+export type Potential =
   | "A" // the improvability rate is very high
   | "B" // the improvability rate is high
   | "C" // the improvability rate is medium
   | "D" // the improvability rate is low
   | "E"; // don't improve
-export type Foot = "ambidextrous" | "left" | "right";
-type FootChance = { left: number; right: number };
+
 export type Position =
   | "gk"
   | "cb"
@@ -36,11 +41,11 @@ export function createAge(): number {
   return Math.floor(Math.random() * (MAX_AGE - MIN_AGE + 1)) + MIN_AGE;
 }
 
-// returns a talent randomly with end points talents less frequent
-export function createTalent(): Talent {
-  const talents: Talent[] = ["A", "B", "C", "D", "E"];
+// returns a potential randomly with end points potentials less frequent
+export function createPotential(): Potential {
+  const potentials: Potential[] = ["A", "B", "C", "D", "E"];
   const point = (randomGauss() + 2 * Math.random()) / 3; // loosen up a bit
-  return talents[Math.floor(point * talents.length)];
+  return potentials[Math.floor(point * potentials.length)];
 }
 
 // returns the probability for the preferred foot between left and right
@@ -68,6 +73,38 @@ export function createPreferredFoot(pos: Position): Foot {
   return "ambidextrous";
 }
 
+export interface Skills {
+  strength: number;
+  height: number;
+  reflexes: number;
+  handling: number;
+  diving: number;
+  speed: number;
+  agility: number;
+  stamina: number;
+  defensivePositioning: number;
+  interception: number;
+  marking: number;
+  passing: number;
+  vision: number;
+  technique: number;
+  offensivePositioning: number;
+  shot: number;
+  finisnishing: number;
+}
+
+// a macroskills is a combination of skills
+export const macroskills: { [macroskill: string]: (keyof Skills)[] } = {
+  mobility: ["speed", "agility", "stamina"],
+  physic: ["strength", "height"],
+  goolkeeper: ["reflexes", "handling", "diving"],
+  defense: ["defensivePositioning", "interception", "marking"],
+  ability: ["passing", "vision", "technique"],
+  offense: ["offensivePositioning", "shot", "finisnishing"],
+};
+
+// Player creates semi-random player that best fit the position characteristics
+// note instances of this class are saved as JSON
 export class Player {
   id: string;
   name: string;
@@ -76,7 +113,8 @@ export class Player {
   age: number;
   birthday: string;
   foot: Foot;
-  talent: Talent;
+  potential: Potential;
+  skills: Skills;
 
   constructor(pos: Position, now: Date) {
     this.age = createAge();
@@ -85,7 +123,8 @@ export class Player {
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(this.age, now);
-    this.talent = createTalent();
+    this.potential = createPotential();
     this.foot = createPreferredFoot(pos);
+    this.skills = createSkills(pos);
   }
 }

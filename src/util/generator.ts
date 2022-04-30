@@ -1,16 +1,24 @@
 import names from "../asset/names.json";
 
-// return true when more is more frequent in smaple than less
+// return true when more is more frequent in sample than less
 export function isMoreFrequent<T>(more: T, less: T, sample: T[]): boolean {
   const check = (to: T) => (v: T) => v === to;
   return sample.filter(check(more)).length > sample.filter(check(less)).length;
 }
 
 // returns a random number between 0 and 1 (non inclusive) seemingly taken from
-// a normal distribution with standard deviation around loosely 0.144
+// a normal distribution with standard deviation loosely around 0.144
 export function randomGauss(): number {
   const samples = Array.from({ length: 4 }, () => Math.random());
   return samples.reduce((a, s) => a + s) / samples.length;
+}
+
+// return a random number between mean - maxOffeset and mean + maxOffeset
+// (non inclusive) seemingly taken from a normal distribution
+// the standard deviation is loosely around 14.4 when max maxOffeset is 50
+export function customGaussian(mean: number, maxOffeset: number): number {
+  const point = randomGauss();
+  return mean + (point - 0.5) * 2 * maxOffeset;
 }
 
 // returns an randomly generated id (with a very low collision probability)
@@ -27,7 +35,7 @@ export function createName(): string {
   return `${name} ${surname}`;
 }
 
-// returns a random date for birthday for the given age
+// returns a random birthday date for the given age
 export function createBirthdayDate(age: number, now: Date): Date {
   if (age < 0) {
     throw new Error("age argument can't be negatite");
@@ -38,7 +46,7 @@ export function createBirthdayDate(age: number, now: Date): Date {
   return new Date(now.getFullYear() - age, now.getMonth(), now.getDate() - day);
 }
 
-// returns a random dateString (can construct a new Date) for birthday for the given age
+// returns a random birthday dateString (can construct a new Date) for the given age
 export function createBirthday(age: number, now: Date): string {
   const d = createBirthdayDate(age, now);
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -56,4 +64,14 @@ export function getAgeAt(birthdayDateString: string, now: Date) {
   }
 
   return age;
+}
+
+export function mean(sample: number[]): number {
+  return sample.reduce((a, v) => a + v) / sample.length;
+}
+
+// https://en.wikipedia.org/wiki/Variance
+export function variance(sample: number[]): number {
+  const m = mean(sample);
+  return sample.reduce((a, v) => a + (v - m) ** 2, 0) / (sample.length - 1);
 }
