@@ -103,6 +103,89 @@ export const macroskills: { [macroskill: string]: (keyof Skills)[] } = {
   offense: ["offensivePositioning", "shot", "finisnishing"],
 };
 
+// list for every position the amount of malus applied to the player when
+// playing out of its natural postion
+// TODO: should it be part of the game save state so can be customisable as a JSON??
+const outOfPositionMalus: { [k: string]: { [k: string]: Position[] } } = {
+  gk: {
+    smallMalus: [],
+    midMalus: [],
+    // bigMalus is the default for all other position left out (expect this position itself)
+  },
+  lb: {
+    smallMalus: ["rb"],
+    midMalus: ["cb", "lm"],
+    // bigMalus is the default
+  },
+  rb: {
+    smallMalus: ["lb"],
+    midMalus: ["cb", "rm"],
+  },
+  cb: {
+    smallMalus: [],
+    midMalus: ["lb", "rb"],
+  },
+  dm: {
+    smallMalus: ["cm"],
+    midMalus: ["cb", "lb", "rb", "rm", "lm"],
+  },
+  lm: {
+    smallMalus: ["rm"],
+    midMalus: ["lb", "lw", "rw", "cm", "am"],
+  },
+  rm: {
+    smallMalus: ["lm"],
+    midMalus: ["rb", "lw", "rw", "cm", "am"],
+  },
+  cm: {
+    smallMalus: ["dm", "am"],
+    midMalus: ["lm", "rm"],
+  },
+  am: {
+    smallMalus: ["cm"],
+    midMalus: ["lm", "rm", "lw", "rw", "cf"],
+  },
+  lw: {
+    smallMalus: ["lm", "am"],
+    midMalus: ["rm", "cf"],
+  },
+  rw: {
+    smallMalus: ["rm", "am"],
+    midMalus: ["lm", "cf"],
+  },
+  cf: {
+    smallMalus: [],
+    midMalus: ["lw", "rw"],
+  },
+};
+
+// get a malus factor between 0 and 1 to applied to the player skills when is
+// playing out of position, the amount of malus is depending at which position
+// it is playing
+export function getOutOfPositionMalus(p: Player, at = p.position): number {
+  if (p.position === at) {
+    return 0;
+  }
+  if (outOfPositionMalus[p.position]?.smallMalus.includes(at)) {
+    return 0.05;
+  }
+  if (outOfPositionMalus[p.position]?.midMalus.includes(at)) {
+    return 0.1;
+  }
+
+  return 0.2;
+}
+
+// the only skills where the out of position malus is applicable
+export const skillsApplicableMalus = new Set<keyof Skills>([
+  "defensivePositioning",
+  "interception",
+  "marking",
+  "offensivePositioning",
+  "finisnishing",
+  "vision",
+]);
+
 // Player creates semi-random player that best fit the position characteristics
 // note instances of this class are saved as JSON
 export class Player {
@@ -126,5 +209,27 @@ export class Player {
     this.potential = createPotential();
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
+  }
+
+  // get the skill player value taking in cosideration out of position malus
+  static getSkill(p: Player, s: keyof Skills, at = p.position): number {
+    return skillsApplicableMalus.has(s)
+      ? Math.floor(p.skills[s] - p.skills[s] * getOutOfPositionMalus(p, at)) // with floor we always apply a malus
+      : p.skills[s];
+  }
+
+  // get the macroskill player value taking in cosideration out of position malus
+  // the value is between MIN_SKILL and MAX_SKILL
+  static getMacroskill(p: Player, macroskill: string, at = p.position): number {
+    if (macroskills[macroskill]) {
+      return Math.round(
+        macroskills[macroskill].reduce(
+          (sum, sk) => Player.getSkill(p, sk, at) + sum,
+          0
+        ) / macroskills[macroskill].length
+      );
+    }
+
+    throw new Error(`macroSkill: ${macroskill} doesn't exist`);
   }
 }
