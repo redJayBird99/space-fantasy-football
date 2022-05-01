@@ -35,6 +35,15 @@ export type Position =
   | "lw"
   | "cf";
 
+export type PositionArea = "goolkeeper" | "defender" | "midfielder" | "forward";
+export const positionArea: Readonly<Record<PositionArea, readonly Position[]>> =
+  {
+    goolkeeper: ["gk"],
+    defender: ["cb", "cb", "lb", "rb"],
+    midfielder: ["cm", "cm", "lm", "rm", "dm", "am"],
+    forward: ["cf", "cf", "lw", "rw"],
+  };
+
 // returns a random number between MIN_AGE and MAX_AGE with end points less frequent
 export function createAge(): number {
   // TOFIX: older an younger player shoul be less frequent
@@ -93,8 +102,17 @@ export interface Skills {
   finisnishing: number;
 }
 
-// a macroskills is a combination of skills
-export const macroskills: { [macroskill: string]: (keyof Skills)[] } = {
+type Skill = keyof Skills;
+export type Macroskill =
+  | "mobility"
+  | "physic"
+  | "goolkeeper"
+  | "defense"
+  | "ability"
+  | "offense";
+
+// macroskills are combination of skills
+export const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
   mobility: ["speed", "agility", "stamina"],
   physic: ["strength", "height"],
   goolkeeper: ["reflexes", "handling", "diving"],
@@ -106,7 +124,8 @@ export const macroskills: { [macroskill: string]: (keyof Skills)[] } = {
 // list for every position the amount of malus applied to the player when
 // playing out of its natural postion
 // TODO: should it be part of the game save state so can be customisable as a JSON??
-const outOfPositionMalus: { [k: string]: { [k: string]: Position[] } } = {
+type PosMalus = Readonly<Record<Position, Record<string, readonly Position[]>>>;
+const outOfPositionMalus: PosMalus = {
   gk: {
     smallMalus: [],
     midMalus: [],
@@ -166,10 +185,10 @@ export function getOutOfPositionMalus(p: Player, at = p.position): number {
   if (p.position === at) {
     return 0;
   }
-  if (outOfPositionMalus[p.position]?.smallMalus.includes(at)) {
+  if (outOfPositionMalus[p.position].smallMalus.includes(at)) {
     return 0.05;
   }
-  if (outOfPositionMalus[p.position]?.midMalus.includes(at)) {
+  if (outOfPositionMalus[p.position].midMalus.includes(at)) {
     return 0.1;
   }
 
@@ -177,7 +196,8 @@ export function getOutOfPositionMalus(p: Player, at = p.position): number {
 }
 
 // the only skills where the out of position malus is applicable
-export const skillsApplicableMalus = new Set<keyof Skills>([
+// TODO: readonly
+export const skillsApplicableMalus = new Set<Skill>([
   "defensivePositioning",
   "interception",
   "marking",
@@ -212,7 +232,7 @@ export class Player {
   }
 
   // get the skill player value taking in cosideration out of position malus
-  static getSkill(p: Player, s: keyof Skills, at = p.position): number {
+  static getSkill(p: Player, s: Skill, at = p.position): number {
     return skillsApplicableMalus.has(s)
       ? Math.floor(p.skills[s] - p.skills[s] * getOutOfPositionMalus(p, at)) // with floor we always apply a malus
       : p.skills[s];
@@ -220,16 +240,133 @@ export class Player {
 
   // get the macroskill player value taking in cosideration out of position malus
   // the value is between MIN_SKILL and MAX_SKILL
-  static getMacroskill(p: Player, macroskill: string, at = p.position): number {
-    if (macroskills[macroskill]) {
-      return Math.round(
-        macroskills[macroskill].reduce(
-          (sum, sk) => Player.getSkill(p, sk, at) + sum,
-          0
-        ) / macroskills[macroskill].length
-      );
+  // check macroskills for all possible macroskills
+  static getMacroskill(p: Player, m: Macroskill, at = p.position): number {
+    return Math.round(
+      macroskills[m].reduce((sum, sk) => Player.getSkill(p, sk, at) + sum, 0) /
+        macroskills[m].length
+    );
+  }
+
+  // get a player at the given PositionArea randomly, some position is more
+  // frequent than other cm for midfielder, cf for forward and cb for defender
+  static createPlayerAt(now: Date, at: PositionArea): Player {
+    const picks = JSON.parse(JSON.stringify(positionArea)); // in case of performance extract this object
+    // raise up the probability to pick the position
+    picks.defender.push("cb");
+    picks.midfielder.push("cm");
+    picks.forward.push("cf");
+
+    const pick = Math.floor(Math.random() * picks[at].length);
+    return new Player(picks[at][pick], now);
+  }
+
+  /**
+    a player score is like an overall but this game doesn't use it explicitly
+    an overall is a tricky concept but a way to compare two player is necessary
+    which skills are more important for a position is subjective, the most
+    important thing is to have a good balance between postions score so every
+    position have equal opportunities to be picked by a team when compared
+    TODO: some statistical analysis
+
+    @param at take in cosideration out of position malus
+    @Returns a value between MIN_SKILL and MAX_SKILL
+  */
+  static getScore(p: Player, at = p.position): number {
+    let score = 0;
+
+    for (const macro in positionScoreFactors[at]) {
+      const mk = macro as Macroskill;
+      score += Player.getMacroskill(p, mk, at) * positionScoreFactors[at][mk];
     }
 
-    throw new Error(`macroSkill: ${macroskill} doesn't exist`);
+    return Math.floor(score); // floor better to underestimate
   }
 }
+
+// the sum of scoreFactors should always be 1 (expect for rounding error)
+type ScoreFactors = Readonly<Record<Macroskill, number>>;
+const fbScoreFactors: ScoreFactors = {
+  // higher is the value more important the macroskill is for the player position score
+  goolkeeper: 0,
+  mobility: 0.15,
+  physic: 0.1,
+  defense: 0.45,
+  offense: 0.05,
+  ability: 0.25,
+};
+
+const emScoreFactors: ScoreFactors = {
+  goolkeeper: 0,
+  mobility: 0.15,
+  physic: 0.1,
+  defense: 0.175,
+  ability: 0.4,
+  offense: 0.175,
+};
+
+const wgScoreFactors: ScoreFactors = {
+  goolkeeper: 0,
+  mobility: 0.15,
+  physic: 0.1,
+  ability: 0.35,
+  offense: 0.35,
+  defense: 0.05,
+};
+
+export const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
+  gk: {
+    goolkeeper: 0.65,
+    mobility: 0,
+    physic: 0.35,
+    ability: 0,
+    offense: 0,
+    defense: 0,
+  },
+  cb: {
+    goolkeeper: 0,
+    mobility: 0.1,
+    physic: 0.15,
+    defense: 0.45,
+    offense: 0.05,
+    ability: 0.25,
+  },
+  lb: fbScoreFactors,
+  rb: fbScoreFactors,
+  dm: {
+    goolkeeper: 0,
+    mobility: 0.1,
+    physic: 0.1,
+    defense: 0.3,
+    offense: 0.1,
+    ability: 0.4,
+  },
+  cm: {
+    goolkeeper: 0,
+    mobility: 0.1,
+    physic: 0.1,
+    defense: 0.2,
+    ability: 0.4,
+    offense: 0.2,
+  },
+  am: {
+    goolkeeper: 0,
+    mobility: 0.125,
+    physic: 0.125,
+    ability: 0.4,
+    offense: 0.25,
+    defense: 0.1,
+  },
+  lm: emScoreFactors,
+  rm: emScoreFactors,
+  lw: wgScoreFactors,
+  rw: wgScoreFactors,
+  cf: {
+    goolkeeper: 0,
+    mobility: 0.125,
+    physic: 0.125,
+    ability: 0.25,
+    offense: 0.45,
+    defense: 0.05,
+  },
+};

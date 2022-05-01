@@ -1,7 +1,7 @@
 import * as player from "../../src/character/player";
 import { isMoreFrequent } from "../../src/util/generator";
 
-const pos: player.Position[] = [
+const poss: player.Position[] = [
   "cb",
   "rb",
   "lb",
@@ -14,6 +14,9 @@ const pos: player.Position[] = [
   "rw",
   "cf",
 ];
+const samplePos = poss[Math.floor(poss.length * Math.random())];
+const samplePlayer = new player.Player(samplePos, new Date());
+const atPos = poss.find((pp) => pp !== samplePos);
 
 describe("createAge()", () => {
   const ages = Array.from({ length: 100 }, () => player.createAge());
@@ -36,6 +39,14 @@ describe("createPotential()", () => {
     player.createPotential()
   );
 
+  test("all potentials should able to created", () => {
+    expect(potentials.includes("A")).toBe(true);
+    expect(potentials.includes("B")).toBe(true);
+    expect(potentials.includes("C")).toBe(true);
+    expect(potentials.includes("D")).toBe(true);
+    expect(potentials.includes("E")).toBe(true);
+  });
+
   test("potential C should be return more frequently of A", () => {
     expect(isMoreFrequent("C", "A", potentials)).toBe(true);
   });
@@ -46,7 +57,7 @@ describe("createPotential()", () => {
 });
 
 describe("preferredFootChance()", () => {
-  pos.forEach((p) => {
+  poss.forEach((p) => {
     const rst = player.preferredFootChance(p);
 
     test(`the summed probability for ${p} shouldn't be greater than 1`, () => {
@@ -81,16 +92,24 @@ describe("createPreferredFoot()", () => {
   });
 
   test("should return a right footed more often for any other position", () => {
-    pos
+    poss
       .filter((p) => p !== "lb" && p !== "lm" && p !== "lw")
       .forEach((p) => expect(moreOftenLeftFooted(p)).toBe(false));
+  });
+
+  test("should be able to create all preferred foots", () => {
+    const p = poss[Math.floor(poss.length * Math.random())];
+    const ft = Array.from({ length: 200 }, () => player.createPreferredFoot(p));
+    expect(ft.includes("ambidextrous")).toBe(true);
+    expect(ft.includes("left")).toBe(true);
+    expect(ft.includes("right")).toBe(true);
   });
 });
 
 describe("getOutOfPositionMalus()", () => {
-  pos.forEach((p) => {
+  poss.forEach((p) => {
     const plr = new player.Player(p, new Date());
-    const at = pos.find((pp) => pp !== p);
+    const at = poss.find((pp) => pp !== p);
 
     test(`should return 0 when isn't out of position`, () => {
       expect(player.getOutOfPositionMalus(plr)).toBe(0);
@@ -111,57 +130,106 @@ describe("getOutOfPositionMalus()", () => {
 });
 
 describe("getSkill()", () => {
-  const p = pos[Math.floor(pos.length * Math.random())];
-  const plr = new player.Player(p, new Date());
-  const at = pos.find((pp) => pp !== p);
-
   player.skillsApplicableMalus.forEach((sk) => {
-    test(`when ${p} is playing out of position the ${sk} value is reduced`, () => {
-      expect(plr.skills[sk]).toBeGreaterThan(
-        player.Player.getSkill(plr, sk, at)
+    test(`when is playing out of position the skill value is reduced`, () => {
+      expect(samplePlayer.skills[sk]).toBeGreaterThan(
+        player.Player.getSkill(samplePlayer, sk, atPos)
       );
     });
   });
 
-  Object.keys(plr.skills).forEach((s) => {
+  Object.keys(samplePlayer.skills).forEach((s) => {
     const sk = s as keyof player.Skills;
 
     if (!player.skillsApplicableMalus.has(sk)) {
-      test(`when ${p} is playing at ${p}, ${sk} value have no malus`, () => {
-        expect(plr.skills[sk]).toBe(player.Player.getSkill(plr, sk, at));
+      test(`when is playing at its natural position, the skill value have no malus`, () => {
+        expect(samplePlayer.skills[sk]).toBe(
+          player.Player.getSkill(samplePlayer, sk, atPos)
+        );
       });
     }
 
     test(`${sk} value is greater than or equal ${player.MIN_SKILL}`, () => {
-      expect(player.Player.getSkill(plr, sk, at)).toBeGreaterThan(
+      expect(player.Player.getSkill(samplePlayer, sk, atPos)).toBeGreaterThan(
         player.MIN_SKILL
       );
     });
 
     test(`${sk} value is less than or equal ${player.MAX_SKILL}`, () => {
-      expect(player.Player.getSkill(plr, sk, at)).toBeLessThanOrEqual(
-        player.MAX_SKILL
-      );
+      expect(
+        player.Player.getSkill(samplePlayer, sk, atPos)
+      ).toBeLessThanOrEqual(player.MAX_SKILL);
     });
   });
 });
 
 describe("getMacroskill()", () => {
-  const p = pos[Math.floor(pos.length * Math.random())];
-  const plr = new player.Player(p, new Date());
-  const at = pos.find((pp) => pp !== p);
+  Object.keys(player.macroskills).forEach((m) => {
+    const s = m as player.Macroskill;
 
-  Object.keys(player.macroskills).forEach((s) => {
     test(`${s} value is greater than or equal ${player.MIN_SKILL}`, () => {
-      expect(player.Player.getMacroskill(plr, s, at)).toBeGreaterThan(
-        player.MIN_SKILL
-      );
+      expect(
+        player.Player.getMacroskill(samplePlayer, s, atPos)
+      ).toBeGreaterThan(player.MIN_SKILL);
     });
 
     test(`${s} value is less than or equal ${player.MAX_SKILL}`, () => {
-      expect(player.Player.getMacroskill(plr, s, at)).toBeLessThanOrEqual(
-        player.MAX_SKILL
-      );
+      expect(
+        player.Player.getMacroskill(samplePlayer, s, atPos)
+      ).toBeLessThanOrEqual(player.MAX_SKILL);
     });
+  });
+});
+
+describe("createPlayerAt()", () => {
+  Object.keys(player.positionArea).forEach((area) => {
+    const pArea = area as player.PositionArea;
+    const plrs = Array.from({ length: 100 }, () =>
+      player.Player.createPlayerAt(new Date(), pArea)
+    );
+
+    describe(`when at is ${pArea}`, () => {
+      player.positionArea[pArea].forEach((p) => {
+        const pp = p as player.Position;
+
+        test(`should be able to return a player at ${pp}`, () => {
+          expect(plrs.some((pr) => pr.position === pp)).toBe(true);
+        });
+      });
+    });
+  });
+
+  xtest("cm is more frequent", () => {});
+});
+
+describe("positionScoreFactors", () => {
+  Object.keys(player.positionScoreFactors).forEach((p) => {
+    const pp = p as player.Position;
+
+    describe(`the sum of factor of ${pp} score is 1`, () => {
+      expect(
+        Object.values(player.positionScoreFactors[pp]).reduce((a, v) => a + v)
+      ).toBeCloseTo(1);
+    });
+  });
+});
+
+describe("getScore()", () => {
+  test(`when is playing out of position the score is reduced`, () => {
+    expect(player.Player.getScore(samplePlayer)).toBeGreaterThan(
+      player.Player.getScore(samplePlayer, atPos)
+    );
+  });
+
+  test(`should return a value greater than or equal ${player.MIN_SKILL}`, () => {
+    expect(player.Player.getScore(samplePlayer)).toBeGreaterThan(
+      player.MIN_SKILL
+    );
+  });
+
+  test(`should return a value less than or equal ${player.MAX_SKILL}`, () => {
+    expect(player.Player.getScore(samplePlayer)).toBeLessThanOrEqual(
+      player.MAX_SKILL
+    );
   });
 });
