@@ -35,7 +35,7 @@ describe("createAge()", () => {
 });
 
 describe("createPotential()", () => {
-  const potentials = Array.from({ length: 100 }, () =>
+  const potentials = Array.from({ length: 250 }, () =>
     player.createPotential()
   );
 
@@ -75,7 +75,7 @@ describe("createPreferredFoot()", () => {
     return isMoreFrequent(
       "left",
       "right",
-      Array.from({ length: 100 }, () => player.createPreferredFoot(p))
+      Array.from({ length: 250 }, () => player.createPreferredFoot(p))
     );
   };
 

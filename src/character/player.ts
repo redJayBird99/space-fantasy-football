@@ -207,7 +207,7 @@ export const skillsApplicableMalus = new Set<Skill>([
 ]);
 
 // Player creates semi-random player that best fit the position characteristics
-// note instances of this class are saved as JSON
+// note instances of this class are saved as JSON on the user machine
 export class Player {
   id: string;
   name: string;

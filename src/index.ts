@@ -1,3 +1,6 @@
-import { Player } from "./character/player";
+import { initGameState, GameStateHandle } from "./game-state/game-state";
 
-console.log(`Hello world!!`, new Player("cb", new Date()));
+const gs = new GameStateHandle(initGameState());
+const pre = document.createElement("pre");
+pre.textContent = JSON.stringify(gs.state, null, 4);
+document.body.append(pre);
