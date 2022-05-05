@@ -102,7 +102,7 @@ export interface Skills {
   finisnishing: number;
 }
 
-type Skill = keyof Skills;
+export type Skill = keyof Skills;
 export type Macroskill =
   | "mobility"
   | "physic"
@@ -221,11 +221,11 @@ export class Player {
 
   constructor(pos: Position, now: Date) {
     this.age = createAge();
-    this.id = createId();
     this.name = createName();
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(this.age, now);
+    this.id = createId() + this.birthday.split("-").join(""); // you never know...
     this.potential = createPotential();
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
@@ -281,6 +281,26 @@ export class Player {
     }
 
     return Math.floor(score); // floor better to underestimate
+  }
+
+  // returns a value between 150 and 205
+  static getHeightInCm(p: Player): number {
+    return Math.round(150 + 55 * (p.skills.height / MAX_SKILL));
+  }
+
+  // return a wage between 2000 and 64000 per month wanted by the player it is
+  // depended on the score of the player, defenders and goolkeepers usually ask for less
+  static wantedWage(p: Player): number {
+    const posFactor =
+      positionArea.goolkeeper.includes(p.position) ||
+      positionArea.defender.includes(p.position)
+        ? 0.5
+        : 1;
+    const minWage = 2_000;
+    const noise = minWage * (Math.random() - 0.5);
+    const wage = 2 ** ((Player.getScore(p) - 45) / 6) * minWage * posFactor;
+
+    return Math.round(Math.max(minWage, Math.min(32 * minWage, wage + noise)));
   }
 }
 

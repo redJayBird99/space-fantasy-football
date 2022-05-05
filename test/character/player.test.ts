@@ -1,7 +1,8 @@
-import * as player from "../../src/character/player";
+import * as _pl from "../../src/character/player";
 import { isMoreFrequent } from "../../src/util/generator";
 
-const poss: player.Position[] = [
+const poss: _pl.Position[] = [
+  "gk",
   "cb",
   "rb",
   "lb",
@@ -15,18 +16,18 @@ const poss: player.Position[] = [
   "cf",
 ];
 const samplePos = poss[Math.floor(poss.length * Math.random())];
-const samplePlayer = new player.Player(samplePos, new Date());
+const samplePlayer = new _pl.Player(samplePos, new Date());
 const atPos = poss.find((pp) => pp !== samplePos);
 
 describe("createAge()", () => {
-  const ages = Array.from({ length: 100 }, () => player.createAge());
+  const ages = Array.from({ length: 100 }, () => _pl.createAge());
 
   test("should return numbers greater or equal than MIN_AGE", () => {
-    ages.forEach((age) => expect(age).toBeGreaterThanOrEqual(player.MIN_AGE));
+    ages.forEach((age) => expect(age).toBeGreaterThanOrEqual(_pl.MIN_AGE));
   });
 
   test("should return numbers smaller or equal than MAX_AGE", () => {
-    ages.forEach((age) => expect(age).toBeLessThanOrEqual(player.MAX_AGE));
+    ages.forEach((age) => expect(age).toBeLessThanOrEqual(_pl.MAX_AGE));
   });
 
   xtest("teens should be less frequent of any 20s", () => {});
@@ -35,9 +36,7 @@ describe("createAge()", () => {
 });
 
 describe("createPotential()", () => {
-  const potentials = Array.from({ length: 250 }, () =>
-    player.createPotential()
-  );
+  const potentials = Array.from({ length: 250 }, () => _pl.createPotential());
 
   test("all potentials should able to created", () => {
     expect(potentials.includes("A")).toBe(true);
@@ -58,7 +57,7 @@ describe("createPotential()", () => {
 
 describe("preferredFootChance()", () => {
   poss.forEach((p) => {
-    const rst = player.preferredFootChance(p);
+    const rst = _pl.preferredFootChance(p);
 
     test(`the summed probability for ${p} shouldn't be greater than 1`, () => {
       expect(rst.left + rst.right).toBeLessThanOrEqual(1);
@@ -71,11 +70,11 @@ describe("preferredFootChance()", () => {
 });
 
 describe("createPreferredFoot()", () => {
-  const moreOftenLeftFooted = (p: player.Position) => {
+  const moreOftenLeftFooted = (p: _pl.Position) => {
     return isMoreFrequent(
       "left",
       "right",
-      Array.from({ length: 250 }, () => player.createPreferredFoot(p))
+      Array.from({ length: 250 }, () => _pl.createPreferredFoot(p))
     );
   };
 
@@ -99,7 +98,7 @@ describe("createPreferredFoot()", () => {
 
   test("should be able to create all preferred foots", () => {
     const p = poss[Math.floor(poss.length * Math.random())];
-    const ft = Array.from({ length: 200 }, () => player.createPreferredFoot(p));
+    const ft = Array.from({ length: 200 }, () => _pl.createPreferredFoot(p));
     expect(ft.includes("ambidextrous")).toBe(true);
     expect(ft.includes("left")).toBe(true);
     expect(ft.includes("right")).toBe(true);
@@ -108,15 +107,15 @@ describe("createPreferredFoot()", () => {
 
 describe("getOutOfPositionMalus()", () => {
   poss.forEach((p) => {
-    const plr = new player.Player(p, new Date());
+    const plr = new _pl.Player(p, new Date());
     const at = poss.find((pp) => pp !== p);
 
     test(`should return 0 when isn't out of position`, () => {
-      expect(player.getOutOfPositionMalus(plr)).toBe(0);
+      expect(_pl.getOutOfPositionMalus(plr)).toBe(0);
     });
 
     describe(`when ${p} is playing at ${at}`, () => {
-      const malus = player.getOutOfPositionMalus(plr, at);
+      const malus = _pl.getOutOfPositionMalus(plr, at);
 
       test(`should return a factor malus greater than 0`, () => {
         expect(malus).toBeGreaterThan(0);
@@ -129,68 +128,68 @@ describe("getOutOfPositionMalus()", () => {
   });
 });
 
-describe("getSkill()", () => {
-  player.skillsApplicableMalus.forEach((sk) => {
+describe("Player.getSkill()", () => {
+  _pl.skillsApplicableMalus.forEach((sk) => {
     test(`when is playing out of position the skill value is reduced`, () => {
       expect(samplePlayer.skills[sk]).toBeGreaterThan(
-        player.Player.getSkill(samplePlayer, sk, atPos)
+        _pl.Player.getSkill(samplePlayer, sk, atPos)
       );
     });
   });
 
   Object.keys(samplePlayer.skills).forEach((s) => {
-    const sk = s as keyof player.Skills;
+    const sk = s as keyof _pl.Skills;
 
-    if (!player.skillsApplicableMalus.has(sk)) {
+    if (!_pl.skillsApplicableMalus.has(sk)) {
       test(`when is playing at its natural position, the skill value have no malus`, () => {
         expect(samplePlayer.skills[sk]).toBe(
-          player.Player.getSkill(samplePlayer, sk, atPos)
+          _pl.Player.getSkill(samplePlayer, sk, atPos)
         );
       });
     }
 
-    test(`${sk} value is greater than or equal ${player.MIN_SKILL}`, () => {
-      expect(player.Player.getSkill(samplePlayer, sk, atPos)).toBeGreaterThan(
-        player.MIN_SKILL
+    test(`${sk} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
+      expect(_pl.Player.getSkill(samplePlayer, sk, atPos)).toBeGreaterThan(
+        _pl.MIN_SKILL
       );
     });
 
-    test(`${sk} value is less than or equal ${player.MAX_SKILL}`, () => {
-      expect(
-        player.Player.getSkill(samplePlayer, sk, atPos)
-      ).toBeLessThanOrEqual(player.MAX_SKILL);
+    test(`${sk} value is less than or equal ${_pl.MAX_SKILL}`, () => {
+      expect(_pl.Player.getSkill(samplePlayer, sk, atPos)).toBeLessThanOrEqual(
+        _pl.MAX_SKILL
+      );
     });
   });
 });
 
-describe("getMacroskill()", () => {
-  Object.keys(player.macroskills).forEach((m) => {
-    const s = m as player.Macroskill;
+describe("Player.getMacroskill()", () => {
+  Object.keys(_pl.macroskills).forEach((m) => {
+    const s = m as _pl.Macroskill;
 
-    test(`${s} value is greater than or equal ${player.MIN_SKILL}`, () => {
-      expect(
-        player.Player.getMacroskill(samplePlayer, s, atPos)
-      ).toBeGreaterThan(player.MIN_SKILL);
+    test(`${s} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
+      expect(_pl.Player.getMacroskill(samplePlayer, s, atPos)).toBeGreaterThan(
+        _pl.MIN_SKILL
+      );
     });
 
-    test(`${s} value is less than or equal ${player.MAX_SKILL}`, () => {
+    test(`${s} value is less than or equal ${_pl.MAX_SKILL}`, () => {
       expect(
-        player.Player.getMacroskill(samplePlayer, s, atPos)
-      ).toBeLessThanOrEqual(player.MAX_SKILL);
+        _pl.Player.getMacroskill(samplePlayer, s, atPos)
+      ).toBeLessThanOrEqual(_pl.MAX_SKILL);
     });
   });
 });
 
-describe("createPlayerAt()", () => {
-  Object.keys(player.positionArea).forEach((area) => {
-    const pArea = area as player.PositionArea;
+describe("Player.createPlayerAt()", () => {
+  Object.keys(_pl.positionArea).forEach((area) => {
+    const pArea = area as _pl.PositionArea;
     const plrs = Array.from({ length: 100 }, () =>
-      player.Player.createPlayerAt(new Date(), pArea)
+      _pl.Player.createPlayerAt(new Date(), pArea)
     );
 
     describe(`when at is ${pArea}`, () => {
-      player.positionArea[pArea].forEach((p) => {
-        const pp = p as player.Position;
+      _pl.positionArea[pArea].forEach((p) => {
+        const pp = p as _pl.Position;
 
         test(`should be able to return a player at ${pp}`, () => {
           expect(plrs.some((pr) => pr.position === pp)).toBe(true);
@@ -203,33 +202,68 @@ describe("createPlayerAt()", () => {
 });
 
 describe("positionScoreFactors", () => {
-  Object.keys(player.positionScoreFactors).forEach((p) => {
-    const pp = p as player.Position;
+  Object.keys(_pl.positionScoreFactors).forEach((p) => {
+    const pp = p as _pl.Position;
 
     describe(`the sum of factor of ${pp} score is 1`, () => {
       expect(
-        Object.values(player.positionScoreFactors[pp]).reduce((a, v) => a + v)
+        Object.values(_pl.positionScoreFactors[pp]).reduce((a, v) => a + v)
       ).toBeCloseTo(1);
     });
   });
 });
 
-describe("getScore()", () => {
+describe("Player.getScore()", () => {
   test(`when is playing out of position the score is reduced`, () => {
-    expect(player.Player.getScore(samplePlayer)).toBeGreaterThan(
-      player.Player.getScore(samplePlayer, atPos)
+    expect(_pl.Player.getScore(samplePlayer)).toBeGreaterThan(
+      _pl.Player.getScore(samplePlayer, atPos)
     );
   });
 
-  test(`should return a value greater than or equal ${player.MIN_SKILL}`, () => {
-    expect(player.Player.getScore(samplePlayer)).toBeGreaterThan(
-      player.MIN_SKILL
-    );
+  test(`should return a value greater than or equal ${_pl.MIN_SKILL}`, () => {
+    expect(_pl.Player.getScore(samplePlayer)).toBeGreaterThan(_pl.MIN_SKILL);
   });
 
-  test(`should return a value less than or equal ${player.MAX_SKILL}`, () => {
-    expect(player.Player.getScore(samplePlayer)).toBeLessThanOrEqual(
-      player.MAX_SKILL
+  test(`should return a value less than or equal ${_pl.MAX_SKILL}`, () => {
+    expect(_pl.Player.getScore(samplePlayer)).toBeLessThanOrEqual(
+      _pl.MAX_SKILL
     );
+  });
+});
+
+describe("Player.getHeightInCm()", () => {
+  const plr = new _pl.Player("am", new Date());
+
+  test("should return 150 when height is 0", () => {
+    plr.skills.height = 0;
+    expect(_pl.Player.getHeightInCm(plr)).toBe(150);
+  });
+
+  test("should return 205 when height is 99", () => {
+    plr.skills.height = 99;
+    expect(_pl.Player.getHeightInCm(plr)).toBe(205);
+  });
+});
+
+describe("Player.wantedWage()", () => {
+  const plr = new _pl.Player(
+    poss[Math.floor(Math.random() * poss.length)],
+    new Date()
+  );
+
+  test("a very good player should ask for 64000", () => {
+    Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 90));
+    expect(_pl.Player.wantedWage(plr)).toBe(64_000);
+  });
+
+  test("a bad player should ask for 2000", () => {
+    Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 20));
+    expect(_pl.Player.wantedWage(plr)).toBe(2_000);
+  });
+
+  test("a mid player should ask for between 2000 and 64000", () => {
+    Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
+    expect(_pl.Player.wantedWage(plr)).toBeGreaterThan(2_000);
+    expect(_pl.Player.wantedWage(plr)).toBeLessThan(64_000);
   });
 });
