@@ -3,23 +3,28 @@ import {
   createName,
   randomGauss,
   createBirthday,
+  randomSign,
 } from "../util/generator";
+import { mod } from "../util/math";
 import { createSkills } from "./create-skills";
 
 export const MAX_AGE = 45;
 export const MIN_AGE = 16;
 export const MAX_SKILL = 99; // included
 export const MIN_SKILL = 0;
+export const END_GROWTH_AGE = 27;
+export const MAX_GROWTH_RATE = 0.0025; // monthly
+export const START_DEGROWTH_AGE = 32;
 
 export type Foot = "ambidextrous" | "left" | "right";
 type FootChance = { left: number; right: number };
 
-export type Potential =
-  | "A" // the improvability rate is very high
-  | "B" // the improvability rate is high
-  | "C" // the improvability rate is medium
-  | "D" // the improvability rate is low
-  | "E"; // don't improve
+export type Improvability =
+  | "A" // the growth rate is very high
+  | "B" // the growth rate is high
+  | "C" // the growth rate is medium
+  | "D" // the growth rate is low
+  | "E"; // the growth rate is very low or none
 
 export type Position =
   | "gk"
@@ -50,11 +55,33 @@ export function createAge(): number {
   return Math.floor(Math.random() * (MAX_AGE - MIN_AGE + 1)) + MIN_AGE;
 }
 
-// returns a potential randomly with end points potentials less frequent
-export function createPotential(): Potential {
-  const potentials: Potential[] = ["A", "B", "C", "D", "E"];
-  const point = (randomGauss() + 2 * Math.random()) / 3; // loosen up a bit
-  return potentials[Math.floor(point * potentials.length)];
+// return a value between 0 and 1 depending on the age of the player
+// for players younger than 27 usually the value is less than 1, fro players
+// older tha 32 the valueis less than 1
+export function createGrowthState(p: Player): number {
+  if (p.age < END_GROWTH_AGE) {
+    const annualGrowthRate = 12 * p.growthRate;
+    // one year less than END_GROWTH_AGE as buffer
+    return 1 - Math.max(0, annualGrowthRate * (END_GROWTH_AGE - 1 - p.age));
+  }
+
+  const annualDegrowthRate = (MAX_GROWTH_RATE / 2) * 12;
+  return 1 - annualDegrowthRate * Math.max(0, p.age - START_DEGROWTH_AGE);
+}
+
+// convert the growth rate to improvability rating
+export function getImprovability(growthRate: number): Improvability {
+  const ratings: Improvability[] = ["E", "D", "C", "B", "A"];
+  const step = MAX_GROWTH_RATE / ratings.length;
+  return ratings[Math.floor(growthRate / step)];
+}
+
+// deceiving the improvability rating (for user)
+// TODO: use it
+// TODO: depending on the scountig
+export function addGrowthRateNoise(gRate: number): number {
+  const noise = randomSign((MAX_GROWTH_RATE / 3) * Math.random());
+  return mod(gRate + noise, MAX_GROWTH_RATE);
 }
 
 // returns the probability for the preferred foot between left and right
@@ -206,6 +233,9 @@ export const skillsApplicableMalus = new Set<Skill>([
   "vision",
 ]);
 
+// TODO: readonly
+export const noGrowthSkill = new Set<Skill>(["height"]);
+
 // Player creates semi-random player that best fit the position characteristics
 // note instances of this class are saved as JSON on the user machine
 export class Player {
@@ -216,29 +246,36 @@ export class Player {
   age: number;
   birthday: string;
   foot: Foot;
-  potential: Potential;
-  skills: Skills;
+  growthRate: number; // monthly growth rate of growthState
+  growthState: number; // (percentage 0-1) applying it: skillValue * growthState
+  improvability: Improvability; // the user see this value instead of the growthRate
+  skills: Skills; // to get the skill values with all modifiers (growth, malus and etc) applied use getSkill
 
-  constructor(pos: Position, now: Date) {
-    this.age = createAge();
+  constructor(pos: Position, now: Date, age?: number) {
+    this.age = age ?? createAge();
     this.name = createName();
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(this.age, now);
     this.id = createId() + this.birthday.split("-").join(""); // you never know...
-    this.potential = createPotential();
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
+    this.growthRate =
+      ((randomGauss() + 2 * Math.random()) / 3) * MAX_GROWTH_RATE; // loosen up a bit the randomGauss;
+    this.growthState = createGrowthState(this);
+    this.improvability = getImprovability(this.growthRate);
   }
 
-  // get the skill player value taking in cosideration out of position malus
+  // get the skill player value taking in cosideration all modifiers like
+  // out of position malus and growthState
   static getSkill(p: Player, s: Skill, at = p.position): number {
-    return skillsApplicableMalus.has(s)
-      ? Math.floor(p.skills[s] - p.skills[s] * getOutOfPositionMalus(p, at)) // with floor we always apply a malus
-      : p.skills[s];
+    const v = noGrowthSkill.has(s) ? p.skills[s] : p.skills[s] * p.growthState;
+    return Math.round(
+      skillsApplicableMalus.has(s) ? v - v * getOutOfPositionMalus(p, at) : v
+    );
   }
 
-  // get the macroskill player value taking in cosideration out of position malus
+  // get the macroskill player value taking in cosideration all modifiers
   // the value is between MIN_SKILL and MAX_SKILL
   // check macroskills for all possible macroskills
   static getMacroskill(p: Player, m: Macroskill, at = p.position): number {
@@ -280,7 +317,23 @@ export class Player {
       score += Player.getMacroskill(p, mk, at) * positionScoreFactors[at][mk];
     }
 
-    return Math.floor(score); // floor better to underestimate
+    return score;
+  }
+
+  // update the growthState if the player can still grow, it is meant to be used
+  // every end of the month
+  static applyMonthlyGrowth(p: Player): void {
+    const growth = p.age < END_GROWTH_AGE ? p.growthRate : 0;
+    p.growthState = Math.min(1, p.growthState + growth);
+  }
+
+  // update the growthState shrinking its value (min 0.5) when the player is old Enough,
+  // it is meant to be used every end of the month
+  static applyMonthlyDegrowth(p: Player): void {
+    if (p.age >= START_DEGROWTH_AGE) {
+      const degrowth = randomGauss() * MAX_GROWTH_RATE;
+      p.growthState = Math.max(0.5, p.growthState - degrowth);
+    }
   }
 
   // returns a value between 150 and 205
@@ -294,7 +347,7 @@ export class Player {
     const posFactor =
       positionArea.goolkeeper.includes(p.position) ||
       positionArea.defender.includes(p.position)
-        ? 0.5
+        ? 0.8
         : 1;
     const minWage = 2_000;
     const noise = minWage * (Math.random() - 0.5);

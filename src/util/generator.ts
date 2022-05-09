@@ -75,3 +75,8 @@ export function variance(sample: number[]): number {
   const m = mean(sample);
   return sample.reduce((a, v) => a + (v - m) ** 2, 0) / (sample.length - 1);
 }
+
+// returns the given number with a random random sign
+export function randomSign(n: number): number {
+  return Math.random() > 0.5 ? -n : n;
+}

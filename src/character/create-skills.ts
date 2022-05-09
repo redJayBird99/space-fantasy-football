@@ -9,7 +9,7 @@ const SKILL_EXTRA_NOISE = SKILL_NOISE + 10;
 export function createSkill(hint: number, maxOffeset?: number) {
   const defltOffset = Math.min(MAX_SKILL - hint, hint - MIN_SKILL);
   maxOffeset = maxOffeset ? Math.min(maxOffeset, defltOffset) : defltOffset;
-  return Math.floor(customGaussian(hint, maxOffeset));
+  return Math.round(customGaussian(hint, maxOffeset));
 }
 
 // returns the set of skills that best fit the position

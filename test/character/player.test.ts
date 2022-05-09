@@ -1,5 +1,5 @@
 import * as _pl from "../../src/character/player";
-import { isMoreFrequent } from "../../src/util/generator";
+import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
 
 const poss: _pl.Position[] = [
   "gk",
@@ -16,7 +16,7 @@ const poss: _pl.Position[] = [
   "cf",
 ];
 const samplePos = poss[Math.floor(poss.length * Math.random())];
-const samplePlayer = new _pl.Player(samplePos, new Date());
+const smpPlr = new _pl.Player(samplePos, new Date());
 const atPos = poss.find((pp) => pp !== samplePos);
 
 describe("createAge()", () => {
@@ -35,23 +35,27 @@ describe("createAge()", () => {
   xtest("30s should be less frequent of any 20s", () => {});
 });
 
-describe("createPotential()", () => {
-  const potentials = Array.from({ length: 250 }, () => _pl.createPotential());
+describe("getImprovability()", () => {
+  const step = _pl.MAX_GROWTH_RATE / 5; // 5 improvability ratings
 
-  test("all potentials should able to created", () => {
-    expect(potentials.includes("A")).toBe(true);
-    expect(potentials.includes("B")).toBe(true);
-    expect(potentials.includes("C")).toBe(true);
-    expect(potentials.includes("D")).toBe(true);
-    expect(potentials.includes("E")).toBe(true);
+  test("should return E", () => {
+    expect(_pl.getImprovability(step / 2)).toBe("E");
   });
 
-  test("potential C should be return more frequently of A", () => {
-    expect(isMoreFrequent("C", "A", potentials)).toBe(true);
+  test("should return D", () => {
+    expect(_pl.getImprovability(step / 2 + step)).toBe("D");
   });
 
-  test("potential C should be return more frequently of E", () => {
-    expect(isMoreFrequent("C", "E", potentials)).toBe(true);
+  test("should return C", () => {
+    expect(_pl.getImprovability(step / 2 + 2 * step)).toBe("C");
+  });
+
+  test("should return B", () => {
+    expect(_pl.getImprovability(step / 2 + 3 * step)).toBe("B");
+  });
+
+  test("should return A", () => {
+    expect(_pl.getImprovability(step / 2 + 4 * step)).toBe("A");
   });
 });
 
@@ -131,31 +135,39 @@ describe("getOutOfPositionMalus()", () => {
 describe("Player.getSkill()", () => {
   _pl.skillsApplicableMalus.forEach((sk) => {
     test(`when is playing out of position the skill value is reduced`, () => {
-      expect(samplePlayer.skills[sk]).toBeGreaterThan(
-        _pl.Player.getSkill(samplePlayer, sk, atPos)
+      expect(_pl.Player.getSkill(smpPlr, sk)).toBeGreaterThan(
+        _pl.Player.getSkill(smpPlr, sk, atPos)
       );
     });
   });
 
-  Object.keys(samplePlayer.skills).forEach((s) => {
+  _pl.noGrowthSkill.forEach((sk) => {
+    const plr = new _pl.Player("am", new Date(), 18);
+    plr.growthState = 0.8;
+
+    test(`growthState shouldn't be applied to noGrowthSkill skills`, () => {
+      expect(plr.skills[sk]).toBe(_pl.Player.getSkill(plr, sk));
+    });
+  });
+
+  Object.keys(smpPlr.skills).forEach((s) => {
     const sk = s as keyof _pl.Skills;
 
-    if (!_pl.skillsApplicableMalus.has(sk)) {
-      test(`when is playing at its natural position, the skill value have no malus`, () => {
-        expect(samplePlayer.skills[sk]).toBe(
-          _pl.Player.getSkill(samplePlayer, sk, atPos)
-        );
+    if (!_pl.noGrowthSkill.has(sk)) {
+      test(`should take in account the growthState`, () => {
+        const skl = Math.round(smpPlr.skills[sk] * smpPlr.growthState);
+        expect(skl).toBe(_pl.Player.getSkill(smpPlr, sk));
       });
     }
 
     test(`${sk} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
-      expect(_pl.Player.getSkill(samplePlayer, sk, atPos)).toBeGreaterThan(
+      expect(_pl.Player.getSkill(smpPlr, sk, atPos)).toBeGreaterThan(
         _pl.MIN_SKILL
       );
     });
 
     test(`${sk} value is less than or equal ${_pl.MAX_SKILL}`, () => {
-      expect(_pl.Player.getSkill(samplePlayer, sk, atPos)).toBeLessThanOrEqual(
+      expect(_pl.Player.getSkill(smpPlr, sk, atPos)).toBeLessThanOrEqual(
         _pl.MAX_SKILL
       );
     });
@@ -167,15 +179,15 @@ describe("Player.getMacroskill()", () => {
     const s = m as _pl.Macroskill;
 
     test(`${s} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
-      expect(_pl.Player.getMacroskill(samplePlayer, s, atPos)).toBeGreaterThan(
+      expect(_pl.Player.getMacroskill(smpPlr, s, atPos)).toBeGreaterThan(
         _pl.MIN_SKILL
       );
     });
 
     test(`${s} value is less than or equal ${_pl.MAX_SKILL}`, () => {
-      expect(
-        _pl.Player.getMacroskill(samplePlayer, s, atPos)
-      ).toBeLessThanOrEqual(_pl.MAX_SKILL);
+      expect(_pl.Player.getMacroskill(smpPlr, s, atPos)).toBeLessThanOrEqual(
+        _pl.MAX_SKILL
+      );
     });
   });
 });
@@ -215,19 +227,17 @@ describe("positionScoreFactors", () => {
 
 describe("Player.getScore()", () => {
   test(`when is playing out of position the score is reduced`, () => {
-    expect(_pl.Player.getScore(samplePlayer)).toBeGreaterThan(
-      _pl.Player.getScore(samplePlayer, atPos)
+    expect(_pl.Player.getScore(smpPlr)).toBeGreaterThan(
+      _pl.Player.getScore(smpPlr, atPos)
     );
   });
 
   test(`should return a value greater than or equal ${_pl.MIN_SKILL}`, () => {
-    expect(_pl.Player.getScore(samplePlayer)).toBeGreaterThan(_pl.MIN_SKILL);
+    expect(_pl.Player.getScore(smpPlr)).toBeGreaterThan(_pl.MIN_SKILL);
   });
 
   test(`should return a value less than or equal ${_pl.MAX_SKILL}`, () => {
-    expect(_pl.Player.getScore(samplePlayer)).toBeLessThanOrEqual(
-      _pl.MAX_SKILL
-    );
+    expect(_pl.Player.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
   });
 });
 
@@ -265,5 +275,107 @@ describe("Player.wantedWage()", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
     expect(_pl.Player.wantedWage(plr)).toBeGreaterThan(2_000);
     expect(_pl.Player.wantedWage(plr)).toBeLessThan(64_000);
+  });
+});
+
+describe("createGrowthState()", () => {
+  test("should return 1 when the player is older than END_GROWTH_AGE - 1", () => {
+    const plr = new _pl.Player("lw", new Date(), _pl.END_GROWTH_AGE - 1);
+    expect(_pl.createGrowthState(plr)).toBe(1);
+  });
+
+  test("should return less than 1 when player is younger than _END_GROWTH_AGE - 1", () => {
+    const plr = new _pl.Player("lw", new Date(), _pl.END_GROWTH_AGE - 2);
+    expect(_pl.createGrowthState(plr)).toBeLessThan(1);
+  });
+
+  test("should return less than 1 when player is older than START_DEGROWTH_AGE", () => {
+    const plr = new _pl.Player("cm", new Date(), _pl.START_DEGROWTH_AGE + 1);
+    expect(_pl.createGrowthState(plr)).toBeLessThan(1);
+  });
+
+  test("should return 1 when player is younger than START_DEGROWTH_AGE", () => {
+    const plr = new _pl.Player("cm", new Date(), _pl.START_DEGROWTH_AGE - 1);
+    expect(_pl.createGrowthState(plr)).toBe(1);
+  });
+
+  test("younger and younger than END_GROWTH_AGE, should return progressively a smaller value", () => {
+    const plr = new _pl.Player("lw", new Date(), 16);
+
+    for (let age = 17; age < _pl.END_GROWTH_AGE; age++) {
+      const prev = _pl.createGrowthState(plr);
+      plr.age = age;
+      expect(prev).toBeLessThan(_pl.createGrowthState(plr));
+    }
+  });
+
+  test("older and older than START_DEGROWTH_AGE, should return progressively a smaller value", () => {
+    const startAge = _pl.START_DEGROWTH_AGE;
+    const plr = new _pl.Player("lw", new Date(), startAge);
+
+    for (let age = startAge + 1; age < startAge + 10; age++) {
+      const prev = _pl.createGrowthState(plr);
+      plr.age = age;
+      expect(_pl.createGrowthState(plr)).toBeLessThan(prev);
+    }
+  });
+});
+
+describe("Player.applyMonthlyGrowth()", () => {
+  test("shouldn't change player.growthState after END_GROWTH_AGE", () => {
+    const plr = new _pl.Player("rw", new Date(), _pl.END_GROWTH_AGE);
+    const oldGrowthState = plr.growthState;
+    _pl.Player.applyMonthlyGrowth(plr);
+    expect(plr.growthState).toBe(oldGrowthState);
+  });
+
+  test("should add plr.growthRate to player.growthState before END_GROWTH_AGE", () => {
+    const plr = new _pl.Player("rw", new Date(), _pl.END_GROWTH_AGE - 1);
+    const oldGrowthState = (plr.growthState -= 10); // make sure the ceil is not reached
+    _pl.Player.applyMonthlyGrowth(plr);
+    expect(plr.growthState).toBeCloseTo(oldGrowthState + plr.growthRate);
+  });
+
+  test("shouldn't change player.growthState when the growthState is 1", () => {
+    const plr = new _pl.Player("rw", new Date(), 20);
+    plr.growthState = 1;
+    _pl.Player.applyMonthlyGrowth(plr);
+    expect(plr.growthState).toBe(1);
+  });
+
+  test("calling it every month should make growthState reach 1 before END_GROWTH_AGE", () => {
+    const now = new Date("2010-10-10");
+    const plr = new _pl.Player("lm", now, 16);
+
+    while (plr.age < _pl.END_GROWTH_AGE) {
+      _pl.Player.applyMonthlyGrowth(plr);
+      now.setMonth(now.getMonth() + 1);
+      plr.age = getAgeAt(plr.birthday, now);
+    }
+
+    expect(plr.growthState).toBe(1);
+  });
+});
+
+describe("Player.applyMonthlyDegrowth()", () => {
+  test("shouldn't change player.growthState before START_DEGROWTH_AGE", () => {
+    const plr = new _pl.Player("rb", new Date(), _pl.START_DEGROWTH_AGE - 1);
+    const oldGrowthState = plr.growthState;
+    _pl.Player.applyMonthlyDegrowth(plr);
+    expect(plr.growthState).toBe(oldGrowthState);
+  });
+
+  test("should shrink player.growthState after START_DEGROWTH_AGE", () => {
+    const plr = new _pl.Player("lb", new Date(), _pl.START_DEGROWTH_AGE + 1);
+    const oldGrowthState = plr.growthState; // make sure the ceil is not reached
+    _pl.Player.applyMonthlyDegrowth(plr);
+    expect(plr.growthState).toBeLessThan(oldGrowthState);
+  });
+
+  test("player.growthState shouldn't shrink more than 0.5", () => {
+    const plr = new _pl.Player("rb", new Date(), _pl.START_DEGROWTH_AGE - 1);
+    plr.growthState = 0.5;
+    _pl.Player.applyMonthlyDegrowth(plr);
+    expect(plr.growthState).toBe(0.5);
   });
 });

@@ -4,3 +4,5 @@ const gs = new GameStateHandle(initGameState());
 const pre = document.createElement("pre");
 pre.textContent = JSON.stringify(gs.state, null, 4);
 document.body.append(pre);
+
+window.$_game = gs;
