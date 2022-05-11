@@ -1,6 +1,7 @@
 import * as _gs from "../../src/game-state/game-state";
 import * as _pl from "../../src/character/player";
 import * as _tm from "../../src/character/team";
+import { Schedule } from "../../src/game-state/tournament-scheduler";
 import teamsJson from "../../src/asset/team-names.json";
 
 let gameState: _gs.GameState = new _gs.GameState(new Date());
@@ -147,6 +148,58 @@ describe("initContracts()", () => {
   });
 });
 
+describe("GameState.saveSchedule()", () => {
+  const date = new Date(2010, 8, 1);
+  const schedule = new Schedule(teamsJson.eng.names, date);
+  const gState: _gs.GameState = new _gs.GameState(date);
+  _gs.GameState.saveSchedule(gState, schedule, "now");
+
+  test("should save every match of the schedule in gameState.matches", () => {
+    schedule.rounds.forEach((round) =>
+      round.matches.forEach((mt) => {
+        expect(gState.matches[mt.id]).toEqual(mt);
+      })
+    );
+  });
+
+  test("should save a new schedules[schedule.startDate.getFullYear()]", () => {
+    expect(gState.schedules.now).toBeDefined();
+  });
+
+  test("every saved round has a corresponding match id from the schedule", () => {
+    schedule.rounds.forEach((round, i) => {
+      const savedRound = gState.schedules.now[i];
+      round.matches.forEach((mt) => {
+        expect(savedRound.matchIds.some((id) => mt.id)).toBe(true);
+      });
+    });
+  });
+});
+
+describe("initSchedule()", () => {
+  const teams = teamsJson.eng.names;
+  const date = new Date(2010, 8, 1);
+  const gState: _gs.GameState = new _gs.GameState(date);
+  _gs.initSchedule(gState, teams);
+
+  test("all scheduled rounds are on sunday", () => {
+    Object.keys(gState.schedules).forEach((key) => {
+      gState.schedules[key].forEach((round) => {
+        expect(round.date.getDay()).toBe(0);
+      });
+    });
+  });
+
+  test("should save a new schedule for the current season", () => {
+    expect(gState.schedules.now).toBeDefined();
+  });
+
+  test("should create teams.length / 2 * 2 * (teams.length - 1) matches", () => {
+    const count = (teams.length / 2) * 2 * (teams.length - 1);
+    expect(Object.values(gState.matches).length).toBe(count);
+  });
+});
+
 describe("GameState.getTeamPlayers()", () => {
   test("should return an array of players when the team exist", () => {
     _gs.initTeams(gameState, teamNames);
@@ -162,8 +215,8 @@ describe("GameState.getTeamPlayers()", () => {
   });
 });
 
-describe("initGameState", () => {
-  const game = _gs.initGameState();
+describe("GameState.init()", () => {
+  const game = _gs.GameState.init();
 
   test("should create a gameState with all team-names.json names", () => {
     expect(Object.keys(game.teams)).toEqual(
@@ -182,6 +235,10 @@ describe("initGameState", () => {
       .map((name) => _gs.GameState.getTeamPlayers(game, name))
       .flat();
     teamPlayers.forEach((p) => expect(game.contracts[p.id]).toBeDefined());
+  });
+
+  test("should have a schedule for the current season", () => {
+    expect(game.schedules.now).toBeDefined();
   });
 });
 

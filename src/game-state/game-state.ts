@@ -1,23 +1,35 @@
 import { Player, PositionArea } from "../character/player";
 import { Team, Contract } from "../character/team";
+import { Schedule, Match } from "./tournament-scheduler";
 import teams from "../asset/team-names.json";
 
 const START_MONTH = 8; // september
 const START_DATE = 1;
+const START_HOUR = 10;
+type ScheduleRound = { date: Date; matchIds: string[] };
 
 // instances of this inferface are saved as JSON on the user machine, this is
 // the game save
 class GameState {
   date: Date;
-  players: { [id: string]: Player };
-  teams: { [name: string]: Team };
-  contracts: { [id: string]: Contract };
+  players: { [id: string]: Player } = {};
+  teams: { [name: string]: Team } = {};
+  contracts: { [id: string]: Contract } = {};
+  schedules: { [year: string]: ScheduleRound[] } = {};
+  matches: { [id: string]: Match } = {};
 
-  constructor(date: Date, players = {}, teams = {}, contracts = {}) {
+  constructor(date: Date) {
     this.date = date;
-    this.players = players;
-    this.teams = teams;
-    this.contracts = contracts;
+  }
+
+  // init a new game state filling it with players, team and all the necessary for a new game
+  static init(): GameState {
+    const state = new GameState(
+      new Date(new Date().getFullYear(), START_MONTH, START_DATE, START_HOUR)
+    );
+    initSchedule(state, teams.eng.names); // TODO: select the location
+    initTeams(state, teams.eng.names); // TODO: select the location
+    return state;
   }
 
   // get all team players or an empty array when the then doesn't exist
@@ -43,6 +55,25 @@ class GameState {
 
   static saveTeam(s: GameState, t: Team): void {
     s.teams[t.name] = t;
+  }
+
+  /**
+   * the saved schedule is flatten in two object schedules and matches
+   * key is used as index for the schedule, for the current season use the "now" as key
+   */
+  static saveSchedule(s: GameState, schd: Schedule, key: string): void {
+    s.schedules[key] = [];
+
+    schd.rounds.forEach((round) => {
+      s.schedules[key].push({
+        date: round.date,
+        matchIds: round.matches.map((m) => m.id),
+      });
+
+      round.matches.forEach((m) => {
+        s.matches[m.id] = m;
+      });
+    });
   }
 }
 
@@ -135,13 +166,12 @@ function initTeams(s: GameState, names: string[]): Team[] {
   });
 }
 
-// init a new game state filling it with players, team and all the necessary for a new game
-function initGameState(): GameState {
-  const state = new GameState(
-    new Date(new Date().getFullYear(), START_MONTH, START_DATE)
-  );
-  initTeams(state, teams.eng.names); // TODO: select the location
-  return state;
+// create a new schedule for the current season and save it to the gamestate
+function initSchedule(s: GameState, teams: string[]): void {
+  const startSchedule = new Date(s.date.getTime());
+  const daysToSunday = (7 - startSchedule.getDay()) % 7;
+  startSchedule.setDate(startSchedule.getDate() + daysToSunday);
+  GameState.saveSchedule(s, new Schedule(teams, startSchedule), "now");
 }
 
 export {
@@ -150,6 +180,6 @@ export {
   GameStateHandle,
   initPlayers,
   initTeams,
-  initGameState,
   initContracts,
+  initSchedule,
 };

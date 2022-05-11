@@ -49,7 +49,7 @@ export function createBirthdayDate(age: number, now: Date): Date {
 // returns a random birthday dateString (can construct a new Date) for the given age
 export function createBirthday(age: number, now: Date): string {
   const d = createBirthdayDate(age, now);
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  return `${d.toDateString()}`;
 }
 
 // returns the age at now for the given birthday

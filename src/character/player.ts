@@ -257,7 +257,7 @@ export class Player {
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(this.age, now);
-    this.id = createId() + this.birthday.split("-").join(""); // you never know...
+    this.id = createId() + this.birthday.split(" ").join(""); // you never know...
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
     this.growthRate =
