@@ -1,6 +1,7 @@
 import { Player, PositionArea } from "../character/player";
 import { Team, Contract } from "../character/team";
 import { Schedule, Match } from "./tournament-scheduler";
+import { GameEvent } from "./game-simulation";
 import teams from "../asset/team-names.json";
 
 const START_MONTH = 8; // september
@@ -12,6 +13,8 @@ type ScheduleRound = { date: Date; matchIds: string[] };
 // the game save
 class GameState {
   date: Date;
+  // sorted by dates, use enqueueGameEvents when adding events to preserve the order
+  eventQueue: GameEvent[] = [];
   players: { [id: string]: Player } = {};
   teams: { [name: string]: Team } = {};
   contracts: { [id: string]: Contract } = {};
@@ -30,6 +33,14 @@ class GameState {
     initSchedule(state, teams.eng.names); // TODO: select the location
     initTeams(state, teams.eng.names); // TODO: select the location
     return state;
+  }
+
+  // add a new game event preserving the order by date of the queue
+  static enqueueGameEvent(s: GameState, e: GameEvent): void {
+    // TODO: use binary search or a priority queue...
+    const findOlder = (evt: GameEvent) => evt.date.getTime() > e.date.getTime();
+    const i = s.eventQueue.findIndex(findOlder);
+    i !== -1 ? s.eventQueue.splice(i, 0, e) : s.eventQueue.push(e);
   }
 
   // get all team players or an empty array when the then doesn't exist
@@ -166,12 +177,19 @@ function initTeams(s: GameState, names: string[]): Team[] {
   });
 }
 
-// create a new schedule for the current season and save it to the gamestate
+// save a new schedule for the current season to the gamestate and enqueue
+// the first round as gameEvent,
 function initSchedule(s: GameState, teams: string[]): void {
   const startSchedule = new Date(s.date.getTime());
   const daysToSunday = (7 - startSchedule.getDay()) % 7;
   startSchedule.setDate(startSchedule.getDate() + daysToSunday);
-  GameState.saveSchedule(s, new Schedule(teams, startSchedule), "now");
+  const schd = new Schedule(teams, startSchedule);
+  GameState.saveSchedule(s, schd, "now");
+  GameState.enqueueGameEvent(s, {
+    date: schd.rounds[0].date,
+    type: "simRound",
+    detail: { round: 0 },
+  });
 }
 
 export {

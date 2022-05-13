@@ -1,4 +1,5 @@
 import * as _gs from "../../src/game-state/game-state";
+import * as _sm from "../../src/game-state/game-simulation";
 import * as _pl from "../../src/character/player";
 import * as _tm from "../../src/character/team";
 import { Schedule } from "../../src/game-state/tournament-scheduler";
@@ -7,7 +8,7 @@ import teamsJson from "../../src/asset/team-names.json";
 let gameState: _gs.GameState = new _gs.GameState(new Date());
 const teamNames = ["Albinos", "rockets", "sharks", "hawks", "bears"];
 
-beforeAll(() => {
+beforeEach(() => {
   gameState = new _gs.GameState(new Date());
 });
 
@@ -198,6 +199,12 @@ describe("initSchedule()", () => {
     const count = (teams.length / 2) * 2 * (teams.length - 1);
     expect(Object.values(gState.matches).length).toBe(count);
   });
+
+  test("should enqueue a GameEvent for the first round", () => {
+    const findFirstRound = (e: _sm.GameEvent) =>
+      e.type === "simRound" && e.detail?.round === 0;
+    expect(gState.eventQueue.some(findFirstRound)).toBe(true);
+  });
 });
 
 describe("GameState.getTeamPlayers()", () => {
@@ -212,6 +219,26 @@ describe("GameState.getTeamPlayers()", () => {
 
   test("should return a empty array when the team doesn't exist", () => {
     expect(_gs.GameState.getTeamPlayers(gameState, "no-name")).toEqual([]);
+  });
+});
+
+describe("GameState.enqueueGameEvent()", () => {
+  test("should able to add a event to the queue when empty", () => {
+    const evt: _sm.GameEvent = { date: new Date(), type: "simRound" };
+    _gs.GameState.enqueueGameEvent(gameState, evt);
+    expect(gameState.eventQueue[0]).toEqual(evt);
+  });
+
+  test("should able to add multiple events and stay sorted by date", () => {
+    let evts: _sm.GameEvent[] = [
+      { date: new Date(2022, 10, 10), type: "simRound" },
+      { date: new Date(2022, 9, 9), type: "simRound" },
+      { date: new Date(2021, 1, 1), type: "simRound" },
+      { date: new Date(2022, 5, 23), type: "simRound" },
+    ];
+    evts.forEach((e) => _gs.GameState.enqueueGameEvent(gameState, e));
+    evts = evts.sort((e1, e2) => e1.date.getTime() - e2.date.getTime());
+    expect(gameState.eventQueue).toEqual(evts);
   });
 });
 
