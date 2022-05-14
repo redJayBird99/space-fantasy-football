@@ -1,5 +1,6 @@
 import * as _sm from "../../src/game-state/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
+import * as _pl from "../../src/character/player";
 
 describe("enqueueSimRoundEvent", () => {
   const gameState: _gs.GameState = new _gs.GameState(new Date());
@@ -46,12 +47,59 @@ describe("simulateRound()", () => {
   });
 });
 
+describe("updateSkills()", () => {
+  const gameState: _gs.GameState = new _gs.GameState(new Date());
+
+  test("should update the growthState for young players", () => {
+    const p1 = new _pl.Player("cf", new Date(), 18);
+    const oldGrowthState = p1.growthState;
+    gameState.players[p1.id] = p1;
+    _sm.updateSkills(gameState);
+    expect(p1.growthState).toBeGreaterThan(oldGrowthState);
+  });
+
+  test("should update the growthState for old players", () => {
+    const p1 = new _pl.Player("cf", new Date(), 34);
+    const oldGrowthState = p1.growthState;
+    gameState.players[p1.id] = p1;
+    _sm.updateSkills(gameState);
+    expect(p1.growthState).toBeLessThan(oldGrowthState);
+  });
+});
+
+describe("enqueueNextSkillUpdateEvent()", () => {
+  const date = new Date(2001, 1, 10);
+  const gameState: _gs.GameState = new _gs.GameState(date);
+
+  test("should enqueue a new GameEvent of type skillUpdate on gameState.eventQueue", () => {
+    _sm.enqueueNextSkillUpdateEvent(gameState);
+    expect(gameState.eventQueue.some((e) => e.type === "skillUpdate")).toBe(
+      true
+    );
+  });
+
+  test("the skillUpdate should be enqueued for the firts day of next month", () => {
+    const d = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    expect(gameState.eventQueue).toContainEqual({
+      date: d,
+      type: "skillUpdate",
+    });
+  });
+});
+
 describe("handleGameEvent()", () => {
   test("should return false for a simRound type event", () => {
     const date = new Date();
     const gameState: _gs.GameState = new _gs.GameState(date);
     const e: _sm.GameEvent = { date, type: "simRound", detail: { round: 1 } };
     expect(_sm.handleGameEvent(gameState, e)).toBe(false);
+  });
+
+  test("should return true for a skillUpdate type GameEvent", () => {
+    const gameState: _gs.GameState = new _gs.GameState(new Date());
+    expect(
+      _sm.handleGameEvent(gameState, { date: new Date(), type: "skillUpdate" })
+    ).toBe(true);
   });
 });
 

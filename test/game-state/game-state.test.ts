@@ -199,11 +199,28 @@ describe("initSchedule()", () => {
     const count = (teams.length / 2) * 2 * (teams.length - 1);
     expect(Object.values(gState.matches).length).toBe(count);
   });
+});
 
-  test("should enqueue a GameEvent for the first round", () => {
+describe("initGameEvents", () => {
+  test("should enqueue 2 GameEvents on gameState.eventQueue", () => {
+    gameState.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
+    _gs.initGameEvents(gameState);
+    expect(gameState.eventQueue.length).toBe(2);
+  });
+
+  test("should enqueue a GameEvent for the first season round", () => {
+    gameState.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
+    _gs.initGameEvents(gameState);
     const findFirstRound = (e: _sm.GameEvent) =>
       e.type === "simRound" && e.detail?.round === 0;
-    expect(gState.eventQueue.some(findFirstRound)).toBe(true);
+    expect(gameState.eventQueue.some(findFirstRound)).toBe(true);
+  });
+
+  test("should enqueue a GameEvent for skillUpdate", () => {
+    _gs.initGameEvents(gameState);
+    expect(gameState.eventQueue.some((e) => e.type === "skillUpdate")).toBe(
+      true
+    );
   });
 });
 

@@ -1,7 +1,8 @@
 import { GameStateHandle, GameState } from "./game-state";
+import { Player } from "../character/player";
 
 const NEXT_HOURS = 12;
-type GameEventTypes = "simRound";
+type GameEventTypes = "simRound" | "skillUpdate";
 type SimRound = { round: number };
 
 interface GameEvent {
@@ -58,13 +59,16 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
   if (evt.type === "simRound") {
     simulateRound(gs, evt.detail as SimRound);
     enqueueSimRoundEvent(gs, evt.detail!.round + 1);
+  } else if (evt.type === "skillUpdate") {
+    updateSkills(gs);
+    enqueueNextSkillUpdateEvent(gs);
+    return true;
   }
 
   return false;
 }
 
-// simulate all the match for the given round of this season schedule and
-// enqueue a new gameEvent for the next round if it exists
+// simulate all the match for the given round of this season schedule
 // every results is saved on the gameState
 function simulateRound(gs: GameState, r: SimRound): void {
   gs.schedules.now?.[r.round]?.matchIds.forEach((id) => simulateMatch(gs, id));
@@ -88,6 +92,21 @@ function simulateMatch(gs: GameState, matchId: string): void {
   match.result = { home: goals(), away: goals() };
 }
 
+// applies the monthly growth and degrowth for every player stored in gs
+function updateSkills(gs: GameState): void {
+  for (const id in gs.players) {
+    Player.applyMonthlyGrowth(gs.players[id]);
+    Player.applyMonthlyDegrowth(gs.players[id]);
+  }
+}
+
+// enqueues a skillUpdate type GameEvent on gs.eventQueue for the first day of next month
+function enqueueNextSkillUpdateEvent(gs: GameState): void {
+  const d = gs.date;
+  const date = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+  GameState.enqueueGameEvent(gs, { date, type: "skillUpdate" });
+}
+
 export {
   SimRound,
   GameEvent,
@@ -95,5 +114,7 @@ export {
   process,
   handleGameEvent,
   simulateRound,
+  updateSkills,
   enqueueSimRoundEvent,
+  enqueueNextSkillUpdateEvent,
 };

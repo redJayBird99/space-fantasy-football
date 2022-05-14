@@ -1,7 +1,11 @@
 import { Player, PositionArea } from "../character/player";
 import { Team, Contract } from "../character/team";
 import { Schedule, Match } from "./tournament-scheduler";
-import { GameEvent } from "./game-simulation";
+import {
+  GameEvent,
+  enqueueSimRoundEvent,
+  enqueueNextSkillUpdateEvent,
+} from "./game-simulation";
 import teams from "../asset/team-names.json";
 
 const START_MONTH = 8; // september
@@ -32,6 +36,7 @@ class GameState {
     );
     initSchedule(state, teams.eng.names); // TODO: select the location
     initTeams(state, teams.eng.names); // TODO: select the location
+    initGameEvents(state);
     return state;
   }
 
@@ -185,11 +190,13 @@ function initSchedule(s: GameState, teams: string[]): void {
   startSchedule.setDate(startSchedule.getDate() + daysToSunday);
   const schd = new Schedule(teams, startSchedule);
   GameState.saveSchedule(s, schd, "now");
-  GameState.enqueueGameEvent(s, {
-    date: schd.rounds[0].date,
-    type: "simRound",
-    detail: { round: 0 },
-  });
+}
+
+// save the starting events for the game in te gameState.eventQueue as
+// skillUpdate and simRound for the first round (when the current season schedule exists)
+function initGameEvents(gs: GameState): void {
+  enqueueSimRoundEvent(gs, 0);
+  enqueueNextSkillUpdateEvent(gs);
 }
 
 export {
@@ -200,4 +207,5 @@ export {
   initTeams,
   initContracts,
   initSchedule,
+  initGameEvents,
 };
