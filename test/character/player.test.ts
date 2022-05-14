@@ -279,67 +279,73 @@ describe("Player.wantedWage()", () => {
 });
 
 describe("createGrowthState()", () => {
+  const now = new Date();
+
   test("should return 1 when the player is older than END_GROWTH_AGE - 1", () => {
-    const plr = new _pl.Player("lw", new Date(), _pl.END_GROWTH_AGE - 1);
-    expect(_pl.createGrowthState(plr)).toBe(1);
+    const plr = new _pl.Player("lw", now, _pl.END_GROWTH_AGE - 1);
+    expect(_pl.createGrowthState(plr, now)).toBe(1);
   });
 
   test("should return less than 1 when player is younger than _END_GROWTH_AGE - 1", () => {
-    const plr = new _pl.Player("lw", new Date(), _pl.END_GROWTH_AGE - 2);
-    expect(_pl.createGrowthState(plr)).toBeLessThan(1);
+    const plr = new _pl.Player("lw", now, _pl.END_GROWTH_AGE - 2);
+    expect(_pl.createGrowthState(plr, now)).toBeLessThan(1);
   });
 
   test("should return less than 1 when player is older than START_DEGROWTH_AGE", () => {
-    const plr = new _pl.Player("cm", new Date(), _pl.START_DEGROWTH_AGE + 1);
-    expect(_pl.createGrowthState(plr)).toBeLessThan(1);
+    const plr = new _pl.Player("cm", now, _pl.START_DEGROWTH_AGE + 1);
+    expect(_pl.createGrowthState(plr, now)).toBeLessThan(1);
   });
 
   test("should return 1 when player is younger than START_DEGROWTH_AGE", () => {
-    const plr = new _pl.Player("cm", new Date(), _pl.START_DEGROWTH_AGE - 1);
-    expect(_pl.createGrowthState(plr)).toBe(1);
+    const plr = new _pl.Player("cm", now, _pl.START_DEGROWTH_AGE - 1);
+    expect(_pl.createGrowthState(plr, now)).toBe(1);
   });
 
   test("younger and younger than END_GROWTH_AGE, should return progressively a smaller value", () => {
-    const plr = new _pl.Player("lw", new Date(), 16);
+    const now = new Date();
+    const plr = new _pl.Player("lw", now, 16);
 
     for (let age = 17; age < _pl.END_GROWTH_AGE; age++) {
-      const prev = _pl.createGrowthState(plr);
-      plr.age = age;
-      expect(prev).toBeLessThan(_pl.createGrowthState(plr));
+      const prev = _pl.createGrowthState(plr, now);
+      now.setFullYear(now.getFullYear() + 1);
+      expect(prev).toBeLessThan(_pl.createGrowthState(plr, now));
     }
   });
 
   test("older and older than START_DEGROWTH_AGE, should return progressively a smaller value", () => {
+    const now = new Date();
     const startAge = _pl.START_DEGROWTH_AGE;
-    const plr = new _pl.Player("lw", new Date(), startAge);
+    const plr = new _pl.Player("lw", now, startAge);
 
     for (let age = startAge + 1; age < startAge + 10; age++) {
-      const prev = _pl.createGrowthState(plr);
-      plr.age = age;
-      expect(_pl.createGrowthState(plr)).toBeLessThan(prev);
+      const prev = _pl.createGrowthState(plr, now);
+      now.setFullYear(now.getFullYear() + 1);
+      expect(_pl.createGrowthState(plr, now)).toBeLessThan(prev);
     }
   });
 });
 
 describe("Player.applyMonthlyGrowth()", () => {
+  const now = new Date();
+
   test("shouldn't change player.growthState after END_GROWTH_AGE", () => {
-    const plr = new _pl.Player("rw", new Date(), _pl.END_GROWTH_AGE);
+    const plr = new _pl.Player("rw", now, _pl.END_GROWTH_AGE);
     const oldGrowthState = plr.growthState;
-    _pl.Player.applyMonthlyGrowth(plr);
+    _pl.Player.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBe(oldGrowthState);
   });
 
   test("should add plr.growthRate to player.growthState before END_GROWTH_AGE", () => {
-    const plr = new _pl.Player("rw", new Date(), _pl.END_GROWTH_AGE - 1);
+    const plr = new _pl.Player("rw", now, _pl.END_GROWTH_AGE - 1);
     const oldGrowthState = (plr.growthState -= 10); // make sure the ceil is not reached
-    _pl.Player.applyMonthlyGrowth(plr);
+    _pl.Player.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBeCloseTo(oldGrowthState + plr.growthRate);
   });
 
   test("shouldn't change player.growthState when the growthState is 1", () => {
-    const plr = new _pl.Player("rw", new Date(), 20);
+    const plr = new _pl.Player("rw", now, 20);
     plr.growthState = 1;
-    _pl.Player.applyMonthlyGrowth(plr);
+    _pl.Player.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBe(1);
   });
 
@@ -347,10 +353,9 @@ describe("Player.applyMonthlyGrowth()", () => {
     const now = new Date("2010-10-10");
     const plr = new _pl.Player("lm", now, 16);
 
-    while (plr.age < _pl.END_GROWTH_AGE) {
-      _pl.Player.applyMonthlyGrowth(plr);
+    while (getAgeAt(plr.birthday, now) < _pl.END_GROWTH_AGE) {
+      _pl.Player.applyMonthlyGrowth(plr, now);
       now.setMonth(now.getMonth() + 1);
-      plr.age = getAgeAt(plr.birthday, now);
     }
 
     expect(plr.growthState).toBe(1);
@@ -358,24 +363,26 @@ describe("Player.applyMonthlyGrowth()", () => {
 });
 
 describe("Player.applyMonthlyDegrowth()", () => {
+  const now = new Date();
+
   test("shouldn't change player.growthState before START_DEGROWTH_AGE", () => {
-    const plr = new _pl.Player("rb", new Date(), _pl.START_DEGROWTH_AGE - 1);
+    const plr = new _pl.Player("rb", now, _pl.START_DEGROWTH_AGE - 1);
     const oldGrowthState = plr.growthState;
-    _pl.Player.applyMonthlyDegrowth(plr);
+    _pl.Player.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBe(oldGrowthState);
   });
 
   test("should shrink player.growthState after START_DEGROWTH_AGE", () => {
-    const plr = new _pl.Player("lb", new Date(), _pl.START_DEGROWTH_AGE + 1);
+    const plr = new _pl.Player("lb", now, _pl.START_DEGROWTH_AGE + 1);
     const oldGrowthState = plr.growthState; // make sure the ceil is not reached
-    _pl.Player.applyMonthlyDegrowth(plr);
+    _pl.Player.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBeLessThan(oldGrowthState);
   });
 
   test("player.growthState shouldn't shrink more than 0.5", () => {
-    const plr = new _pl.Player("rb", new Date(), _pl.START_DEGROWTH_AGE - 1);
+    const plr = new _pl.Player("rb", now, _pl.START_DEGROWTH_AGE - 1);
     plr.growthState = 0.5;
-    _pl.Player.applyMonthlyDegrowth(plr);
+    _pl.Player.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBe(0.5);
   });
 });

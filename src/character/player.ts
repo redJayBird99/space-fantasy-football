@@ -4,6 +4,7 @@ import {
   randomGauss,
   createBirthday,
   randomSign,
+  getAgeAt,
 } from "../util/generator";
 import { mod } from "../util/math";
 import { createSkills } from "./create-skills";
@@ -58,15 +59,17 @@ export function createAge(): number {
 // return a value between 0 and 1 depending on the age of the player
 // for players younger than 27 usually the value is less than 1, fro players
 // older tha 32 the valueis less than 1
-export function createGrowthState(p: Player): number {
-  if (p.age < END_GROWTH_AGE) {
+export function createGrowthState(p: Player, now: Date): number {
+  const age = getAgeAt(p.birthday, now);
+
+  if (age < END_GROWTH_AGE) {
     const annualGrowthRate = 12 * p.growthRate;
     // one year less than END_GROWTH_AGE as buffer
-    return 1 - Math.max(0, annualGrowthRate * (END_GROWTH_AGE - 1 - p.age));
+    return 1 - Math.max(0, annualGrowthRate * (END_GROWTH_AGE - 1 - age));
   }
 
   const annualDegrowthRate = (MAX_GROWTH_RATE / 2) * 12;
-  return 1 - annualDegrowthRate * Math.max(0, p.age - START_DEGROWTH_AGE);
+  return 1 - annualDegrowthRate * Math.max(0, age - START_DEGROWTH_AGE);
 }
 
 // convert the growth rate to improvability rating
@@ -243,7 +246,6 @@ export class Player {
   name: string;
   team: string;
   position: Position;
-  age: number;
   birthday: string;
   foot: Foot;
   growthRate: number; // monthly growth rate of growthState
@@ -252,17 +254,16 @@ export class Player {
   skills: Skills; // to get the skill values with all modifiers (growth, malus and etc) applied use getSkill
 
   constructor(pos: Position, now: Date, age?: number) {
-    this.age = age ?? createAge();
     this.name = createName();
     this.team = "free agent";
     this.position = pos;
-    this.birthday = createBirthday(this.age, now);
+    this.birthday = createBirthday(age ?? createAge(), now);
     this.id = createId() + this.birthday.split(" ").join(""); // you never know...
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
     this.growthRate =
       ((randomGauss() + 2 * Math.random()) / 3) * MAX_GROWTH_RATE; // loosen up a bit the randomGauss;
-    this.growthState = createGrowthState(this);
+    this.growthState = createGrowthState(this, now);
     this.improvability = getImprovability(this.growthRate);
   }
 
@@ -322,15 +323,16 @@ export class Player {
 
   // update the growthState if the player can still grow, it is meant to be used
   // every end of the month
-  static applyMonthlyGrowth(p: Player): void {
-    const growth = p.age < END_GROWTH_AGE ? p.growthRate : 0;
+  static applyMonthlyGrowth(p: Player, now: Date): void {
+    const age = getAgeAt(p.birthday, now);
+    const growth = age < END_GROWTH_AGE ? p.growthRate : 0;
     p.growthState = Math.min(1, p.growthState + growth);
   }
 
   // update the growthState shrinking its value (min 0.5) when the player is old Enough,
   // it is meant to be used every end of the month
-  static applyMonthlyDegrowth(p: Player): void {
-    if (p.age >= START_DEGROWTH_AGE) {
+  static applyMonthlyDegrowth(p: Player, now: Date): void {
+    if (getAgeAt(p.birthday, now) >= START_DEGROWTH_AGE) {
       const degrowth = randomGauss() * MAX_GROWTH_RATE;
       p.growthState = Math.max(0.5, p.growthState - degrowth);
     }

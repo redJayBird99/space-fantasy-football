@@ -95,8 +95,8 @@ function simulateMatch(gs: GameState, matchId: string): void {
 // applies the monthly growth and degrowth for every player stored in gs
 function updateSkills(gs: GameState): void {
   for (const id in gs.players) {
-    Player.applyMonthlyGrowth(gs.players[id]);
-    Player.applyMonthlyDegrowth(gs.players[id]);
+    Player.applyMonthlyGrowth(gs.players[id], gs.date);
+    Player.applyMonthlyDegrowth(gs.players[id], gs.date);
   }
 }
 
