@@ -177,35 +177,11 @@ describe("GameState.saveSchedule()", () => {
   });
 });
 
-describe("initSchedule()", () => {
-  const teams = teamsJson.eng.names;
-  const date = new Date(2010, 8, 1);
-  const gState: _gs.GameState = new _gs.GameState(date);
-  _gs.initSchedule(gState, teams);
-
-  test("all scheduled rounds are on sunday", () => {
-    Object.keys(gState.schedules).forEach((key) => {
-      gState.schedules[key].forEach((round) => {
-        expect(round.date.getDay()).toBe(0);
-      });
-    });
-  });
-
-  test("should save a new schedule for the current season", () => {
-    expect(gState.schedules.now).toBeDefined();
-  });
-
-  test("should create teams.length / 2 * 2 * (teams.length - 1) matches", () => {
-    const count = (teams.length / 2) * 2 * (teams.length - 1);
-    expect(Object.values(gState.matches).length).toBe(count);
-  });
-});
-
 describe("initGameEvents", () => {
   test("should enqueue 2 GameEvents on gameState.eventQueue", () => {
     gameState.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
     _gs.initGameEvents(gameState);
-    expect(gameState.eventQueue.length).toBe(2);
+    expect(gameState.eventQueue.length).toBe(3);
   });
 
   test("should enqueue a GameEvent for the first season round", () => {
@@ -221,6 +197,11 @@ describe("initGameEvents", () => {
     expect(gameState.eventQueue.some((e) => e.type === "skillUpdate")).toBe(
       true
     );
+  });
+
+  test("should enqueue a GameEvent for seasonEnd", () => {
+    _gs.initGameEvents(gameState);
+    expect(gameState.eventQueue.some((e) => e.type === "seasonEnd")).toBe(true);
   });
 });
 

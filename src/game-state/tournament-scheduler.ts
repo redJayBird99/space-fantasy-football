@@ -1,3 +1,5 @@
+import { shuffle } from "../util/generator";
+
 type MatchPair = [string, string];
 
 export class Match {
@@ -51,8 +53,10 @@ export function createDoubleRoundsTournament(teams: string[]): MatchPair[][] {
 }
 
 // https://en.wikipedia.org/wiki/Round-robin_tournament
-// returns a single round-robin schedule of a tournament
+// returns a single round-robin schedule of a tournament, every call get a
+// different combination of matches
 export function createTournamentRounds(teams: string[]): MatchPair[][] {
+  teams = shuffle([...teams]);
   const rounds = [];
 
   for (let round = 0; round < teams.length - 1; round++) {

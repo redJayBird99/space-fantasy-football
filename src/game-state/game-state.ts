@@ -4,13 +4,15 @@ import { Schedule, Match } from "./tournament-scheduler";
 import {
   GameEvent,
   enqueueSimRoundEvent,
-  enqueueNextSkillUpdateEvent,
+  enqueueSkillUpdateEvent,
+  enqueueSeasonEndEvent,
+  newSeasonSchedule,
 } from "./game-simulation";
 import teams from "../asset/team-names.json";
 
-const START_MONTH = 8; // september
-const START_DATE = 1;
-const START_HOUR = 10;
+const INIT_MONTH = 7; // august
+const INIT_DATE = 1;
+const INIT_HOUR = 10;
 type ScheduleRound = { date: Date; matchIds: string[] };
 
 // instances of this inferface are saved as JSON on the user machine, this is
@@ -21,20 +23,20 @@ class GameState {
   eventQueue: GameEvent[] = [];
   players: { [id: string]: Player } = {};
   teams: { [name: string]: Team } = {};
-  contracts: { [id: string]: Contract } = {};
+  contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
 
   constructor(date: Date) {
-    this.date = date;
+    this.date = new Date(date.getTime());
   }
 
   // init a new game state filling it with players, team and all the necessary for a new game
   static init(): GameState {
     const state = new GameState(
-      new Date(new Date().getFullYear(), START_MONTH, START_DATE, START_HOUR)
+      new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
-    initSchedule(state, teams.eng.names); // TODO: select the location
+    newSeasonSchedule(state, teams.eng.names); // TODO: select the location
     initTeams(state, teams.eng.names); // TODO: select the location
     initGameEvents(state);
     return state;
@@ -182,21 +184,12 @@ function initTeams(s: GameState, names: string[]): Team[] {
   });
 }
 
-// save a new schedule for the current season to the gamestate and enqueue
-// the first round as gameEvent,
-function initSchedule(s: GameState, teams: string[]): void {
-  const startSchedule = new Date(s.date.getTime());
-  const daysToSunday = (7 - startSchedule.getDay()) % 7;
-  startSchedule.setDate(startSchedule.getDate() + daysToSunday);
-  const schd = new Schedule(teams, startSchedule);
-  GameState.saveSchedule(s, schd, "now");
-}
-
 // save the starting events for the game in te gameState.eventQueue as
 // skillUpdate and simRound for the first round (when the current season schedule exists)
 function initGameEvents(gs: GameState): void {
   enqueueSimRoundEvent(gs, 0);
-  enqueueNextSkillUpdateEvent(gs);
+  enqueueSkillUpdateEvent(gs);
+  enqueueSeasonEndEvent(gs);
 }
 
 export {
@@ -206,6 +199,5 @@ export {
   initPlayers,
   initTeams,
   initContracts,
-  initSchedule,
   initGameEvents,
 };

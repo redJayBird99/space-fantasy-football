@@ -80,3 +80,19 @@ export function variance(sample: number[]): number {
 export function randomSign(n: number): number {
   return Math.random() > 0.5 ? -n : n;
 }
+
+function swap<T>(arr: T[], i: number, j: number): void {
+  const t = arr[i];
+  arr[i] = arr[j];
+  arr[j] = t;
+}
+
+// Fisher-Yates (aka Knuth) Shuffle.
+// shuffle the array in place
+export function shuffle<T>(arr: T[]): T[] {
+  for (let i = 0; i < arr.length; i++) {
+    swap(arr, i, Math.floor(Math.random() * (i + 1)));
+  }
+
+  return arr;
+}

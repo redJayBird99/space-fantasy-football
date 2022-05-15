@@ -1,5 +1,6 @@
 import * as _tr from "../../src/game-state/tournament-scheduler";
 import tms from "../../src/asset/team-names.json";
+import * as _sm from "../../src/game-state/game-simulation";
 
 const teamsJson = tms.eng.names;
 const teams = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -74,19 +75,24 @@ describe("createDoubleRoundsTournament()", () => {
       });
     });
   });
+
+  test("every call should get different matches pairing", () => {
+    const other = _tr.createDoubleRoundsTournament(teamsJson);
+    expect(other[0]).not.toEqual(rounds[0]);
+  });
 });
 
 describe("Schedule", () => {
-  const schedule = new _tr.Schedule(teamsJson, new Date(2010, 8, 1));
+  const startY = 1990 + Math.floor(40 * Math.random());
+  const start = new Date(startY, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);
+  const schedule = new _tr.Schedule(teamsJson, start);
 
   test("every match has an unique id", () => {
-    const matchIds = new Set();
-    schedule.rounds.forEach((round) =>
-      round.matches.forEach((mt) => {
-        expect(matchIds.has(mt.id)).toBe(false);
-        matchIds.add(mt.id);
-      })
+    const matchIds = new Set(
+      schedule.rounds.map((round) => round.matches.map((m) => m.id)).flat()
     );
+    const matches = (teamsJson.length / 2) * (teamsJson.length - 1) * 2;
+    expect(matchIds.size).toBe(matches);
   });
 
   test("rounds should be one week apart", () => {
