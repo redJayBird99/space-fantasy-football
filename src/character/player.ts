@@ -9,25 +9,25 @@ import {
 import { mod } from "../util/math";
 import { createSkills } from "./create-skills";
 
-export const MAX_AGE = 45;
-export const MIN_AGE = 16;
-export const MAX_SKILL = 99; // included
-export const MIN_SKILL = 0;
-export const END_GROWTH_AGE = 27;
-export const MAX_GROWTH_RATE = 0.0025; // monthly
-export const START_DEGROWTH_AGE = 32;
+const MAX_AGE = 45;
+const MIN_AGE = 16;
+const MAX_SKILL = 99; // included
+const MIN_SKILL = 0;
+const END_GROWTH_AGE = 27;
+const MAX_GROWTH_RATE = 0.0025; // monthly
+const START_DEGROWTH_AGE = 32;
 
-export type Foot = "ambidextrous" | "left" | "right";
+type Foot = "ambidextrous" | "left" | "right";
 type FootChance = { left: number; right: number };
 
-export type Improvability =
+type Improvability =
   | "A" // the growth rate is very high
   | "B" // the growth rate is high
   | "C" // the growth rate is medium
   | "D" // the growth rate is low
   | "E"; // the growth rate is very low or none
 
-export type Position =
+type Position =
   | "gk"
   | "cb"
   | "lb"
@@ -41,25 +41,24 @@ export type Position =
   | "lw"
   | "cf";
 
-export type PositionArea = "goolkeeper" | "defender" | "midfielder" | "forward";
-export const positionArea: Readonly<Record<PositionArea, readonly Position[]>> =
-  {
-    goolkeeper: ["gk"],
-    defender: ["cb", "cb", "lb", "rb"],
-    midfielder: ["cm", "cm", "lm", "rm", "dm", "am"],
-    forward: ["cf", "cf", "lw", "rw"],
-  };
+type PositionArea = "goolkeeper" | "defender" | "midfielder" | "forward";
+const positionArea: Readonly<Record<PositionArea, readonly Position[]>> = {
+  goolkeeper: ["gk"],
+  defender: ["cb", "cb", "lb", "rb"],
+  midfielder: ["cm", "cm", "lm", "rm", "dm", "am"],
+  forward: ["cf", "cf", "lw", "rw"],
+};
 
 // returns a random number between MIN_AGE and MAX_AGE with end points less frequent
-export function createAge(): number {
+function createAge(): number {
   // TOFIX: older an younger player shoul be less frequent
   return Math.floor(Math.random() * (MAX_AGE - MIN_AGE + 1)) + MIN_AGE;
 }
 
 // return a value between 0 and 1 depending on the age of the player
 // for players younger than 27 usually the value is less than 1, fro players
-// older tha 32 the valueis less than 1
-export function createGrowthState(p: Player, now: Date): number {
+// older than 32 the valueis less than 1
+function createGrowthState(p: Player, now: Date): number {
   const age = getAgeAt(p.birthday, now);
 
   if (age < END_GROWTH_AGE) {
@@ -73,7 +72,7 @@ export function createGrowthState(p: Player, now: Date): number {
 }
 
 // convert the growth rate to improvability rating
-export function getImprovability(growthRate: number): Improvability {
+function getImprovability(growthRate: number): Improvability {
   const ratings: Improvability[] = ["E", "D", "C", "B", "A"];
   const step = MAX_GROWTH_RATE / ratings.length;
   return ratings[Math.floor(growthRate / step)];
@@ -82,13 +81,13 @@ export function getImprovability(growthRate: number): Improvability {
 // deceiving the improvability rating (for user)
 // TODO: use it
 // TODO: depending on the scountig
-export function addGrowthRateNoise(gRate: number): number {
+function addGrowthRateNoise(gRate: number): number {
   const noise = randomSign((MAX_GROWTH_RATE / 3) * Math.random());
   return mod(gRate + noise, MAX_GROWTH_RATE);
 }
 
 // returns the probability for the preferred foot between left and right
-export function preferredFootChance(pos: Position): FootChance {
+function preferredFootChance(pos: Position): FootChance {
   if (pos === "lb" || pos === "lm" || pos === "lw") {
     return { left: 0.5, right: 0.25 };
   } else if (pos === "rb" || pos === "rm" || pos === "rw") {
@@ -99,7 +98,7 @@ export function preferredFootChance(pos: Position): FootChance {
 }
 
 // returns the preferred foot with depending on position and randomness
-export function createPreferredFoot(pos: Position): Foot {
+function createPreferredFoot(pos: Position): Foot {
   const chance = preferredFootChance(pos);
   const rdmPoint = Math.random();
 
@@ -112,7 +111,7 @@ export function createPreferredFoot(pos: Position): Foot {
   return "ambidextrous";
 }
 
-export interface Skills {
+interface Skills {
   strength: number;
   height: number;
   reflexes: number;
@@ -132,8 +131,8 @@ export interface Skills {
   finisnishing: number;
 }
 
-export type Skill = keyof Skills;
-export type Macroskill =
+type Skill = keyof Skills;
+type Macroskill =
   | "mobility"
   | "physic"
   | "goolkeeper"
@@ -142,7 +141,7 @@ export type Macroskill =
   | "offense";
 
 // macroskills are combination of skills
-export const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
+const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
   mobility: ["speed", "agility", "stamina"],
   physic: ["strength", "height"],
   goolkeeper: ["reflexes", "handling", "diving"],
@@ -211,7 +210,7 @@ const outOfPositionMalus: PosMalus = {
 // get a malus factor between 0 and 1 to applied to the player skills when is
 // playing out of position, the amount of malus is depending at which position
 // it is playing
-export function getOutOfPositionMalus(p: Player, at = p.position): number {
+function getOutOfPositionMalus(p: Player, at = p.position): number {
   if (p.position === at) {
     return 0;
   }
@@ -227,7 +226,7 @@ export function getOutOfPositionMalus(p: Player, at = p.position): number {
 
 // the only skills where the out of position malus is applicable
 // TODO: readonly
-export const skillsApplicableMalus = new Set<Skill>([
+const skillsApplicableMalus = new Set<Skill>([
   "defensivePositioning",
   "interception",
   "marking",
@@ -237,11 +236,11 @@ export const skillsApplicableMalus = new Set<Skill>([
 ]);
 
 // TODO: readonly
-export const noGrowthSkill = new Set<Skill>(["height"]);
+const noGrowthSkill = new Set<Skill>(["height"]);
 
 // Player creates semi-random player that best fit the position characteristics
 // note instances of this class are saved as JSON on the user machine
-export class Player {
+class Player {
   id: string;
   name: string;
   team: string;
@@ -359,6 +358,20 @@ export class Player {
   }
 }
 
+/**
+ * returns the best (according to player score) n players
+ * @param n amount of player to pick, when n > players.length throw an error
+ */
+function pickBest(players: Player[], n: number): Player[] {
+  if (players.length < n) {
+    throw new Error(`players have less than ${n} players`);
+  }
+
+  return players
+    .sort((p1, p2) => Player.getScore(p2) - Player.getScore(p1))
+    .slice(0, n);
+}
+
 // the sum of scoreFactors should always be 1 (expect for rounding error)
 type ScoreFactors = Readonly<Record<Macroskill, number>>;
 const fbScoreFactors: ScoreFactors = {
@@ -389,7 +402,7 @@ const wgScoreFactors: ScoreFactors = {
   defense: 0.05,
 };
 
-export const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
+const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
   gk: {
     goolkeeper: 0.65,
     mobility: 0,
@@ -444,4 +457,34 @@ export const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
     offense: 0.45,
     defense: 0.05,
   },
+};
+
+export {
+  MAX_AGE,
+  MIN_AGE,
+  MAX_SKILL,
+  MIN_SKILL,
+  END_GROWTH_AGE,
+  MAX_GROWTH_RATE,
+  START_DEGROWTH_AGE,
+  Foot,
+  Improvability,
+  Position,
+  PositionArea,
+  Skills,
+  Skill,
+  Macroskill,
+  Player,
+  positionArea,
+  createAge,
+  createGrowthState,
+  getImprovability,
+  preferredFootChance,
+  createPreferredFoot,
+  macroskills,
+  getOutOfPositionMalus,
+  positionScoreFactors,
+  noGrowthSkill,
+  pickBest,
+  skillsApplicableMalus,
 };

@@ -1,4 +1,4 @@
-import { Player, PositionArea } from "../character/player";
+import { Player, PositionArea, pickBest } from "../character/player";
 import { Team, Contract } from "../character/team";
 import { Schedule, Match } from "./tournament-scheduler";
 import {
@@ -150,36 +150,19 @@ function initPlayers(s: GameState, at: PositionArea, n: number): Player[] {
   });
 }
 
-// creates new contracts for the given players and save every contracts to the
-// given gameState, the min contrat duration is 1 max 5
-function initContracts(s: GameState, plrs: Player[], t: Team): void {
-  const contractDuration = () => Math.floor(Math.random() * 5) + 1;
-  plrs.forEach((p) =>
-    GameState.saveContract(s, {
-      teamName: t.name,
-      playerId: p.id,
-      wage: Player.wantedWage(p),
-      duration: contractDuration(),
-    })
-  );
-}
-
 // create new teams with the given names fill them with some new created players
 // add everything to the given gameState and returns created teams
 function initTeams(s: GameState, names: string[]): Team[] {
   return names.map((name) => {
     const team = new Team(name);
     GameState.saveTeam(s, team);
+    const signPlayers = (plrs: Player[]) =>
+      plrs.forEach((p) => Team.signPlayer(s, team, p));
 
-    const gks = initPlayers(s, "goolkeeper", 4);
-    const defs = initPlayers(s, "defender", 10);
-    const mdfs = initPlayers(s, "midfielder", 10);
-    const fwrs = initPlayers(s, "forward", 8);
-    initContracts(s, Team.pickPlayers(team, gks, 3), team);
-    initContracts(s, Team.pickPlayers(team, defs, 8), team);
-    initContracts(s, Team.pickPlayers(team, mdfs, 8), team);
-    initContracts(s, Team.pickPlayers(team, fwrs, 6), team);
-
+    signPlayers(pickBest(initPlayers(s, "goolkeeper", 4), 3));
+    signPlayers(pickBest(initPlayers(s, "defender", 10), 8));
+    signPlayers(pickBest(initPlayers(s, "midfielder", 10), 8));
+    signPlayers(pickBest(initPlayers(s, "forward", 8), 6));
     return team;
   });
 }
@@ -198,6 +181,5 @@ export {
   GameStateHandle,
   initPlayers,
   initTeams,
-  initContracts,
   initGameEvents,
 };

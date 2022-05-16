@@ -1,7 +1,8 @@
 import { Player } from "./player";
+import { GameState } from "../game-state/game-state";
 
 // note instances of this class are saved as JSON on the user machine
-export interface Contract {
+interface Contract {
   teamName: string;
   playerId: string;
   wage: number;
@@ -9,7 +10,7 @@ export interface Contract {
 }
 
 // note instances of this class are saved as JSON on the user machine
-export class Team {
+class Team {
   name: string;
   playerIds: string[] = [];
 
@@ -17,26 +18,36 @@ export class Team {
     this.name = name;
   }
 
-  /**
-    pick the best (according to player score) n players and add them to the team
-    and return an array with the picked players
-    @param n amount of player to pick, when n > players.length throw an error
-  */
-  static pickPlayers(tm: Team, players: Player[], n: number): Player[] {
-    if (players.length < n) {
-      throw new Error(`players have less than ${n} players`);
-    }
-
-    const picked = players
-      .sort((p1, p2) => Player.getScore(p2) - Player.getScore(p1))
-      .slice(0, n);
-    picked.forEach((p) => Team.addPlayer(tm, p));
-    return picked;
+  // add the player to the team and the signed contract to the gameState
+  // returns the signed Contract
+  static signPlayer(gs: GameState, t: Team, p: Player): Contract {
+    p.team = t.name;
+    t.playerIds.includes(p.id) || t.playerIds.push(p.id);
+    return signContract(gs, t, p);
   }
 
-  // add the player to the team
-  static addPlayer(t: Team, p: Player): void {
-    p.team = t.name;
-    t.playerIds.push(p.id);
+  // remove the player from the team and delete the contract from the gameState
+  static unsignPlayer(gs: GameState, c: Contract): void {
+    const team = gs.teams[c.teamName];
+    const player = gs.players[c.playerId];
+    player.team = "free agent";
+    team.playerIds = team.playerIds.filter((id) => id !== player.id);
+    GameState.deleteContract(gs, c);
   }
 }
+
+// creates new contracts for the given player and save it to the gameState,
+// the min contrat duration is 1 max 5
+function signContract(s: GameState, t: Team, p: Player): Contract {
+  const c = {
+    teamName: t.name,
+    playerId: p.id,
+    wage: Player.wantedWage(p),
+    duration: Math.floor(Math.random() * 5) + 1,
+  };
+  GameState.saveContract(s, c);
+
+  return c;
+}
+
+export { Contract, Team, signContract };

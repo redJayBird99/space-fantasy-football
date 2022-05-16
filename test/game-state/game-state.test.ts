@@ -90,9 +90,7 @@ describe("initTeams()", () => {
 
   test("should return an array with n new teams with the given names", () => {
     const teams = _gs.initTeams(gameState, teamNames);
-    expect(teams.map((_tm) => _tm.name)).toEqual(
-      expect.arrayContaining(teamNames)
-    );
+    expect(teams.map((t) => t.name)).toEqual(expect.arrayContaining(teamNames));
   });
 
   test("all new teams created are stored in the gameState", () => {
@@ -132,20 +130,12 @@ describe("initTeams()", () => {
     const pls = _gs.GameState.getTeamPlayers(gameState, teamNames[0]);
     expect(pls.filter(plrInPosArea("forward")).length).toBeGreaterThan(4);
   });
-});
 
-describe("initContracts()", () => {
-  const team = new _tm.Team(teamNames[0]);
-  const plrs = Array.from(
-    { length: 5 },
-    () => new _pl.Player("lb", new Date())
-  );
-
-  test("should add contracts for every players to the gameState", () => {
-    _gs.initContracts(gameState, plrs, team);
-    plrs.forEach((p) =>
-      expect(_gs.GameState.getContract(gameState, p)).toBeDefined()
-    );
+  test("should add a contract from every team player", () => {
+    _gs.initTeams(gameState, [teamNames[0]]);
+    _gs.GameState.getTeamPlayers(gameState, teamNames[0]).forEach((p) => {
+      expect(_gs.GameState.getContract(gameState, p)).toBeDefined();
+    });
   });
 });
 

@@ -386,3 +386,23 @@ describe("Player.applyMonthlyDegrowth()", () => {
     expect(plr.growthState).toBe(0.5);
   });
 });
+
+describe("pickBest()", () => {
+  const pls = Array.from({ length: 9 }, () => new _pl.Player("am", new Date()));
+  const n = 5;
+
+  test("should return n players", () => {
+    expect(_pl.pickBest(pls, n).length).toBe(n);
+  });
+
+  test("should return the best n players", () => {
+    const best = pls
+      .sort((p1, p2) => _pl.Player.getScore(p2) - _pl.Player.getScore(p1))
+      .slice(0, n);
+    expect(_pl.pickBest(pls, n)).toEqual(expect.arrayContaining(best));
+  });
+
+  test("throw an error when n is larger than player.length", () => {
+    expect(() => _pl.pickBest(pls, 10)).toThrow();
+  });
+});
