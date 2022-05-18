@@ -1,4 +1,4 @@
-import { Player } from "./player";
+import { Player, getArea, MAX_SKILL } from "./player";
 import { GameState } from "../game-state/game-state";
 
 // note instances of this class are saved as JSON on the user machine
@@ -34,6 +34,38 @@ class Team {
     team.playerIds = team.playerIds.filter((id) => id !== player.id);
     GameState.deleteContract(gs, c);
   }
+
+  // returns players with contract duration of 0
+  static getExipiringPlayers(gs: GameState, team: string): Player[] {
+    return GameState.getTeamPlayers(gs, team).filter(
+      (p) => GameState.getContract(gs, p)?.duration === 0
+    );
+  }
+
+  // returns players with contract duration greater than 0
+  static getNotExipiringPlayers(gs: GameState, team: string): Player[] {
+    return GameState.getTeamPlayers(gs, team).filter(
+      (p) => GameState.getContract(gs, p)?.duration !== 0
+    );
+  }
+
+  // try to resign the exipiring players according to the team needs and player scores
+  static renewExipiringContracts(gs: GameState, team: string): void {
+    const notExpiring = Team.getNotExipiringPlayers(gs, team);
+    let rtgs = new RatingAreaByNeed(notExpiring);
+    const expiring = Team.getExipiringPlayers(gs, team).sort(
+      (a, b) => ratingPlayerByNeed(b, rtgs) - ratingPlayerByNeed(a, rtgs)
+    );
+
+    // start by trying to sign the best ranking players
+    expiring.forEach((p) => {
+      if (teamSignPlayerProbability(p, rtgs) >= Math.random()) {
+        Team.signPlayer(gs, gs.teams[team], p);
+        notExpiring.push(p);
+        rtgs = new RatingAreaByNeed(notExpiring);
+      }
+    });
+  }
 }
 
 // creates new contracts for the given player and save it to the gameState,
@@ -50,4 +82,47 @@ function signContract(s: GameState, t: Team, p: Player): Contract {
   return c;
 }
 
-export { Contract, Team, signContract };
+// a rating of how mutch the player area is needed by a team with the given
+// players the ratings are between 0 (low) 1 (high)
+class RatingAreaByNeed {
+  goolkeeper = 0;
+  defender = 0;
+  midfielder = 0;
+  forward = 0;
+
+  constructor(teamPlayers: Player[]) {
+    const bound = (r: number) => Math.min(1, Math.max(0, r));
+    // counts the players per area
+    teamPlayers.forEach((p) => this[getArea(p.position)]++);
+    this.goolkeeper = bound((3 - this.goolkeeper) / 3);
+    this.defender = bound((8 - this.defender) / 8);
+    this.midfielder = bound((8 - this.midfielder) / 8);
+    this.forward = bound((6 - this.forward) / 6);
+  }
+}
+
+// a rating of how mutch a player is needed by a team
+// returns a value between 0 and 5 of one point is depended on the position needs
+// and 4 on the score of the player
+function ratingPlayerByNeed(p: Player, need: RatingAreaByNeed): number {
+  return 4 * (Player.getScore(p) / MAX_SKILL) + need[getArea(p.position)];
+}
+
+// the team probability to sign the player, high score player have higher probability
+// RatingAreaByNeed raises a little the probability when a positionArea is needed
+// returns a value between 0 and 1
+// for players with score 70 to max return always 1
+function teamSignPlayerProbability(p: Player, need: RatingAreaByNeed): number {
+  const scoreFct = Math.min(1, Math.max(0, (Player.getScore(p) - 40) / 30));
+  const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(p.position)];
+  return scoreFct + areaFct;
+}
+
+export {
+  Contract,
+  Team,
+  RatingAreaByNeed,
+  signContract,
+  teamSignPlayerProbability,
+  ratingPlayerByNeed,
+};

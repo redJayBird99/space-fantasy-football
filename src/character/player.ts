@@ -49,6 +49,20 @@ const positionArea: Readonly<Record<PositionArea, readonly Position[]>> = {
   forward: ["cf", "cf", "lw", "rw"],
 };
 
+function getArea(p: Position): PositionArea {
+  if (positionArea.goolkeeper.includes(p)) {
+    return "goolkeeper";
+  }
+  if (positionArea.defender.includes(p)) {
+    return "defender";
+  }
+  if (positionArea.midfielder.includes(p)) {
+    return "midfielder";
+  }
+
+  return "forward";
+}
+
 // returns a random number between MIN_AGE and MAX_AGE with end points less frequent
 function createAge(): number {
   // TOFIX: older an younger player shoul be less frequent
@@ -476,6 +490,7 @@ export {
   Macroskill,
   Player,
   positionArea,
+  getArea,
   createAge,
   createGrowthState,
   getImprovability,

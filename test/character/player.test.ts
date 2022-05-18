@@ -19,6 +19,15 @@ const samplePos = poss[Math.floor(poss.length * Math.random())];
 const smpPlr = new _pl.Player(samplePos, new Date());
 const atPos = poss.find((pp) => pp !== samplePos);
 
+describe("getArea()", () => {
+  test("should map every position to the area", () => {
+    poss.forEach((p) => {
+      const area = _pl.getArea(p);
+      expect(_pl.positionArea[area]).toContainEqual(p);
+    });
+  });
+});
+
 describe("createAge()", () => {
   const ages = Array.from({ length: 100 }, () => _pl.createAge());
 
@@ -256,10 +265,8 @@ describe("Player.getHeightInCm()", () => {
 });
 
 describe("Player.wantedWage()", () => {
-  const plr = new _pl.Player(
-    poss[Math.floor(Math.random() * poss.length)],
-    new Date()
-  );
+  const p = poss[Math.floor(Math.random() * poss.length)];
+  const plr = new _pl.Player(p, new Date(), 28);
 
   test("a very good player should ask for 64000", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 90));

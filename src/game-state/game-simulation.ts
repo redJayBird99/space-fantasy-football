@@ -1,13 +1,19 @@
 import { GameStateHandle, GameState } from "./game-state";
 import { Schedule } from "./tournament-scheduler";
 import { Player } from "../character/player";
+import { Team } from "../character/team";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;
 const SEASON_END_MONTH = 5; // june, the distance is enough for 38 games every week from the start of the season
 const SEASON_END_DATE = 1;
-type GameEventTypes = "simRound" | "skillUpdate" | "seasonEnd" | "seasonStart";
+type GameEventTypes =
+  | "simRound"
+  | "skillUpdate"
+  | "seasonEnd"
+  | "seasonStart"
+  | "updateContract";
 type SimRound = { round: number };
 
 interface GameEvent {
@@ -62,30 +68,76 @@ function process(gs: GameState): boolean {
 // returns true when a particular event handling require to momentarily stop the simulation
 function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
   if (evt.type === "simRound") {
-    simulateRound(gs, evt.detail as SimRound);
-    enqueueSimRoundEvent(gs, evt.detail!.round + 1);
+    return handleSimRound(gs, evt.detail as SimRound);
   } else if (evt.type === "skillUpdate") {
-    updateSkills(gs);
-    enqueueSkillUpdateEvent(gs);
-    return true;
+    return handleSkillUpdate(gs);
   } else if (evt.type === "seasonEnd") {
-    storeEndedSeasonSchedule(gs);
-    enqueueSeasonStartEvent(gs);
-    return true;
+    return handleSeasonEnd(gs, evt);
   } else if (evt.type === "seasonStart") {
-    newSeasonSchedule(gs, Object.keys(gs.teams));
-    enqueueSimRoundEvent(gs, 0);
-    enqueueSeasonEndEvent(gs);
-    return true;
+    return handleSeasonStart(gs);
+  } else if (evt.type === "updateContract") {
+    return handleUpdateContracts(gs);
   }
 
   return false;
 }
 
+function handleSimRound(gs: GameState, r: SimRound): boolean {
+  simulateRound(gs, r.round);
+  enqueueSimRoundEvent(gs, r.round + 1);
+  return false;
+}
+
+function handleSkillUpdate(gs: GameState): boolean {
+  updateSkills(gs);
+  enqueueSkillUpdateEvent(gs);
+  return true;
+}
+
+function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
+  storeEndedSeasonSchedule(gs);
+  enqueueSeasonStartEvent(gs);
+  enqueueUpdateContractEvent(gs, e.date);
+  return true;
+}
+
+function handleSeasonStart(gs: GameState): boolean {
+  newSeasonSchedule(gs, Object.keys(gs.teams));
+  enqueueSimRoundEvent(gs, 0);
+  enqueueSeasonEndEvent(gs);
+  return true;
+}
+
+function handleUpdateContracts(gs: GameState): boolean {
+  updateContracts(gs);
+  renewExipiringContracts(gs);
+  removeExpiredContracts(gs);
+  return false;
+}
+
+function updateContracts(gs: GameState): void {
+  Object.values(gs.contracts).forEach((c) => c.duration--);
+}
+
+// every team try to resign most exipiring players according to their needs
+function renewExipiringContracts(gs: GameState): void {
+  Object.keys(gs.teams).forEach((team) => {
+    Team.renewExipiringContracts(gs, team);
+  });
+}
+
+function removeExpiredContracts(gs: GameState): void {
+  Object.values(gs.contracts).forEach((c) => {
+    if (c.duration === 0) {
+      Team.unsignPlayer(gs, c);
+    }
+  });
+}
+
 // simulate all the match for the given round of this season schedule
 // every results is saved on the gameState
-function simulateRound(gs: GameState, r: SimRound): void {
-  gs.schedules.now?.[r.round]?.matchIds.forEach((id) => simulateMatch(gs, id));
+function simulateRound(gs: GameState, round: number): void {
+  gs.schedules.now?.[round]?.matchIds.forEach((id) => simulateMatch(gs, id));
 }
 
 // enqueue in the gameState a new gameEvent for the given current season round if it exists
@@ -135,6 +187,13 @@ function enqueueSeasonStartEvent(gs: GameState): void {
   GameState.enqueueGameEvent(gs, { date, type: "seasonStart" });
 }
 
+// enqueues a updateContract type GameEvent on gs.eventQueue for the next day of the given date
+function enqueueUpdateContractEvent(gs: GameState, d: Date): void {
+  const date = new Date(d);
+  date.setDate(date.getDate() + 1);
+  GameState.enqueueGameEvent(gs, { date, type: "updateContract" });
+}
+
 // save a new schedule for the current season to the gamestate, should be called
 // before SEASON_END_MONTH and SEASON_START_DATE + 1 of the same year
 function newSeasonSchedule(gs: GameState, teams: string[]): void {
@@ -175,12 +234,21 @@ export {
   GameSimulation,
   process,
   handleGameEvent,
+  handleSimRound,
+  handleSkillUpdate,
+  handleSeasonEnd,
+  handleSeasonStart,
+  handleUpdateContracts,
   simulateRound,
   updateSkills,
+  updateContracts,
+  renewExipiringContracts,
+  removeExpiredContracts,
   enqueueSimRoundEvent,
   enqueueSkillUpdateEvent,
   enqueueSeasonEndEvent,
   enqueueSeasonStartEvent,
+  enqueueUpdateContractEvent,
   storeEndedSeasonSchedule,
   newSeasonSchedule,
 };

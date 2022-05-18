@@ -67,6 +67,7 @@ class GameState {
     return s.contracts[p.id];
   }
 
+  // overrides the old player contract
   static savePlayer(s: GameState, p: Player): void {
     s.players[p.id] = p;
   }
