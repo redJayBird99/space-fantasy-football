@@ -8,7 +8,7 @@ import {
   enqueueSeasonEndEvent,
   newSeasonSchedule,
 } from "./game-simulation";
-import teams from "../asset/team-names.json";
+import teamsJson from "../asset/teams.json";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -36,8 +36,9 @@ class GameState {
     const state = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
-    newSeasonSchedule(state, teams.eng.names); // TODO: select the location
-    initTeams(state, teams.eng.names); // TODO: select the location
+    const teamNames = Object.keys(teamsJson);
+    newSeasonSchedule(state, teamNames);
+    initTeams(state, teamNames);
     initGameEvents(state);
     return state;
   }

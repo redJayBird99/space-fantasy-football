@@ -1,5 +1,21 @@
 import { Player, getArea, MAX_SKILL } from "./player";
 import { GameState } from "../game-state/game-state";
+import teamsJson from "../asset/teams.json";
+const teams: { [team: string]: any } = teamsJson;
+
+type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
+const fanbaseScore: Readonly<Record<Fanbase, number>> = {
+  huge: 4,
+  big: 3,
+  medium: 2,
+  small: 1,
+  verySmall: 0,
+};
+
+function initMoneyAmount(fb: Fanbase, min: number): number {
+  const extra = (1.3 * min) / 5;
+  return Math.round(min + fanbaseScore[fb] * extra + Math.random() * extra);
+}
 
 // note instances of this class are saved as JSON on the user machine
 interface Contract {
@@ -9,13 +25,32 @@ interface Contract {
   duration: number; // in seasons
 }
 
+interface Finances {
+  budget: number;
+  revenue: number;
+  // monthly expenses
+  health: number;
+  scouting: number;
+  facilities: number;
+}
+
 // note instances of this class are saved as JSON on the user machine
 class Team {
   name: string;
   playerIds: string[] = [];
+  finances: Finances;
+  fanbase: Fanbase;
 
   constructor(name: string) {
     this.name = name;
+    this.fanbase = teams[name] ? teams[name].fanbase : "verySmall";
+    this.finances = {
+      budget: initMoneyAmount(this.fanbase, 2_000_000),
+      revenue: initMoneyAmount(this.fanbase, 300_000),
+      health: initMoneyAmount(this.fanbase, 20_000),
+      scouting: initMoneyAmount(this.fanbase, 20_000),
+      facilities: initMoneyAmount(this.fanbase, 20_000),
+    };
   }
 
   // add the player to the team and the signed contract to the gameState
@@ -36,35 +71,49 @@ class Team {
   }
 
   // returns players with contract duration of 0
-  static getExipiringPlayers(gs: GameState, team: string): Player[] {
-    return GameState.getTeamPlayers(gs, team).filter(
+  static getExipiringPlayers(gs: GameState, t: Team): Player[] {
+    return GameState.getTeamPlayers(gs, t.name).filter(
       (p) => GameState.getContract(gs, p)?.duration === 0
     );
   }
 
   // returns players with contract duration greater than 0
-  static getNotExipiringPlayers(gs: GameState, team: string): Player[] {
-    return GameState.getTeamPlayers(gs, team).filter(
+  static getNotExipiringPlayers(gs: GameState, t: Team): Player[] {
+    return GameState.getTeamPlayers(gs, t.name).filter(
       (p) => GameState.getContract(gs, p)?.duration !== 0
     );
   }
 
   // try to resign the exipiring players according to the team needs and player scores
-  static renewExipiringContracts(gs: GameState, team: string): void {
-    const notExpiring = Team.getNotExipiringPlayers(gs, team);
+  static renewExipiringContracts(gs: GameState, t: Team): void {
+    const notExpiring = Team.getNotExipiringPlayers(gs, t);
     let rtgs = new RatingAreaByNeed(notExpiring);
-    const expiring = Team.getExipiringPlayers(gs, team).sort(
+    const expiring = Team.getExipiringPlayers(gs, t).sort(
       (a, b) => ratingPlayerByNeed(b, rtgs) - ratingPlayerByNeed(a, rtgs)
     );
 
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
       if (teamSignPlayerProbability(p, rtgs) >= Math.random()) {
-        Team.signPlayer(gs, gs.teams[team], p);
+        Team.signPlayer(gs, gs.teams[t.name], p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
       }
     });
+  }
+
+  // returns the wages sum of every not exipiring team player
+  static getWagesAmount(gs: GameState, t: Team): number {
+    return Team.getNotExipiringPlayers(gs, t).reduce(
+      (a, p) => (GameState.getContract(gs, p)?.wage || 0) + a,
+      0
+    );
+  }
+
+  // returns the sum of all the monthly expenses
+  static getMonthlyExpenses(gs: GameState, t: Team): number {
+    const { health, facilities, scouting } = t.finances;
+    return Team.getWagesAmount(gs, t) + health + facilities + scouting;
   }
 }
 
@@ -125,4 +174,5 @@ export {
   signContract,
   teamSignPlayerProbability,
   ratingPlayerByNeed,
+  initMoneyAmount,
 };

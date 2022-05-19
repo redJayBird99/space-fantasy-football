@@ -121,7 +121,7 @@ function updateContracts(gs: GameState): void {
 
 // every team try to resign most exipiring players according to their needs
 function renewExipiringContracts(gs: GameState): void {
-  Object.keys(gs.teams).forEach((team) => {
+  Object.values(gs.teams).forEach((team) => {
     Team.renewExipiringContracts(gs, team);
   });
 }

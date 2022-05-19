@@ -6,6 +6,7 @@ import { mean } from "../../src/util/generator";
 const areas = Object.keys(_p.positionArea) as _p.PositionArea[];
 const createPlayers = (area: _p.PositionArea, n: number) =>
   Array.from({ length: n }, () => _p.Player.createPlayerAt(new Date(), area));
+
 const rdmPlayers = (n: number) => {
   const rdmArea = () => areas[Math.floor(Math.random() * areas.length)];
   return Array.from({ length: n }, () =>
@@ -249,44 +250,46 @@ describe("ratingPlayerByNeed()", () => {
 describe("Team.getExipiringPlayers()", () => {
   const st = new _gs.GameState(new Date());
   _gs.initTeams(st, ["titans"]);
+  const team = st.teams.titans;
 
   test("should return all expiring players", () => {
     Object.values(st.contracts).forEach((c) => (c.duration = 0));
-    expect(_t.Team.getExipiringPlayers(st, "titans")).toEqual(
+    expect(_t.Team.getExipiringPlayers(st, team)).toEqual(
       _gs.GameState.getTeamPlayers(st, "titans")
     );
   });
 
   test("should return 0 players when no contract is expiring", () => {
     Object.values(st.contracts).forEach((c) => (c.duration = 1));
-    expect(_t.Team.getExipiringPlayers(st, "titans")).toEqual([]);
+    expect(_t.Team.getExipiringPlayers(st, team)).toEqual([]);
   });
 });
 
 describe("Team.getNotExipiringPlayers()", () => {
   const st = new _gs.GameState(new Date());
   _gs.initTeams(st, ["titans"]);
+  const team = st.teams.titans;
 
   test("should return all not expiring players", () => {
     Object.values(st.contracts).forEach((c) => (c.duration = 1));
-    expect(_t.Team.getNotExipiringPlayers(st, "titans")).toEqual(
+    expect(_t.Team.getNotExipiringPlayers(st, team)).toEqual(
       _gs.GameState.getTeamPlayers(st, "titans")
     );
   });
 
   test("should return 0 players when all contracts are expiring", () => {
     Object.values(st.contracts).forEach((c) => (c.duration = 0));
-    expect(_t.Team.getNotExipiringPlayers(st, "titans")).toEqual([]);
+    expect(_t.Team.getNotExipiringPlayers(st, team)).toEqual([]);
   });
 });
 
 describe("Team.renewExipiringContracts()", () => {
   const st = new _gs.GameState(new Date());
-  _gs.initTeams(st, ["titans"]);
+  _gs.initTeams(st, ["a"]);
   Object.values(st.contracts).forEach((c) => (c.duration = 0));
-  _t.Team.renewExipiringContracts(st, "titans");
-  const renewed = _t.Team.getNotExipiringPlayers(st, "titans");
-  const expired = _t.Team.getExipiringPlayers(st, "titans");
+  _t.Team.renewExipiringContracts(st, st.teams.a);
+  const renewed = _t.Team.getNotExipiringPlayers(st, st.teams.a);
+  const expired = _t.Team.getExipiringPlayers(st, st.teams.a);
 
   test("should renew most players when the team is short of Players", () => {
     expect(renewed.length).toBeGreaterThan(expired.length);
@@ -295,6 +298,71 @@ describe("Team.renewExipiringContracts()", () => {
   test("renewed players should have a mean score greater than unrenewed ones", () => {
     expect(mean(renewed.map((p) => _p.Player.getScore(p)))).toBeGreaterThan(
       mean(expired.map((p) => _p.Player.getScore(p)))
+    );
+  });
+});
+
+describe("initMoneyAmount()", () => {
+  const min = 1_000;
+
+  test("should never return a value less than min", () => {
+    Array.from({ length: 10 }, () =>
+      _t.initMoneyAmount("verySmall", min)
+    ).forEach((amount) => {
+      expect(amount).toBeGreaterThanOrEqual(min);
+    });
+  });
+
+  test("should return a larger amount for a small fanbase respect to a very small one", () => {
+    expect(_t.initMoneyAmount("small", min)).toBeGreaterThan(
+      _t.initMoneyAmount("verySmall", min)
+    );
+  });
+
+  test("should return a larger amount for a medium fanbase respect to a small one", () => {
+    expect(_t.initMoneyAmount("medium", min)).toBeGreaterThan(
+      _t.initMoneyAmount("small", min)
+    );
+  });
+
+  test("should return a larger amount for a big fanbase respect to a medium one", () => {
+    expect(_t.initMoneyAmount("big", min)).toBeGreaterThan(
+      _t.initMoneyAmount("medium", min)
+    );
+  });
+
+  test("should return a larger amount for a huge fanbase respect to a big one", () => {
+    expect(_t.initMoneyAmount("huge", min)).toBeGreaterThan(
+      _t.initMoneyAmount("big", min)
+    );
+  });
+});
+
+describe("Team.getWagesAmount()", () => {
+  const st = new _gs.GameState(new Date());
+  _gs.initTeams(st, ["titans"]);
+  const cts = _t.Team.getNotExipiringPlayers(st, st.teams.titans).map((p) =>
+    _gs.GameState.getContract(st, p)
+  );
+
+  test("should return the sum of every wage", () => {
+    cts.forEach((c) => c && (c.wage = 100));
+    expect(_t.Team.getWagesAmount(st, st.teams.titans)).toBe(100 * cts.length);
+  });
+});
+
+describe("Team.getMonthlyExpenses()", () => {
+  const st = new _gs.GameState(new Date());
+  _gs.initTeams(st, ["a"]);
+  const cts = _t.Team.getNotExipiringPlayers(st, st.teams.a).map((p) =>
+    _gs.GameState.getContract(st, p)
+  );
+
+  test("should return the sum of every wage with all other expenses", () => {
+    cts.forEach((c) => c && (c.wage = 100));
+    const { health, facilities, scouting } = st.teams.a.finances;
+    expect(_t.Team.getMonthlyExpenses(st, st.teams.a)).toBe(
+      100 * cts.length + health + facilities + scouting
     );
   });
 });
