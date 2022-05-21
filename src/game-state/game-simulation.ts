@@ -13,7 +13,8 @@ type GameEventTypes =
   | "skillUpdate"
   | "seasonEnd"
   | "seasonStart"
-  | "updateContract";
+  | "updateContract"
+  | "updateFinances";
 type SimRound = { round: number };
 
 interface GameEvent {
@@ -77,6 +78,8 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleSeasonStart(gs);
   } else if (evt.type === "updateContract") {
     return handleUpdateContracts(gs);
+  } else if (evt.type === "updateFinances") {
+    return handleUpdateFinances(gs);
   }
 
   return false;
@@ -112,6 +115,12 @@ function handleUpdateContracts(gs: GameState): boolean {
   updateContracts(gs);
   renewExipiringContracts(gs);
   removeExpiredContracts(gs);
+  return false;
+}
+
+function handleUpdateFinances(gs: GameState): boolean {
+  Object.values(gs.teams).forEach((t) => Team.updateFinances(gs, t));
+  enqueueUpdateFinancesEvent(gs);
   return false;
 }
 
@@ -194,6 +203,12 @@ function enqueueUpdateContractEvent(gs: GameState, d: Date): void {
   GameState.enqueueGameEvent(gs, { date, type: "updateContract" });
 }
 
+// enqueues a updateFinances type GameEvent on gs.eventQueue for the last day of the next month
+function enqueueUpdateFinancesEvent(gs: GameState): void {
+  const date = new Date(gs.date.getFullYear(), gs.date.getMonth() + 2, 0);
+  GameState.enqueueGameEvent(gs, { date, type: "updateFinances" });
+}
+
 // save a new schedule for the current season to the gamestate, should be called
 // before SEASON_END_MONTH and SEASON_START_DATE + 1 of the same year
 function newSeasonSchedule(gs: GameState, teams: string[]): void {
@@ -239,6 +254,7 @@ export {
   handleSeasonEnd,
   handleSeasonStart,
   handleUpdateContracts,
+  handleUpdateFinances,
   simulateRound,
   updateSkills,
   updateContracts,
@@ -249,6 +265,7 @@ export {
   enqueueSeasonEndEvent,
   enqueueSeasonStartEvent,
   enqueueUpdateContractEvent,
+  enqueueUpdateFinancesEvent,
   storeEndedSeasonSchedule,
   newSeasonSchedule,
 };

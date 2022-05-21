@@ -115,6 +115,14 @@ class Team {
     const { health, facilities, scouting } = t.finances;
     return Team.getWagesAmount(gs, t) + health + facilities + scouting;
   }
+
+  // monthly update the budget subtracting expenses and adding revenues
+  static updateFinances(gs: GameState, t: Team): void {
+    t.finances.budget +=
+      t.finances.revenue -
+      Team.getMonthlyExpenses(gs, t) -
+      Team.getWagesAmount(gs, t);
+  }
 }
 
 // creates new contracts for the given player and save it to the gameState,

@@ -175,6 +175,10 @@ function initGameEvents(gs: GameState): void {
   enqueueSimRoundEvent(gs, 0);
   enqueueSkillUpdateEvent(gs);
   enqueueSeasonEndEvent(gs);
+  GameState.enqueueGameEvent(gs, {
+    date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),
+    type: "updateFinances",
+  });
 }
 
 export {

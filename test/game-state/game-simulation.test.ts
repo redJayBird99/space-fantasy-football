@@ -222,6 +222,16 @@ describe("enqueueUpdateContractsEvent()", () => {
   });
 });
 
+describe("enqueueUpdateFinancesEvent()", () => {
+  const st = new _gs.GameState(startD);
+  _sm.enqueueUpdateFinancesEvent(st);
+
+  test("should enqueue a updateFinances gameEvent on the gameState last dey of the month", () => {
+    const date = new Date(st.date.getFullYear(), st.date.getMonth() + 2, 0);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateFinances" });
+  });
+});
+
 describe("handleSimRound()", () => {
   const gameState = new _gs.GameState(startD);
   const teams = ["Hawks", "Foxes", " Wolfs", "Cats"];
@@ -329,6 +339,24 @@ describe("handleUpdateContracts()", () => {
   });
 });
 
+describe("handleUpdateFinances()", () => {
+  const st = new _gs.GameState(startD);
+  _gs.initTeams(st, ["a", "b", "c", "d"]);
+  const budgets = Object.values(st.teams).map((t) => t.finances.budget);
+  _sm.handleUpdateFinances(st);
+
+  test("should update the team budget of every team", () => {
+    Object.values(st.teams).forEach((t, i) =>
+      expect(t.finances.budget).not.toBe(budgets[i])
+    );
+  });
+
+  test("should enqueue next updateFinances GameEvent", () => {
+    const date = new Date(st.date.getFullYear(), st.date.getMonth() + 2, 0);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateFinances" });
+  });
+});
+
 describe("handleGameEvent()", () => {
   describe("handle GameEvent simRound type", () => {
     test("should return false", () => {
@@ -362,6 +390,13 @@ describe("handleGameEvent()", () => {
   describe("handle GameEvent updateContract type", () => {
     test("should return false", () => {
       const e: _sm.GameEvent = { date: startD, type: "updateContract" };
+      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(false);
+    });
+  });
+
+  describe("handle GameEvent updateFinances type", () => {
+    test("should return false", () => {
+      const e: _sm.GameEvent = { date: startD, type: "updateFinances" };
       expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(false);
     });
   });

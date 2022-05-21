@@ -366,3 +366,19 @@ describe("Team.getMonthlyExpenses()", () => {
     );
   });
 });
+
+describe("Team.updateFinances()", () => {
+  const st = new _gs.GameState(new Date());
+  _gs.initTeams(st, ["a"]);
+
+  test("should update the budget removing expenses and adding revenue", () => {
+    const { revenue, budget } = st.teams.a.finances;
+    _t.Team.updateFinances(st, st.teams.a);
+    expect(st.teams.a.finances.budget).toBe(
+      budget +
+        revenue -
+        _t.Team.getWagesAmount(st, st.teams.a) -
+        _t.Team.getMonthlyExpenses(st, st.teams.a)
+    );
+  });
+});
