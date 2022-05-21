@@ -338,6 +338,32 @@ describe("initMoneyAmount()", () => {
   });
 });
 
+describe("luxuryTax()", () => {
+  test("should return 0 when the payroll doesn't exceed the salary cap", () => {
+    expect(_t.luxuryTax(_t.SALARY_CAP)).toBe(0);
+  });
+
+  test("should return a value greater 0 when the payroll exceed the salary cap", () => {
+    expect(_t.luxuryTax(_t.SALARY_CAP + 100)).toBeGreaterThan(0);
+  });
+
+  test("larger is the payroll excess larger is the tax factor", () => {
+    const taxFct1 = _t.luxuryTax(_t.SALARY_CAP + 10_000) / 10_000;
+    const taxFct2 = _t.luxuryTax(_t.SALARY_CAP + 50_000) / 50_000;
+    expect(taxFct2).toBeGreaterThan(taxFct1);
+  });
+});
+
+describe("minimumSalaryTax()", () => {
+  test("should return 0 when the payroll ins't below the min salary cap", () => {
+    expect(_t.minSalaryTax(_t.MIN_SALARY_CAP)).toBe(0);
+  });
+
+  test("should return difference between the payroll and the min salary cap when below", () => {
+    expect(_t.minSalaryTax(_t.MIN_SALARY_CAP - 10_000)).toBe(10_000);
+  });
+});
+
 describe("Team.getWagesAmount()", () => {
   const st = new _gs.GameState(new Date());
   _gs.initTeams(st, ["titans"]);
@@ -354,15 +380,24 @@ describe("Team.getWagesAmount()", () => {
 describe("Team.getMonthlyExpenses()", () => {
   const st = new _gs.GameState(new Date());
   _gs.initTeams(st, ["a"]);
+  const { health, facilities, scouting } = st.teams.a.finances;
   const cts = _t.Team.getNotExipiringPlayers(st, st.teams.a).map((p) =>
     _gs.GameState.getContract(st, p)
   );
 
-  test("should return the sum of every wage with all other expenses", () => {
-    cts.forEach((c) => c && (c.wage = 100));
-    const { health, facilities, scouting } = st.teams.a.finances;
+  test("should return the sum of every wage with all other expenses and luxuryTax", () => {
+    cts.forEach((c) => c && (c.wage = 30_000));
+    const wages = 30_000 * cts.length;
     expect(_t.Team.getMonthlyExpenses(st, st.teams.a)).toBe(
-      100 * cts.length + health + facilities + scouting
+      wages + _t.luxuryTax(wages) + health + facilities + scouting
+    );
+  });
+
+  test("should return the sum of every wage with all other expenses and minSalaryTax", () => {
+    cts.forEach((c) => c && (c.wage = 1_000));
+    const wages = 1_000 * cts.length;
+    expect(_t.Team.getMonthlyExpenses(st, st.teams.a)).toBe(
+      wages + _t.minSalaryTax(wages) + health + facilities + scouting
     );
   });
 });
@@ -375,10 +410,7 @@ describe("Team.updateFinances()", () => {
     const { revenue, budget } = st.teams.a.finances;
     _t.Team.updateFinances(st, st.teams.a);
     expect(st.teams.a.finances.budget).toBe(
-      budget +
-        revenue -
-        _t.Team.getWagesAmount(st, st.teams.a) -
-        _t.Team.getMonthlyExpenses(st, st.teams.a)
+      budget + revenue - _t.Team.getMonthlyExpenses(st, st.teams.a)
     );
   });
 });

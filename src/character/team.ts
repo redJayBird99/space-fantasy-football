@@ -3,6 +3,9 @@ import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
 const teams: { [team: string]: any } = teamsJson;
 
+const SALARY_CAP = 460_000;
+const MIN_SALARY_CAP = 200_000;
+
 type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
 const fanbaseScore: Readonly<Record<Fanbase, number>> = {
   huge: 4,
@@ -110,18 +113,16 @@ class Team {
     );
   }
 
-  // returns the sum of all the monthly expenses
+  // returns the sum of all the monthly expenses wages and luxuryTax included
   static getMonthlyExpenses(gs: GameState, t: Team): number {
-    const { health, facilities, scouting } = t.finances;
-    return Team.getWagesAmount(gs, t) + health + facilities + scouting;
+    const { health: hth, facilities: fts, scouting: sct } = t.finances;
+    const ws = Team.getWagesAmount(gs, t);
+    return ws + luxuryTax(ws) + minSalaryTax(ws) + hth + fts + sct;
   }
 
   // monthly update the budget subtracting expenses and adding revenues
   static updateFinances(gs: GameState, t: Team): void {
-    t.finances.budget +=
-      t.finances.revenue -
-      Team.getMonthlyExpenses(gs, t) -
-      Team.getWagesAmount(gs, t);
+    t.finances.budget += t.finances.revenue - Team.getMonthlyExpenses(gs, t);
   }
 }
 
@@ -175,7 +176,21 @@ function teamSignPlayerProbability(p: Player, need: RatingAreaByNeed): number {
   return scoreFct + areaFct;
 }
 
+// https://en.wikipedia.org/wiki/NBA_salary_cap#Luxury_tax
+function luxuryTax(payroll: number): number {
+  const exceed = Math.max(0, payroll - SALARY_CAP);
+  return Math.round(exceed ** 2 / (SALARY_CAP / 10) + exceed);
+}
+
+// If the payroll is below the MIN_SALARY_CAP limit, pay the difference between
+// the payroll and the limit.
+function minSalaryTax(payroll: number): number {
+  return Math.max(0, MIN_SALARY_CAP - payroll);
+}
+
 export {
+  SALARY_CAP,
+  MIN_SALARY_CAP,
   Contract,
   Team,
   RatingAreaByNeed,
@@ -183,4 +198,6 @@ export {
   teamSignPlayerProbability,
   ratingPlayerByNeed,
   initMoneyAmount,
+  luxuryTax,
+  minSalaryTax,
 };
