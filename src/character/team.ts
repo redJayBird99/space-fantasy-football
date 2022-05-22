@@ -91,16 +91,18 @@ class Team {
   static renewExipiringContracts(gs: GameState, t: Team): void {
     const notExpiring = Team.getNotExipiringPlayers(gs, t);
     let rtgs = new RatingAreaByNeed(notExpiring);
+    let affordable = Team.canAfford(gs, t);
     const expiring = Team.getExipiringPlayers(gs, t).sort(
       (a, b) => ratingPlayerByNeed(b, rtgs) - ratingPlayerByNeed(a, rtgs)
     );
 
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
-      if (teamSignPlayerProbability(p, rtgs) >= Math.random()) {
+      if (affordable(Player.wantedWage(p)) && teamShouldSign(p, rtgs)) {
         Team.signPlayer(gs, gs.teams[t.name], p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
+        affordable = Team.canAfford(gs, t);
       }
     });
   }
@@ -118,6 +120,18 @@ class Team {
     const { health: hth, facilities: fts, scouting: sct } = t.finances;
     const ws = Team.getWagesAmount(gs, t);
     return ws + luxuryTax(ws) + minSalaryTax(ws) + hth + fts + sct;
+  }
+
+  // returns true when the team can afford the given wage for one year
+  static canAfford(gs: GameState, t: Team): (wage: number) => boolean {
+    const { health, facilities, scouting, budget, revenue } = t.finances;
+    const wages = Team.getWagesAmount(gs, t); // prevents calling it for every check
+
+    return (wage) => {
+      const wgs = wages + wage;
+      const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
+      return budget / 12 + revenue - expenses > 0;
+    };
   }
 
   // monthly update the budget subtracting expenses and adding revenues
@@ -143,12 +157,14 @@ function signContract(s: GameState, t: Team, p: Player): Contract {
 // a rating of how mutch the player area is needed by a team with the given
 // players the ratings are between 0 (low) 1 (high)
 class RatingAreaByNeed {
+  teamPlayers: Player[];
   goolkeeper = 0;
   defender = 0;
   midfielder = 0;
   forward = 0;
 
   constructor(teamPlayers: Player[]) {
+    this.teamPlayers = teamPlayers;
     const bound = (r: number) => Math.min(1, Math.max(0, r));
     // counts the players per area
     teamPlayers.forEach((p) => this[getArea(p.position)]++);
@@ -166,14 +182,30 @@ function ratingPlayerByNeed(p: Player, need: RatingAreaByNeed): number {
   return 4 * (Player.getScore(p) / MAX_SKILL) + need[getArea(p.position)];
 }
 
-// the team probability to sign the player, high score player have higher probability
+// the team probability to sign the player, high score players have higher probability
 // RatingAreaByNeed raises a little the probability when a positionArea is needed
+// and halves it when there is no need for it
 // returns a value between 0 and 1
-// for players with score 70 to max return always 1
+// for players with score 70 to max return always 1 when the area is needed
+// for players with score 40 to 0 return always 0
 function teamSignPlayerProbability(p: Player, need: RatingAreaByNeed): number {
+  if (Player.getScore(p) <= 40) {
+    return 0;
+  }
+
   const scoreFct = Math.min(1, Math.max(0, (Player.getScore(p) - 40) / 30));
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(p.position)];
-  return scoreFct + areaFct;
+  const probability = scoreFct + areaFct;
+  return need[getArea(p.position)] === 0 ? probability / 2 : probability;
+}
+
+// if the team more than 29 players and it doesn't need the player position returns always false
+function teamShouldSign(p: Player, need: RatingAreaByNeed): boolean {
+  if (need.teamPlayers.length < 30 || need[getArea(p.position)] !== 0) {
+    return teamSignPlayerProbability(p, need) > Math.random();
+  }
+
+  return false;
 }
 
 // https://en.wikipedia.org/wiki/NBA_salary_cap#Luxury_tax
@@ -200,4 +232,5 @@ export {
   initMoneyAmount,
   luxuryTax,
   minSalaryTax,
+  teamShouldSign,
 };
