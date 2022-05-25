@@ -1,4 +1,4 @@
-import { Player, getArea, MAX_SKILL } from "./player";
+import { Player, getArea, MAX_SKILL, MIN_WAGE } from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
 const teams: { [team: string]: any } = teamsJson;
@@ -6,6 +6,7 @@ const teams: { [team: string]: any } = teamsJson;
 const SALARY_CAP = 460_000;
 const MIN_SALARY_CAP = 200_000;
 
+type Affordable = (wage: number) => boolean;
 type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
 const fanbaseScore: Readonly<Record<Fanbase, number>> = {
   huge: 4,
@@ -98,7 +99,10 @@ class Team {
 
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
-      if (affordable(Player.wantedWage(p)) && teamShouldSign(p, rtgs)) {
+      if (
+        affordable(Player.wantedWage(p)) &&
+        Team.shouldRenew(p, rtgs, notExpiring.length)
+      ) {
         Team.signPlayer(gs, gs.teams[t.name], p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
@@ -122,16 +126,58 @@ class Team {
     return ws + luxuryTax(ws) + minSalaryTax(ws) + hth + fts + sct;
   }
 
-  // returns true when the team can afford the given wage for one year
-  static canAfford(gs: GameState, t: Team): (wage: number) => boolean {
+  // returns true when the team can afford the given wage for one year, min wage
+  // is always affordable no matter team expenses
+  static canAfford(gs: GameState, t: Team): Affordable {
     const { health, facilities, scouting, budget, revenue } = t.finances;
     const wages = Team.getWagesAmount(gs, t); // prevents calling it for every check
 
     return (wage) => {
+      if (wage <= MIN_WAGE) {
+        return true;
+      }
+
       const wgs = wages + wage;
       const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
       return budget / 12 + revenue - expenses > 0;
     };
+  }
+
+  // return true when the team need a new player
+  static needPlayer(gs: GameState, t: Team): boolean {
+    // TODO: take in cosideration the quality of the teamPlayers
+    const players = Team.getNotExipiringPlayers(gs, t);
+    const rgs = new RatingAreaByNeed(players);
+    return players.length < 30 && Object.values(rgs).some((v) => v > 0);
+  }
+
+  /**
+  if the team more than 29 players and it doesn't need the player position returns always false
+  when the player are more than 25 returning true is less probable
+  @param players - the number of team players
+  */
+  static shouldRenew(p: Player, r: RatingAreaByNeed, players: number): boolean {
+    if (players <= 25 || r[getArea(p.position)] !== 0) {
+      return renewalProbability(p, r) > Math.random();
+    } else if (players < 30) {
+      return renewalProbability(p, r) / 3 > Math.random();
+    }
+
+    return false;
+  }
+
+  // sign the best (by rating) affordable player between the given free agents
+  // returns the signed player
+  static signFreeAgent(gs: GameState, t: Team, free: Player[]): Player | void {
+    const teamPlayers = Team.getNotExipiringPlayers(gs, t);
+    const rtgs = new RatingAreaByNeed(teamPlayers);
+    const affordable = Team.canAfford(gs, t);
+    const target = findBest(free, rtgs, affordable);
+
+    if (target) {
+      Team.signPlayer(gs, gs.teams[t.name], target);
+      return target;
+    }
   }
 
   // monthly update the budget subtracting expenses and adding revenues
@@ -157,14 +203,12 @@ function signContract(s: GameState, t: Team, p: Player): Contract {
 // a rating of how mutch the player area is needed by a team with the given
 // players the ratings are between 0 (low) 1 (high)
 class RatingAreaByNeed {
-  teamPlayers: Player[];
   goolkeeper = 0;
   defender = 0;
   midfielder = 0;
   forward = 0;
 
   constructor(teamPlayers: Player[]) {
-    this.teamPlayers = teamPlayers;
     const bound = (r: number) => Math.min(1, Math.max(0, r));
     // counts the players per area
     teamPlayers.forEach((p) => this[getArea(p.position)]++);
@@ -187,9 +231,9 @@ function ratingPlayerByNeed(p: Player, need: RatingAreaByNeed): number {
 // and halves it when there is no need for it
 // returns a value between 0 and 1
 // for players with score 70 to max return always 1 when the area is needed
-// for players with score 40 to 0 return always 0
-function teamSignPlayerProbability(p: Player, need: RatingAreaByNeed): number {
-  if (Player.getScore(p) <= 40) {
+// for players with score 50 to 0 return always 0
+function renewalProbability(p: Player, need: RatingAreaByNeed): number {
+  if (Player.getScore(p) <= 50) {
     return 0;
   }
 
@@ -197,15 +241,6 @@ function teamSignPlayerProbability(p: Player, need: RatingAreaByNeed): number {
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(p.position)];
   const probability = scoreFct + areaFct;
   return need[getArea(p.position)] === 0 ? probability / 2 : probability;
-}
-
-// if the team more than 29 players and it doesn't need the player position returns always false
-function teamShouldSign(p: Player, need: RatingAreaByNeed): boolean {
-  if (need.teamPlayers.length < 30 || need[getArea(p.position)] !== 0) {
-    return teamSignPlayerProbability(p, need) > Math.random();
-  }
-
-  return false;
 }
 
 // https://en.wikipedia.org/wiki/NBA_salary_cap#Luxury_tax
@@ -220,6 +255,19 @@ function minSalaryTax(payroll: number): number {
   return Math.max(0, MIN_SALARY_CAP - payroll);
 }
 
+// returns the best affordable potential new sign between the given players or undefined
+function findBest(ps: Player[], r: RatingAreaByNeed, fn: Affordable) {
+  const affordables = ps.filter((p) => fn(Player.wantedWage(p)));
+
+  if (affordables.length > 1) {
+    return affordables.reduce((a, b) =>
+      ratingPlayerByNeed(b, r) > ratingPlayerByNeed(a, r) ? b : a
+    );
+  }
+
+  return affordables[0];
+}
+
 export {
   SALARY_CAP,
   MIN_SALARY_CAP,
@@ -227,10 +275,10 @@ export {
   Team,
   RatingAreaByNeed,
   signContract,
-  teamSignPlayerProbability,
+  renewalProbability,
   ratingPlayerByNeed,
   initMoneyAmount,
   luxuryTax,
   minSalaryTax,
-  teamShouldSign,
+  findBest,
 };

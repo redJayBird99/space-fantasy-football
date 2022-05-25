@@ -178,7 +178,7 @@ describe("initGameEvents", () => {
     st.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
     _gs.initGameEvents(st);
     const findFirstRound = (e: _sm.GameEvent) =>
-      e.type === "simRound" && e.detail?.round === 0;
+      e.type === "simRound" && (e.detail as _sm.SimRound)?.round === 0;
     expect(st.eventQueue.some(findFirstRound)).toBe(true);
   });
 

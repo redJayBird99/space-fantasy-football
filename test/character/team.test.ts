@@ -179,77 +179,65 @@ describe("RatingAreaByNeed", () => {
   });
 });
 
-describe("teamSignPlayerProbability()", () => {
+describe("renewalProbability()", () => {
   const pl = new _p.Player("am", new Date(), 28);
-  let rtgs = {
-    teamPlayers: rdmPlayers(1),
-    goolkeeper: 0.1,
-    defender: 0.1,
-    midfielder: 0.1,
-    forward: 0.1,
-  };
+  let rtgs = { goolkeeper: 0.1, defender: 0.1, midfielder: 0.1, forward: 0.1 };
 
   describe("when the area rating is 0.1", () => {
-    const p = rtgs.teamPlayers[0];
+    const p = rdmPlayers(1)[0];
 
     test("should return a value greater than or equal 0", () => {
-      expect(_t.teamSignPlayerProbability(p, rtgs)).toBeGreaterThanOrEqual(0);
+      expect(_t.renewalProbability(p, rtgs)).toBeGreaterThanOrEqual(0);
     });
 
     test("should return a value less than or equal 1", () => {
-      expect(_t.teamSignPlayerProbability(p, rtgs)).toBeLessThanOrEqual(1);
+      expect(_t.renewalProbability(p, rtgs)).toBeLessThanOrEqual(1);
     });
 
     test("a player with score 70 should return 1", () => {
       setSkillsTo(pl, 70);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBe(1);
+      expect(_t.renewalProbability(pl, rtgs)).toBe(1);
     });
 
     test("a player with score 52 should return 0.42", () => {
       setSkillsTo(pl, 52);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBeCloseTo(0.42);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.42);
     });
   });
 
   describe("when the area rating is 0", () => {
     test("a player with score 70 should return 0.5", () => {
-      rtgs = { ...rtgs, goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
+      rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
       setSkillsTo(pl, 70);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBe(0.5);
+      expect(_t.renewalProbability(pl, rtgs)).toBe(0.5);
     });
 
-    test("a player with score 40 should return 0", () => {
-      setSkillsTo(pl, 40);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBe(0);
+    test("a player with score 50 should return 0", () => {
+      setSkillsTo(pl, 50);
+      expect(_t.renewalProbability(pl, rtgs)).toBe(0);
     });
   });
 
   describe("when the area rating is 1", () => {
-    test("a player with score 40 should return 0", () => {
-      rtgs = { ...rtgs, goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
-      setSkillsTo(pl, 40);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBeCloseTo(0);
+    test("a player with score 50 should return 0", () => {
+      rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
+      setSkillsTo(pl, 50);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0);
     });
 
     test("a player with score 52 should return 0.6", () => {
       setSkillsTo(pl, 52);
-      expect(_t.teamSignPlayerProbability(pl, rtgs)).toBeCloseTo(0.6);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.6);
     });
   });
 });
 
 describe("ratingPlayerByNeed()", () => {
   const pl = new _p.Player("cf", new Date(), 28);
+  let rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
   const pls = rdmPlayers(20).sort(
     (p1, p2) => _p.Player.getScore(p2) - _p.Player.getScore(p1)
   );
-  let rtgs = {
-    teamPlayers: pls,
-    goolkeeper: 0,
-    defender: 0,
-    midfielder: 0,
-    forward: 0,
-  };
 
   describe("when the area rating is 0", () => {
     test("rate the players according the score", () => {
@@ -285,7 +273,7 @@ describe("ratingPlayerByNeed()", () => {
 
   describe("when the area rating is 1", () => {
     test("a player with MAX score should return 5", () => {
-      rtgs = { ...rtgs, goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
+      rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
       setSkillsTo(pl, _p.MAX_SKILL);
       expect(_t.ratingPlayerByNeed(pl, rtgs)).toBeCloseTo(5);
     });
@@ -418,6 +406,11 @@ describe("Team.getMonthlyExpenses()", () => {
 });
 
 describe("Team.canAfford()", () => {
+  test("should return always true for MIN_WAGE", () => {
+    getContracts(st, team).forEach((c) => c && (c.wage = _t.SALARY_CAP / 5));
+    expect(_t.Team.canAfford(st, team)(_p.MIN_WAGE)).toBe(true);
+  });
+
   test("should return true when all expenses are small", () => {
     const wage = _t.MIN_SALARY_CAP / 24;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
@@ -451,25 +444,39 @@ describe("Team.canAfford()", () => {
   });
 });
 
-describe("teamShouldSign()", () => {
-  const pl = new _p.Player("cf", new Date(), 28);
-  setSkillsTo(pl, 70);
-  let rtgs = {
-    teamPlayers: rdmPlayers(30),
+describe("findBest()", () => {
+  const rgs = {
+    teamPlayers: [],
     goolkeeper: 0,
     defender: 0,
     midfielder: 0,
     forward: 0,
   };
+  const pls = rdmPlayers(30).sort(
+    (a, b) => _t.ratingPlayerByNeed(b, rgs) - _t.ratingPlayerByNeed(a, rgs)
+  );
+
+  test("should return the player with the highest rating when affordable", () => {
+    expect(_t.findBest([...pls], rgs, (a) => true)).toEqual(pls[0]);
+  });
+
+  test("should return the undefined when no one is affordable", () => {
+    expect(_t.findBest([...pls], rgs, (a) => false)).not.toBeDefined();
+  });
+});
+
+describe("Team.shouldRenew()", () => {
+  const pl = new _p.Player("cf", new Date(), 28);
+  setSkillsTo(pl, 70);
+  let rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
 
   test("should return false when there are 30 and no particular position need", () => {
-    expect(_t.teamShouldSign(pl, rtgs)).toBe(false);
+    expect(_t.Team.shouldRenew(pl, rtgs, 30)).toBe(false);
   });
 
   test("should return true for a very good player when the team has less than 30 players and need the position", () => {
-    rtgs.teamPlayers = rtgs.teamPlayers.slice(0, 10);
-    rtgs = { ...rtgs, teamPlayers: rtgs.teamPlayers.slice(0, 10), forward: 1 };
-    expect(_t.teamShouldSign(pl, rtgs)).toBe(true);
+    rtgs = { ...rtgs, forward: 1 };
+    expect(_t.Team.shouldRenew(pl, rtgs, 10)).toBe(true);
   });
 });
 
@@ -483,7 +490,7 @@ describe("Team.renewExipiringContracts()", () => {
     expect(renewed.length).toBeGreaterThan(expired.length);
   });
 
-  test("renewed players should have a mean score greater than unrenewed ones whencan afford it", () => {
+  test("renewed players should have a mean score greater than unrenewed ones when can afford it", () => {
     getContracts(st, team).forEach((c) => (c.duration = 0));
     _t.Team.renewExipiringContracts(st, team);
     const renewed = _t.Team.getNotExipiringPlayers(st, team);
@@ -494,16 +501,47 @@ describe("Team.renewExipiringContracts()", () => {
   });
 
   test("should expire most players when the team can't afford them", () => {
-    getContracts(st, team).forEach((c) => {
-      c.duration = 0;
-      c.wage = _t.MIN_SALARY_CAP / 6;
-    });
-    team.finances.revenue = _t.MIN_SALARY_CAP;
+    getContracts(st, team).forEach((c) => (c.duration = 0));
+    team.finances.revenue = _t.MIN_SALARY_CAP / 5;
     team.finances.budget = 0;
     _t.Team.renewExipiringContracts(st, team);
     expect(_t.Team.getExipiringPlayers(st, team).length).toBeGreaterThan(
       _t.Team.getNotExipiringPlayers(st, team).length
     );
+  });
+});
+
+describe("Team.needPlayer()", () => {
+  test("should return false when all positionArea are covered", () => {
+    expect(_t.Team.needPlayer(st, team)).toBe(false);
+  });
+
+  test("should return true when is short of players", () => {
+    team.playerIds = team.playerIds.slice(15, team.playerIds.length);
+    expect(_t.Team.needPlayer(st, team)).toBe(true);
+  });
+});
+
+describe("Team.signFreeAgent()", () => {
+  const plrs = rdmPlayers(30).sort(
+    (a, b) => _p.Player.getScore(b) - _p.Player.getScore(a)
+  );
+
+  test("should sign a player when can afford it and return it", () => {
+    team.finances.revenue = 10 * _t.SALARY_CAP;
+    const sign = _t.Team.signFreeAgent(st, team, plrs);
+    expect(team.playerIds).toContainEqual(sign?.id);
+  });
+
+  test("should sign one of the best score player when positionArea isn't a factor", () => {
+    team.finances.revenue = 10 * _t.SALARY_CAP;
+    const nthBest = plrs.indexOf(_t.Team.signFreeAgent(st, team, plrs)!);
+    expect(nthBest).not.toBe(-1);
+    expect(nthBest).toBeLessThan(6);
+  });
+
+  test("should return undefined when can't sign any players", () => {
+    expect(_t.Team.signFreeAgent(st, team, [])).not.toBeDefined();
   });
 });
 

@@ -2,6 +2,7 @@ import { GameStateHandle, GameState } from "./game-state";
 import { Schedule } from "./tournament-scheduler";
 import { Player } from "../character/player";
 import { Team } from "../character/team";
+import { shuffle } from "../util/generator";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september
@@ -14,13 +15,15 @@ type GameEventTypes =
   | "seasonEnd"
   | "seasonStart"
   | "updateContract"
-  | "updateFinances";
+  | "updateFinances"
+  | "signings";
 type SimRound = { round: number };
+type Signings = { days: number }; // how many consecutive days should dispatch signings events
 
 interface GameEvent {
   date: Date;
   type: GameEventTypes;
-  detail?: SimRound;
+  detail?: SimRound | Signings;
 }
 
 // when the simulation is running no other piece of code should mutate the
@@ -77,9 +80,11 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
   } else if (evt.type === "seasonStart") {
     return handleSeasonStart(gs);
   } else if (evt.type === "updateContract") {
-    return handleUpdateContracts(gs);
+    return handleUpdateContracts(gs, evt);
   } else if (evt.type === "updateFinances") {
     return handleUpdateFinances(gs);
+  } else if (evt.type === "signings") {
+    return handleSignings(gs, evt);
   }
 
   return false;
@@ -111,16 +116,23 @@ function handleSeasonStart(gs: GameState): boolean {
   return true;
 }
 
-function handleUpdateContracts(gs: GameState): boolean {
+function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
   updateContracts(gs);
   renewExipiringContracts(gs);
   removeExpiredContracts(gs);
+  enqueueSigningsEvent(gs, e.date, 30);
   return false;
 }
 
 function handleUpdateFinances(gs: GameState): boolean {
   Object.values(gs.teams).forEach((t) => Team.updateFinances(gs, t));
   enqueueUpdateFinancesEvent(gs);
+  return false;
+}
+
+function handleSignings(gs: GameState, e: GameEvent): boolean {
+  teamsSignFreeAgents(gs);
+  enqueueSigningsEvent(gs, e.date, (e.detail as Signings).days - 1);
   return false;
 }
 
@@ -175,6 +187,21 @@ function updateSkills(gs: GameState): void {
   }
 }
 
+// simulate the teams signing new players, sign only one player per team and
+// only if the team needs it
+function teamsSignFreeAgents(gs: GameState): void {
+  const teams = Object.values(gs.teams).filter((t) => Team.needPlayer(gs, t));
+  let free = Object.values(gs.players).filter((p) => p.team === "free agent");
+
+  shuffle(teams).forEach((team) => {
+    const signed = Team.signFreeAgent(gs, team, free);
+
+    if (signed) {
+      free = free.filter((p) => p !== signed);
+    }
+  });
+}
+
 // enqueues a skillUpdate type GameEvent on gs.eventQueue for the first day of next month
 function enqueueSkillUpdateEvent(gs: GameState): void {
   const d = gs.date;
@@ -201,6 +228,18 @@ function enqueueUpdateContractEvent(gs: GameState, d: Date): void {
   const date = new Date(d);
   date.setDate(date.getDate() + 1);
   GameState.enqueueGameEvent(gs, { date, type: "updateContract" });
+}
+
+// enqueues a signings type GameEvent on gs.eventQueue for the next day of the given date
+// if days is less than or equal 0 doesn't enqueue
+function enqueueSigningsEvent(gs: GameState, d: Date, days: number): void {
+  if (days <= 0) {
+    return;
+  }
+
+  const date = new Date(d);
+  date.setDate(date.getDate() + 1);
+  GameState.enqueueGameEvent(gs, { date, type: "signings", detail: { days } });
 }
 
 // enqueues a updateFinances type GameEvent on gs.eventQueue for the last day of the next month
@@ -255,9 +294,11 @@ export {
   handleSeasonStart,
   handleUpdateContracts,
   handleUpdateFinances,
+  handleSignings,
   simulateRound,
   updateSkills,
   updateContracts,
+  teamsSignFreeAgents,
   renewExipiringContracts,
   removeExpiredContracts,
   enqueueSimRoundEvent,
@@ -266,6 +307,7 @@ export {
   enqueueSeasonStartEvent,
   enqueueUpdateContractEvent,
   enqueueUpdateFinancesEvent,
+  enqueueSigningsEvent,
   storeEndedSeasonSchedule,
   newSeasonSchedule,
 };

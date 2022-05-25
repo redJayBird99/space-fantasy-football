@@ -1,20 +1,24 @@
 import * as _sm from "../../src/game-state/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 import * as _pl from "../../src/character/player";
+import * as _t from "../../src/character/team";
 import teamsJson from "../../src/asset/team-names.json";
 
 const rdmYear = 1990 + Math.floor(Math.random() * 35);
 let startD = new Date(rdmYear, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);
 let endD = new Date(rdmYear + 1, _sm.SEASON_END_MONTH, _sm.SEASON_END_DATE);
+let st = new _gs.GameState(startD);
 
 beforeEach(() => {
   startD = new Date(rdmYear, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);
   endD = new Date(rdmYear + 1, _sm.SEASON_END_MONTH, _sm.SEASON_END_DATE);
+  st = new _gs.GameState(startD);
 });
 
-describe("enqueueSimRoundEvent", () => {
-  const st = new _gs.GameState(startD);
+const getFreeAgents = (st: _gs.GameState) =>
+  Object.values(st.players).filter((p) => p.team === "free agent");
 
+describe("enqueueSimRoundEvent", () => {
   test("shouldn't enqueue any event when there isn't any schedule", () => {
     _sm.enqueueSimRoundEvent(st, 0);
     expect(st.eventQueue.length).toBe(0);
@@ -27,23 +31,23 @@ describe("enqueueSimRoundEvent", () => {
   });
 
   test("should enqueue an event to simulate the given round", () => {
-    st.schedules.now.push({ date: startD, matchIds: ["..."] });
-    _sm.enqueueSimRoundEvent(st, 1);
-    const evt = { date: startD, type: "simRound", detail: { round: 1 } };
+    st.schedules.now = [{ date: startD, matchIds: ["..."] }];
+    _sm.enqueueSimRoundEvent(st, 0);
+    const evt = { date: startD, type: "simRound", detail: { round: 0 } };
     expect(st.eventQueue).toContainEqual(evt);
   });
 });
 
 describe("newSeasonSchedule()", () => {
   const teams = teamsJson.eng.names;
-  const st = new _gs.GameState(startD);
-  _sm.newSeasonSchedule(st, teams);
 
   test("should save a new schedule for the current season", () => {
+    _sm.newSeasonSchedule(st, teams);
     expect(st.schedules.now).toBeDefined();
   });
 
   test("all scheduled rounds are on sunday", () => {
+    _sm.newSeasonSchedule(st, teams);
     Object.keys(st.schedules).forEach((key) => {
       st.schedules[key].forEach((round) => {
         expect(round.date.getDay()).toBe(0);
@@ -52,11 +56,13 @@ describe("newSeasonSchedule()", () => {
   });
 
   test("should create teams.length / 2 * 2 * (teams.length - 1) matches", () => {
+    _sm.newSeasonSchedule(st, teams);
     const count = (teams.length / 2) * 2 * (teams.length - 1);
     expect(Object.values(st.matches).length).toBe(count);
   });
 
   test("the schedule should end before the end of season", () => {
+    _sm.newSeasonSchedule(st, teams);
     const schedule = st.schedules.now;
     const last = schedule[schedule.length - 1].date;
     expect(last.getTime()).toBeLessThan(endD.getTime());
@@ -69,11 +75,8 @@ describe("newSeasonSchedule()", () => {
 });
 
 describe("simulateRound()", () => {
-  const st = new _gs.GameState(startD);
-  const teams = ["Hawks", "Foxes", " Wolfs", "Cats"];
-  _sm.newSeasonSchedule(st, teams);
-
   test("shouldn't simulate any match if the given round doesn't exist", () => {
+    _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
     _sm.simulateRound(st, st.schedules.now.length);
     st.schedules.now.forEach((r) => {
       r.matchIds.forEach((id) => {
@@ -83,6 +86,7 @@ describe("simulateRound()", () => {
   });
 
   test("should simulate all matches of the given round", () => {
+    _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
     _sm.simulateRound(st, 0);
     st.schedules.now[0].matchIds.forEach((id) => {
       expect(st.matches[id].result).toBeDefined();
@@ -91,8 +95,6 @@ describe("simulateRound()", () => {
 });
 
 describe("updateSkills()", () => {
-  const st = new _gs.GameState(startD);
-
   test("should update the growthState for young players", () => {
     const p1 = new _pl.Player("cf", startD, 18);
     const oldGrowthState = p1.growthState;
@@ -111,25 +113,21 @@ describe("updateSkills()", () => {
 });
 
 describe("updateContracts()", () => {
-  const gState = new _gs.GameState(startD);
-  _gs.initTeams(gState, ["Martians", "insert name"]);
-  const cts = Object.values(gState.contracts);
-
   test("should subtract one season from contracts", () => {
+    _gs.initTeams(st, ["Martians", "insert name"]);
+    const cts = Object.values(st.contracts);
     const oldCts = cts.map((c) => JSON.parse(JSON.stringify(c)));
-    _sm.updateContracts(gState);
+    _sm.updateContracts(st);
     oldCts.forEach((c, i) => expect(c.duration - cts[i].duration).toBe(1));
   });
 });
 
 describe("renewExipiringContracts()", () => {
-  const gState = new _gs.GameState(startD);
-  _gs.initTeams(gState, ["Martians", "insert name"]);
-  const cts = Object.values(gState.contracts);
-  cts.forEach((c) => (c.duration = 0));
-
   test("should renew most contracts", () => {
-    _sm.renewExipiringContracts(gState);
+    _gs.initTeams(st, ["Martians", "insert name"]);
+    const cts = Object.values(st.contracts);
+    cts.forEach((c) => (c.duration = 0));
+    _sm.renewExipiringContracts(st);
     const renewed = cts.filter((c) => c.duration > 0);
     const expiring = cts.filter((c) => c.duration === 0);
     expect(renewed.length).toBeLessThan(expiring.length);
@@ -166,9 +164,34 @@ describe("removeExpiredContracts()", () => {
   });
 });
 
-describe("enqueueSkillUpdateEvent()", () => {
-  const st = new _gs.GameState(startD);
+describe("teamsSignFreeAgents()", () => {
+  test("shouldn't sign new players when not needed", () => {
+    _gs.initTeams(st, ["a", "b"]);
+    const oldFree = getFreeAgents(st);
+    _sm.teamsSignFreeAgents(st);
+    expect(getFreeAgents(st).length).toBe(oldFree.length);
+  });
 
+  test("should only sign one player per team", () => {
+    _gs.initTeams(st, ["a", "b"]);
+    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    _sm.teamsSignFreeAgents(st);
+    expect(st.teams.a.playerIds.length).toBe(1);
+    expect(st.teams.b.playerIds.length).toBe(1);
+  });
+
+  test("should only sign free agents", () => {
+    _gs.initTeams(st, ["a", "b"]);
+    Object.values(st.contracts).forEach(
+      (c) => Math.random() > 0.6 && _t.Team.unsignPlayer(st, c)
+    );
+    const oldFree = getFreeAgents(st);
+    _sm.teamsSignFreeAgents(st);
+    expect(getFreeAgents(st).length).toBe(oldFree.length - 2);
+  });
+});
+
+describe("enqueueSkillUpdateEvent()", () => {
   test("should enqueue a new skillUpdate GameEvent for the firts day of next month", () => {
     _sm.enqueueSkillUpdateEvent(st);
     expect(st.eventQueue).toContainEqual({
@@ -184,7 +207,6 @@ describe("storeEndedSeasonSchedule()", () => {
       { date: startD, matchIds: [] },
       { date: endD, matchIds: [] },
     ];
-    const st = new _gs.GameState(startD);
     st.schedules.now = s;
     _sm.storeEndedSeasonSchedule(st);
     const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
@@ -193,8 +215,6 @@ describe("storeEndedSeasonSchedule()", () => {
 });
 
 describe("enqueueSeasonEndEvent()", () => {
-  const st = new _gs.GameState(startD);
-
   test("should enqueue a new seasonEnd GameEvent for june firts of next year", () => {
     _sm.enqueueSeasonEndEvent(st);
     expect(st.eventQueue).toContainEqual({ date: endD, type: "seasonEnd" });
@@ -213,9 +233,9 @@ describe("enqueueSeasonStartEvent()", () => {
 
 describe("enqueueUpdateContractsEvent()", () => {
   const st = new _gs.GameState(endD);
-  _sm.enqueueUpdateContractEvent(st, endD);
 
   test("should enqueue a updateContract gameEvent on the gameState for next day", () => {
+    _sm.enqueueUpdateContractEvent(st, endD);
     const date = new Date(endD);
     date.setDate(date.getDate() + 1);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
@@ -223,40 +243,50 @@ describe("enqueueUpdateContractsEvent()", () => {
 });
 
 describe("enqueueUpdateFinancesEvent()", () => {
-  const st = new _gs.GameState(startD);
-  _sm.enqueueUpdateFinancesEvent(st);
-
-  test("should enqueue a updateFinances gameEvent on the gameState last dey of the month", () => {
+  test("should enqueue a updateFinances gameEvent on the gameState for last day of the month", () => {
+    _sm.enqueueUpdateFinancesEvent(st);
     const date = new Date(st.date.getFullYear(), st.date.getMonth() + 2, 0);
     expect(st.eventQueue).toContainEqual({ date, type: "updateFinances" });
   });
 });
 
-describe("handleSimRound()", () => {
-  const gameState = new _gs.GameState(startD);
-  const teams = ["Hawks", "Foxes", " Wolfs", "Cats"];
-  _sm.newSeasonSchedule(gameState, teams);
-  _sm.handleSimRound(gameState, { round: 0 });
+describe("enqueueSigningsEvent()", () => {
+  test("shouldn't enqueue a signings gameEvent when days is less than 1", () => {
+    _sm.enqueueSigningsEvent(st, startD, 0);
+    expect(st.eventQueue.some((e) => e.type === "signings")).toBe(false);
+  });
 
+  test("should enqueue a signings gameEvent on the gameState for next day", () => {
+    _sm.enqueueSigningsEvent(st, startD, 1);
+    const date = new Date(startD);
+    date.setDate(startD.getDate() + 1);
+    const e = { date, type: "signings", detail: { days: 1 } };
+    expect(st.eventQueue).toContainEqual(e);
+  });
+});
+
+describe("handleSimRound()", () => {
   test("should simulate all matches of the given round", () => {
-    gameState.schedules.now[0].matchIds.forEach((id) => {
-      expect(gameState.matches[id].result).toBeDefined();
+    _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
+    _sm.handleSimRound(st, { round: 0 });
+    st.schedules.now[0].matchIds.forEach((id) => {
+      expect(st.matches[id].result).toBeDefined();
     });
   });
 
   test("should enqueue the next round for the next week", () => {
-    const date = gameState.schedules.now[1].date;
+    _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
+    _sm.handleSimRound(st, { round: 0 });
+    const date = st.schedules.now[1].date;
     const evt = { date, type: "simRound", detail: { round: 1 } };
-    expect(gameState.eventQueue).toContainEqual(evt);
+    expect(st.eventQueue).toContainEqual(evt);
   });
 });
 
 describe("handleSkillUpdate()", () => {
-  const gameState = new _gs.GameState(startD);
-
   test("should enqueue a new skillUpdate type GameEvent", () => {
-    _sm.handleSkillUpdate(gameState);
-    expect(gameState.eventQueue).toContainEqual({
+    _sm.handleSkillUpdate(st);
+    expect(st.eventQueue).toContainEqual({
       date: new Date(startD.getFullYear(), startD.getMonth() + 1, 1),
       type: "skillUpdate",
     });
@@ -265,69 +295,71 @@ describe("handleSkillUpdate()", () => {
   test("should update the growthState for players", () => {
     const p1 = new _pl.Player("cf", startD, 17);
     const oldGrowthState = p1.growthState;
-    gameState.players[p1.id] = p1;
-    _sm.handleSkillUpdate(gameState);
+    st.players[p1.id] = p1;
+    _sm.handleSkillUpdate(st);
     expect(p1.growthState).toBeGreaterThan(oldGrowthState);
   });
 });
 
 describe("handleSeasonEnd()", () => {
-  const gState = new _gs.GameState(endD);
+  const st = new _gs.GameState(endD);
   const shd = [
     { date: startD, matchIds: [] },
     { date: endD, matchIds: [] },
   ];
-  gState.schedules.now = shd;
+  st.schedules.now = shd;
 
   test("should enqueue a seasonStart GameEvent", () => {
     const date = new Date(startD);
     date.setFullYear(endD.getFullYear());
-    _sm.handleSeasonEnd(gState, { date: endD, type: "updateContract" });
-    expect(gState.eventQueue).toContainEqual({ date, type: "seasonStart" });
+    _sm.handleSeasonEnd(st, { date: endD, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "seasonStart" });
   });
 
   test("should enqueue a updateContract GameEvent", () => {
     const date = new Date(endD);
     date.setDate(endD.getDate() + 1);
-    _sm.handleSeasonEnd(gState, { date: endD, type: "updateContract" });
-    expect(gState.eventQueue).toContainEqual({ date, type: "updateContract" });
+    _sm.handleSeasonEnd(st, { date: endD, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
   });
 
-  test("should save the ended schedule on the gState.schedules", () => {
+  test("should save the ended schedule on the st.schedules", () => {
     const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
-    expect(gState.schedules[seasonYears]).toEqual(shd);
+    expect(st.schedules[seasonYears]).toEqual(shd);
   });
 });
 
 describe("handleSeasonStart()", () => {
-  const gameState = new _gs.GameState(startD);
   const teams = ["dragons", "foxes", "birds", "snakes"];
-  _gs.initTeams(gameState, teams);
-  _sm.handleSeasonStart(gameState);
 
   test("should enqueue a seasonEnd", () => {
+    _gs.initTeams(st, teams);
+    _sm.handleSeasonStart(st);
     const e = { date: endD, type: "seasonEnd" };
-    expect(gameState.eventQueue).toContainEqual(e);
+    expect(st.eventQueue).toContainEqual(e);
   });
 
   test("should create a new schedule for the season", () => {
+    _gs.initTeams(st, teams);
+    _sm.handleSeasonStart(st);
     const rounds = 2 * (teams.length - 1);
-    expect(gameState.schedules.now.length).toBe(rounds);
+    expect(st.schedules.now.length).toBe(rounds);
   });
 
   test("should enqueue a simRound 0", () => {
-    const date = gameState.schedules.now[0].date;
+    _gs.initTeams(st, teams);
+    _sm.handleSeasonStart(st);
+    const date = st.schedules.now[0].date;
     const evt = { date, type: "simRound", detail: { round: 0 } };
-    expect(gameState.eventQueue).toContainEqual(evt);
+    expect(st.eventQueue).toContainEqual(evt);
   });
 });
 
 describe("handleUpdateContracts()", () => {
-  const st = new _gs.GameState(startD);
   _gs.initTeams(st, ["a", "b", "c", "d"]);
   Object.values(st.contracts).forEach((c) => (c.duration = 1));
   const expiring = Object.values(st.contracts).filter((c) => c.duration === 1);
-  _sm.handleUpdateContracts(st);
+  _sm.handleUpdateContracts(st, { date: endD, type: "updateContract" });
   const renewed = Object.values(st.contracts);
 
   test("should renew some contracts", () => {
@@ -337,82 +369,113 @@ describe("handleUpdateContracts()", () => {
   test("should remove some contracts", () => {
     expect(expiring.length).toBeGreaterThan(renewed.length);
   });
+
+  test("should enqueue a 30 days signings GameEvent for next day", () => {
+    _sm.handleUpdateContracts(st, { date: endD, type: "updateContract" });
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 1);
+    const e: _sm.GameEvent = { date, type: "signings", detail: { days: 30 } };
+    expect(st.eventQueue).toContainEqual(e);
+  });
 });
 
 describe("handleUpdateFinances()", () => {
-  const st = new _gs.GameState(startD);
-  _gs.initTeams(st, ["a", "b", "c", "d"]);
-  const budgets = Object.values(st.teams).map((t) => t.finances.budget);
-  _sm.handleUpdateFinances(st);
-
   test("should update the team budget of every team", () => {
+    _gs.initTeams(st, ["a", "b", "c", "d"]);
+    const budgets = Object.values(st.teams).map((t) => t.finances.budget);
+    _sm.handleUpdateFinances(st);
     Object.values(st.teams).forEach((t, i) =>
       expect(t.finances.budget).not.toBe(budgets[i])
     );
   });
 
   test("should enqueue next updateFinances GameEvent", () => {
+    _sm.handleUpdateFinances(st);
     const date = new Date(st.date.getFullYear(), st.date.getMonth() + 2, 0);
     expect(st.eventQueue).toContainEqual({ date, type: "updateFinances" });
   });
 });
 
+describe("handleSignings()", () => {
+  const e = { date: endD, type: "signings", detail: { days: 20 } };
+
+  test("should enqueue a the next signings GameEvent with a day less", () => {
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 1);
+    const nextE = { date, type: "signings", detail: { days: 19 } };
+    _sm.handleSignings(st, e as _sm.GameEvent);
+    expect(st.eventQueue).toContainEqual(nextE as _sm.GameEvent);
+  });
+
+  test("should sign one new players per team when players are needed", () => {
+    _gs.initTeams(st, ["a", "b"]);
+    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    _sm.handleSignings(st, e as _sm.GameEvent);
+    expect(st.teams.a.playerIds.length).toBe(1);
+    expect(st.teams.b.playerIds.length).toBe(1);
+  });
+});
+
 describe("handleGameEvent()", () => {
-  describe("handle GameEvent simRound type", () => {
+  describe("handle simRound GameEvent", () => {
     test("should return false", () => {
-      const gameState = new _gs.GameState(startD);
       const e = { date: startD, type: "simRound", detail: { round: 0 } };
-      expect(_sm.handleGameEvent(gameState, e as _sm.GameEvent)).toBe(false);
+      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
     });
   });
 
-  describe("handle GameEvent skillUpdate type", () => {
+  describe("handle skillUpdate GameEvent", () => {
     test("should return true", () => {
       const e: _sm.GameEvent = { date: startD, type: "skillUpdate" };
-      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(true);
+      expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
-  describe("handle GameEvent seasonEnd type", () => {
+  describe("handle seasonEnd GameEvent", () => {
     test("should return true for a seasonEnd type GameEvent", () => {
       const e: _sm.GameEvent = { date: startD, type: "seasonEnd" };
-      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(true);
+      expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
-  describe("handle GameEvent seasonStart type", () => {
+  describe("handle seasonStart GameEvent", () => {
     test("should return true", () => {
       const e: _sm.GameEvent = { date: startD, type: "seasonStart" };
-      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(true);
+      expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
-  describe("handle GameEvent updateContract type", () => {
+  describe("handle updateContract GameEvent", () => {
     test("should return false", () => {
       const e: _sm.GameEvent = { date: startD, type: "updateContract" };
-      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(false);
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
-  describe("handle GameEvent updateFinances type", () => {
+  describe("handle updateFinances GameEvent", () => {
     test("should return false", () => {
       const e: _sm.GameEvent = { date: startD, type: "updateFinances" };
-      expect(_sm.handleGameEvent(new _gs.GameState(startD), e)).toBe(false);
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
+    });
+  });
+
+  describe("handle signings GameEvent", () => {
+    test("should return false", () => {
+      const e = { date: startD, type: "signings", detail: { days: 1 } };
+      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
     });
   });
 });
 
 describe("process()", () => {
-  const gameState = new _gs.GameState(startD);
-
   test("when the gamestate.eventQueue is empty doesn't mutate the gameState date", () => {
-    gameState.eventQueue = [];
-    _sm.process(gameState);
-    expect(gameState.date).toEqual(startD);
+    st.eventQueue = [];
+    _sm.process(st);
+    expect(st.date).toEqual(startD);
   });
 
   test("when the gamestate.eventQueue is empty return true", () => {
-    expect(_sm.process(gameState)).toBe(true);
+    expect(_sm.process(st)).toBe(true);
   });
 
   test("process one event at the time and pop it from the queue", () => {
@@ -420,12 +483,8 @@ describe("process()", () => {
       { date: startD, type: "simRound", detail: { round: 0 } },
       { date: startD, type: "simRound", detail: { round: 1 } },
     ];
-    gameState.eventQueue.push(...evts);
-    _sm.process(gameState);
-    expect(gameState.eventQueue).toEqual([evts[1]]);
-  });
-
-  test("should return false when processing a event of type simRound", () => {
-    expect(_sm.process(gameState)).toBe(false);
+    st.eventQueue.push(...evts);
+    _sm.process(st);
+    expect(st.eventQueue).toEqual([evts[1]]);
   });
 });

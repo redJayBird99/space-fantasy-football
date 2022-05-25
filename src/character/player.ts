@@ -16,6 +16,8 @@ const MIN_SKILL = 0;
 const END_GROWTH_AGE = 27;
 const MAX_GROWTH_RATE = 0.0025; // monthly
 const START_DEGROWTH_AGE = 32;
+const MIN_WAGE = 2_000;
+const MAX_WAGE = 32 * MIN_WAGE;
 
 type Foot = "ambidextrous" | "left" | "right";
 type FootChance = { left: number; right: number };
@@ -364,11 +366,9 @@ class Player {
       positionArea.defender.includes(p.position)
         ? 0.8
         : 1;
-    const minWage = 2_000;
-    const noise = minWage * (Math.random() - 0.5);
-    const wage = 2 ** ((Player.getScore(p) - 45) / 6) * minWage * posFactor;
+    const wage = 2 ** ((Player.getScore(p) - 50) / 5) * MIN_WAGE * posFactor;
 
-    return Math.round(Math.max(minWage, Math.min(32 * minWage, wage + noise)));
+    return Math.round(Math.max(MIN_WAGE, Math.min(MAX_WAGE, wage)));
   }
 }
 
@@ -481,6 +481,7 @@ export {
   END_GROWTH_AGE,
   MAX_GROWTH_RATE,
   START_DEGROWTH_AGE,
+  MIN_WAGE,
   Foot,
   Improvability,
   Position,
