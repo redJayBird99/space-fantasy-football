@@ -1,5 +1,10 @@
 import * as _pl from "../../src/character/player";
-import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
+import {
+  isMoreFrequent,
+  getAgeAt,
+  mean,
+  variance,
+} from "../../src/util/generator";
 
 const poss: _pl.Position[] = [
   "gk",
@@ -247,6 +252,24 @@ describe("Player.getScore()", () => {
 
   test(`should return a value less than or equal ${_pl.MAX_SKILL}`, () => {
     expect(_pl.Player.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
+  });
+
+  describe.each(poss.map((p) => [p]))("for position %s", (pos) => {
+    const sample = Array.from({ length: 500 }, () =>
+      _pl.Player.getScore(new _pl.Player(pos, new Date()))
+    );
+
+    test("should return a mean score around 60", () => {
+      const m = mean(sample);
+      expect(m).toBeGreaterThan(59);
+      expect(m).toBeLessThan(61);
+    });
+
+    test("should return a standard deviation around 6", () => {
+      const m = Math.sqrt(variance(sample));
+      expect(m).toBeGreaterThan(5);
+      expect(m).toBeLessThan(7);
+    });
   });
 });
 

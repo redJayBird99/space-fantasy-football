@@ -82,7 +82,7 @@ function createGkSkills(): Skills {
     reflexes: createSkill(gk, SKILL_NOISE),
     handling: createSkill(gk, SKILL_NOISE),
     diving: createSkill(gk, SKILL_NOISE),
-    speed: createSkill(40),
+    speed: createSkill(35),
     agility: createSkill(40),
     stamina: createSkill(50),
     defensivePositioning: createSkill(defensive, SKILL_NOISE),
@@ -133,7 +133,7 @@ function createFbSkills(): Skills {
     interception: createSkill(defensive, SKILL_NOISE),
     marking: createSkill(defensive, SKILL_NOISE),
     stamina: createSkill(70),
-    speed: createSkill(65),
+    speed: createSkill(70),
     passing: createSkill(ability, SKILL_NOISE),
     vision: createSkill(vision, SKILL_NOISE),
     technique: createSkill(ability, SKILL_NOISE),
@@ -193,7 +193,7 @@ function createEmSkills(): Skills {
     vision: createSkill(vision, SKILL_NOISE),
     technique: createSkill(ability, SKILL_NOISE),
     stamina: createSkill(70),
-    speed: createSkill(65),
+    speed: createSkill(70),
   };
 }
 
@@ -221,7 +221,7 @@ function createAmSkills(): Skills {
 function createWgSkills(): Skills {
   const defensive = createSkill(30);
   const offensive = createSkill(70);
-  const ability = createSkill(65);
+  const ability = createSkill(70);
   const technique = ability + 10 > MAX_SKILL ? ability : ability + 10;
   const vision = ability - 5 < MIN_SKILL ? ability : ability - 5;
 
@@ -230,7 +230,7 @@ function createWgSkills(): Skills {
     defensivePositioning: createSkill(defensive, SKILL_NOISE),
     interception: createSkill(defensive, SKILL_NOISE),
     marking: createSkill(defensive, SKILL_NOISE),
-    speed: createSkill(65),
+    speed: createSkill(70),
     agility: createSkill(60),
     passing: createSkill(ability, SKILL_NOISE),
     vision: createSkill(vision, SKILL_NOISE),
