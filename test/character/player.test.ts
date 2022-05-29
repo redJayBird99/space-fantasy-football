@@ -25,11 +25,8 @@ const smpPlr = new _pl.Player(samplePos, new Date());
 const atPos = poss.find((pp) => pp !== samplePos);
 
 describe("getArea()", () => {
-  test("should map every position to the area", () => {
-    poss.forEach((p) => {
-      const area = _pl.getArea(p);
-      expect(_pl.positionArea[area]).toContainEqual(p);
-    });
+  test.each(poss)("position: %s should returns the corresponding area", (p) => {
+    expect(_pl.positionArea[_pl.getArea(p)]).toContainEqual(p);
   });
 });
 
@@ -148,7 +145,7 @@ describe("getOutOfPositionMalus()", () => {
 
 describe("Player.getSkill()", () => {
   _pl.skillsApplicableMalus.forEach((sk) => {
-    test(`when is playing out of position the skill value is reduced`, () => {
+    test(`when is playing out of position the ${sk} value is reduced`, () => {
       expect(_pl.Player.getSkill(smpPlr, sk)).toBeGreaterThan(
         _pl.Player.getSkill(smpPlr, sk, atPos)
       );
@@ -254,7 +251,7 @@ describe("Player.getScore()", () => {
     expect(_pl.Player.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
   });
 
-  describe.each(poss.map((p) => [p]))("for position %s", (pos) => {
+  describe.each(poss)("for position %s", (pos) => {
     const sample = Array.from({ length: 500 }, () =>
       _pl.Player.getScore(new _pl.Player(pos, new Date()))
     );
@@ -291,20 +288,20 @@ describe("Player.wantedWage()", () => {
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
-  test("a very good player should ask for 64000", () => {
+  test("a very good player should ask for MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 90));
-    expect(_pl.Player.wantedWage(plr)).toBe(64_000);
+    expect(_pl.Player.wantedWage(plr)).toBe(_pl.MAX_WAGE);
   });
 
-  test("a bad player should ask for 2000", () => {
+  test("a bad player should ask for MIN_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 20));
-    expect(_pl.Player.wantedWage(plr)).toBe(2_000);
+    expect(_pl.Player.wantedWage(plr)).toBe(_pl.MIN_WAGE);
   });
 
-  test("a mid player should ask for between 2000 and 64000", () => {
+  test("a mid player should ask for between MIN_WAGE and MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
-    expect(_pl.Player.wantedWage(plr)).toBeGreaterThan(2_000);
-    expect(_pl.Player.wantedWage(plr)).toBeLessThan(64_000);
+    expect(_pl.Player.wantedWage(plr)).toBeGreaterThan(_pl.MIN_WAGE);
+    expect(_pl.Player.wantedWage(plr)).toBeLessThan(_pl.MAX_WAGE);
   });
 });
 

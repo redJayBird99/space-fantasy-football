@@ -194,40 +194,40 @@ describe("renewalProbability()", () => {
       expect(_t.renewalProbability(p, rtgs)).toBeLessThanOrEqual(1);
     });
 
-    test("a player with score 70 should return 1", () => {
-      setSkillsTo(pl, 70);
-      expect(_t.renewalProbability(pl, rtgs)).toBe(1);
+    test("a player with score 72 should return 1", () => {
+      setSkillsTo(pl, 72);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(1);
     });
 
-    test("a player with score 52 should return 0.42", () => {
-      setSkillsTo(pl, 52);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.42);
+    test("a player with score 60 should return 0.5", () => {
+      setSkillsTo(pl, 60);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.52);
     });
   });
 
   describe("when the area rating is 0", () => {
-    test("a player with score 70 should return 0.5", () => {
+    test("a player with score 72 should return 0.5", () => {
       rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
-      setSkillsTo(pl, 70);
-      expect(_t.renewalProbability(pl, rtgs)).toBe(0.5);
+      setSkillsTo(pl, 72);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.5);
     });
 
-    test("a player with score 50 should return 0", () => {
-      setSkillsTo(pl, 50);
+    test("a player with score 54 should return 0", () => {
+      setSkillsTo(pl, 54);
       expect(_t.renewalProbability(pl, rtgs)).toBe(0);
     });
   });
 
   describe("when the area rating is 1", () => {
-    test("a player with score 50 should return 0", () => {
+    test("a player with score 54 should return 0", () => {
       rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
-      setSkillsTo(pl, 50);
+      setSkillsTo(pl, 54);
       expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0);
     });
 
-    test("a player with score 52 should return 0.6", () => {
-      setSkillsTo(pl, 52);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.6);
+    test("a player with score 60 should return 0.7", () => {
+      setSkillsTo(pl, 60);
+      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.7);
     });
   });
 });
@@ -351,27 +351,27 @@ describe("initMoneyAmount()", () => {
 
 describe("luxuryTax()", () => {
   test("should return 0 when the payroll doesn't exceed the salary cap", () => {
-    expect(_t.luxuryTax(_t.SALARY_CAP)).toBe(0);
+    expect(_t.luxuryTax(_p.SALARY_CAP)).toBe(0);
   });
 
   test("should return a value greater 0 when the payroll exceed the salary cap", () => {
-    expect(_t.luxuryTax(_t.SALARY_CAP + 100)).toBeGreaterThan(0);
+    expect(_t.luxuryTax(_p.SALARY_CAP + 100)).toBeGreaterThan(0);
   });
 
   test("larger is the payroll excess larger is the tax factor", () => {
-    const taxFct1 = _t.luxuryTax(_t.SALARY_CAP + 10_000) / 10_000;
-    const taxFct2 = _t.luxuryTax(_t.SALARY_CAP + 50_000) / 50_000;
+    const taxFct1 = _t.luxuryTax(_p.SALARY_CAP + 10_000) / 10_000;
+    const taxFct2 = _t.luxuryTax(_p.SALARY_CAP + 50_000) / 50_000;
     expect(taxFct2).toBeGreaterThan(taxFct1);
   });
 });
 
 describe("minimumSalaryTax()", () => {
   test("should return 0 when the payroll ins't below the min salary cap", () => {
-    expect(_t.minSalaryTax(_t.MIN_SALARY_CAP)).toBe(0);
+    expect(_t.minSalaryTax(_p.MIN_SALARY_CAP)).toBe(0);
   });
 
   test("should return difference between the payroll and the min salary cap when below", () => {
-    expect(_t.minSalaryTax(_t.MIN_SALARY_CAP - 10_000)).toBe(10_000);
+    expect(_t.minSalaryTax(_p.MIN_SALARY_CAP - 10_000)).toBe(10_000);
   });
 });
 
@@ -386,7 +386,7 @@ describe("Team.getWagesAmount()", () => {
 describe("Team.getMonthlyExpenses()", () => {
   test("should return the sum of every wage with all other expenses and luxuryTax", () => {
     const { health, facilities, scouting } = team.finances;
-    const wage = _t.SALARY_CAP / 10;
+    const wage = _p.SALARY_CAP / 10;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
     const wages = wage * getContracts(st, team).length;
     expect(_t.Team.getMonthlyExpenses(st, team)).toBe(
@@ -396,7 +396,7 @@ describe("Team.getMonthlyExpenses()", () => {
 
   test("should return the sum of every wage with all other expenses and minSalaryTax", () => {
     const { health, facilities, scouting } = team.finances;
-    const wage = _t.SALARY_CAP / 100;
+    const wage = _p.MIN_WAGE;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
     const wages = wage * getContracts(st, team).length;
     expect(_t.Team.getMonthlyExpenses(st, team)).toBe(
@@ -407,40 +407,56 @@ describe("Team.getMonthlyExpenses()", () => {
 
 describe("Team.canAfford()", () => {
   test("should return always true for MIN_WAGE", () => {
-    getContracts(st, team).forEach((c) => c && (c.wage = _t.SALARY_CAP / 5));
+    getContracts(st, team).forEach((c) => c && (c.wage = _p.MAX_WAGE));
     expect(_t.Team.canAfford(st, team)(_p.MIN_WAGE)).toBe(true);
   });
 
   test("should return true when all expenses are small", () => {
-    const wage = _t.MIN_SALARY_CAP / 24;
+    const wage = _p.MIN_SALARY_CAP / 20;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
     expect(_t.Team.canAfford(st, team)(wage)).toBe(true);
   });
 
-  test("should return true when all expenses are larger than the revenue but have a large enough budget", () => {
-    const dif = team.finances.revenue - _t.Team.getMonthlyExpenses(st, team);
-    team.finances.health += dif + _t.SALARY_CAP / 20;
-    team.finances.budget = _t.SALARY_CAP;
-    expect(_t.Team.canAfford(st, team)(_t.SALARY_CAP / 100)).toBe(true);
+  test("should return true when wages are under MIN_SALARY_CAP no matter the budget", () => {
+    team.finances.budget = -100 * _p.SALARY_CAP;
+    getContracts(st, team).forEach((c) => c && (c.wage = _p.MIN_WAGE));
+    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(true);
   });
 
-  test("should return false when all expenses are larger than the revenue and the budget isn't larger enough", () => {
-    const dif = team.finances.revenue - _t.Team.getMonthlyExpenses(st, team);
-    team.finances.health += dif + _t.SALARY_CAP / 20;
+  test("should return true when all expenses are larger than the revenue but have a large enough budget", () => {
+    team.finances.health = team.finances.revenue;
+    team.finances.budget = 100 * _t.Team.getMonthlyExpenses(st, team);
+    expect(_t.Team.canAfford(st, team)(3 * _p.MIN_WAGE)).toBe(true);
+  });
+
+  test("should return false when all expenses are larger than the revenue and the budget isn't large enough", () => {
+    team.finances.health = team.finances.revenue;
     team.finances.budget = 0;
-    expect(_t.Team.canAfford(st, team)(_t.SALARY_CAP / 100)).toBe(false);
+    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(false);
   });
 
   test("should return false when a large luxury tax is applied and the budget isn't larger enough", () => {
     team.finances = {
-      revenue: _t.SALARY_CAP,
-      budget: _t.SALARY_CAP / 100,
-      health: _t.SALARY_CAP / 100,
-      scouting: _t.SALARY_CAP / 100,
-      facilities: _t.SALARY_CAP / 100,
+      revenue: _p.SALARY_CAP,
+      budget: _p.SALARY_CAP / 100,
+      health: _p.SALARY_CAP / 100,
+      scouting: _p.SALARY_CAP / 100,
+      facilities: _p.SALARY_CAP / 100,
     };
-    getContracts(st, team).forEach((c) => c && (c.wage = _t.SALARY_CAP / 15));
-    expect(_t.Team.canAfford(st, team)(_t.SALARY_CAP / 15)).toBe(false);
+    getContracts(st, team).forEach((c) => c && (c.wage = _p.SALARY_CAP / 15));
+    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(false);
+  });
+
+  test("should return true when the budget is negative but can compensate with revenue", () => {
+    team.finances = {
+      revenue: _p.SALARY_CAP,
+      budget: -_p.SALARY_CAP,
+      health: _p.SALARY_CAP / 100,
+      scouting: _p.SALARY_CAP / 100,
+      facilities: _p.SALARY_CAP / 100,
+    };
+    getContracts(st, team).forEach((c) => c && (c.wage = _p.SALARY_CAP / 30));
+    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(true);
   });
 });
 
@@ -482,7 +498,7 @@ describe("Team.shouldRenew()", () => {
 
 describe("Team.renewExipiringContracts()", () => {
   test("should renew most players when the team is short of Players and can afford it", () => {
-    team.finances.revenue = 3 * _t.SALARY_CAP;
+    team.finances.revenue = 3 * _p.SALARY_CAP;
     getContracts(st, team).forEach((c) => (c.duration = 0));
     _t.Team.renewExipiringContracts(st, team);
     const renewed = _t.Team.getNotExipiringPlayers(st, team);
@@ -491,6 +507,7 @@ describe("Team.renewExipiringContracts()", () => {
   });
 
   test("renewed players should have a mean score greater than unrenewed ones when can afford it", () => {
+    team.finances.revenue = 3 * _p.SALARY_CAP;
     getContracts(st, team).forEach((c) => (c.duration = 0));
     _t.Team.renewExipiringContracts(st, team);
     const renewed = _t.Team.getNotExipiringPlayers(st, team);
@@ -501,9 +518,13 @@ describe("Team.renewExipiringContracts()", () => {
   });
 
   test("should expire most players when the team can't afford them", () => {
-    getContracts(st, team).forEach((c) => (c.duration = 0));
-    team.finances.revenue = _t.MIN_SALARY_CAP / 5;
+    team.finances.revenue = _p.MIN_SALARY_CAP;
     team.finances.budget = 0;
+    getContracts(st, team).forEach((c) => (c.duration = 0));
+    _t.Team.getExipiringPlayers(st, team).forEach((p) => {
+      // so they ask for the max wage
+      Object.keys(p.skills).forEach((s) => (p.skills[s as _p.Skill] = 80));
+    });
     _t.Team.renewExipiringContracts(st, team);
     expect(_t.Team.getExipiringPlayers(st, team).length).toBeGreaterThan(
       _t.Team.getNotExipiringPlayers(st, team).length
@@ -528,13 +549,13 @@ describe("Team.signFreeAgent()", () => {
   );
 
   test("should sign a player when can afford it and return it", () => {
-    team.finances.revenue = 10 * _t.SALARY_CAP;
+    team.finances.revenue = 10 * _p.SALARY_CAP;
     const sign = _t.Team.signFreeAgent(st, team, plrs);
     expect(team.playerIds).toContainEqual(sign?.id);
   });
 
   test("should sign one of the best score player when positionArea isn't a factor", () => {
-    team.finances.revenue = 10 * _t.SALARY_CAP;
+    team.finances.revenue = 10 * _p.SALARY_CAP;
     const nthBest = plrs.indexOf(_t.Team.signFreeAgent(st, team, plrs)!);
     expect(nthBest).not.toBe(-1);
     expect(nthBest).toBeLessThan(6);

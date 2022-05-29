@@ -1,10 +1,14 @@
-import { Player, getArea, MAX_SKILL, MIN_WAGE } from "./player";
+import {
+  Player,
+  getArea,
+  SALARY_CAP,
+  MIN_SALARY_CAP,
+  MAX_SKILL,
+  MIN_WAGE,
+} from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
 const teams: { [team: string]: any } = teamsJson;
-
-const SALARY_CAP = 460_000;
-const MIN_SALARY_CAP = 200_000;
 
 type Affordable = (wage: number) => boolean;
 type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
@@ -17,7 +21,7 @@ const fanbaseScore: Readonly<Record<Fanbase, number>> = {
 };
 
 function initMoneyAmount(fb: Fanbase, min: number): number {
-  const extra = (1.3 * min) / 5;
+  const extra = (0.5 * min) / 5;
   return Math.round(min + fanbaseScore[fb] * extra + Math.random() * extra);
 }
 
@@ -49,11 +53,11 @@ class Team {
     this.name = name;
     this.fanbase = teams[name] ? teams[name].fanbase : "verySmall";
     this.finances = {
-      budget: initMoneyAmount(this.fanbase, 2_000_000),
-      revenue: initMoneyAmount(this.fanbase, 300_000),
-      health: initMoneyAmount(this.fanbase, 20_000),
-      scouting: initMoneyAmount(this.fanbase, 20_000),
-      facilities: initMoneyAmount(this.fanbase, 20_000),
+      budget: initMoneyAmount(this.fanbase, 10 * SALARY_CAP),
+      revenue: initMoneyAmount(this.fanbase, SALARY_CAP + SALARY_CAP / 10),
+      health: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
+      scouting: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
+      facilities: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
     };
   }
 
@@ -133,13 +137,14 @@ class Team {
     const wages = Team.getWagesAmount(gs, t); // prevents calling it for every check
 
     return (wage) => {
-      if (wage <= MIN_WAGE) {
+      if (wage <= MIN_WAGE || wages <= MIN_SALARY_CAP) {
         return true;
       }
 
       const wgs = wages + wage;
       const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
-      return budget / 12 + revenue - expenses > 0;
+      const extra = budget > 0 ? budget / 12 : budget / 60; // 12 months when positive and 5 years otherwise
+      return revenue + extra - expenses > 0;
     };
   }
 
@@ -193,7 +198,7 @@ function signContract(s: GameState, t: Team, p: Player): Contract {
     teamName: t.name,
     playerId: p.id,
     wage: Player.wantedWage(p),
-    duration: Math.floor(Math.random() * 5) + 1,
+    duration: Math.floor(Math.random() * 4) + 1,
   };
   GameState.saveContract(s, c);
 
@@ -230,14 +235,14 @@ function ratingPlayerByNeed(p: Player, need: RatingAreaByNeed): number {
 // RatingAreaByNeed raises a little the probability when a positionArea is needed
 // and halves it when there is no need for it
 // returns a value between 0 and 1
-// for players with score 70 to max return always 1 when the area is needed
-// for players with score 50 to 0 return always 0
+// for players with score 72 to max return always 1 when the area is needed
+// for players with score 54 to 0 return always 0
 function renewalProbability(p: Player, need: RatingAreaByNeed): number {
-  if (Player.getScore(p) <= 50) {
+  if (Player.getScore(p) <= 54) {
     return 0;
   }
 
-  const scoreFct = Math.min(1, Math.max(0, (Player.getScore(p) - 40) / 30));
+  const scoreFct = Math.min(1, Math.max(0, (Player.getScore(p) - 48) / 24));
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(p.position)];
   const probability = scoreFct + areaFct;
   return need[getArea(p.position)] === 0 ? probability / 2 : probability;
@@ -269,8 +274,6 @@ function findBest(ps: Player[], r: RatingAreaByNeed, fn: Affordable) {
 }
 
 export {
-  SALARY_CAP,
-  MIN_SALARY_CAP,
   Contract,
   Team,
   RatingAreaByNeed,

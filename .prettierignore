@@ -24,3 +24,4 @@ tsconfig.json
 webpack.dev.js
 .eslintrc.js
 jest.config.js
+planets.js
