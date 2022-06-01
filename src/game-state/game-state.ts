@@ -43,6 +43,11 @@ class GameState {
     return state;
   }
 
+  // rehydrate the given gameState JSON
+  static parse(gameState: string): GameState {
+    return JSON.parse(gameState, (k, v) => (k === "date" ? new Date(v) : v));
+  }
+
   // add a new game event preserving the order by date of the queue
   static enqueueGameEvent(s: GameState, e: GameEvent): void {
     // TODO: use binary search or a priority queue...
@@ -142,11 +147,19 @@ class GameStateHandle {
   }
 }
 
-// create n new players at the given position area and add to the given gameState
-// returns the players created
-function initPlayers(s: GameState, at: PositionArea, n: number): Player[] {
+/**
+  create n new players at the given position area and add them to the given gameState
+  @param genAge age generator if not given use the default
+  @returns the players created
+*/
+function createPlayers(
+  s: GameState,
+  at: PositionArea,
+  n: number,
+  genAge?: () => number
+): Player[] {
   return Array.from({ length: n }, () => {
-    const p = Player.createPlayerAt(s.date, at);
+    const p = Player.createPlayerAt(s.date, at, genAge ? genAge() : undefined);
     GameState.savePlayer(s, p);
     return p;
   });
@@ -161,10 +174,10 @@ function initTeams(s: GameState, names: string[]): Team[] {
     const signPlayers = (plrs: Player[]) =>
       plrs.forEach((p) => Team.signPlayer(s, team, p));
 
-    signPlayers(pickBest(initPlayers(s, "goolkeeper", 4), 3));
-    signPlayers(pickBest(initPlayers(s, "defender", 10), 8));
-    signPlayers(pickBest(initPlayers(s, "midfielder", 10), 8));
-    signPlayers(pickBest(initPlayers(s, "forward", 8), 6));
+    signPlayers(pickBest(createPlayers(s, "goolkeeper", 4), 3));
+    signPlayers(pickBest(createPlayers(s, "defender", 10), 8));
+    signPlayers(pickBest(createPlayers(s, "midfielder", 10), 8));
+    signPlayers(pickBest(createPlayers(s, "forward", 8), 6));
     return team;
   });
 }
@@ -185,7 +198,7 @@ export {
   GameState,
   GameStateObserver,
   GameStateHandle,
-  initPlayers,
+  createPlayers,
   initTeams,
   initGameEvents,
 };

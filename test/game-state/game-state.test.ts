@@ -62,23 +62,30 @@ describe("GameState.saveTeam()", () => {
   });
 });
 
-describe("initPlayers()", () => {
+describe("createPlayers()", () => {
   const areas = Object.keys(_pl.positionArea) as _pl.PositionArea[];
   const n = Math.floor(Math.random() * 20);
   const at = areas[Math.floor(Math.random() * areas.length)];
 
   test("should return n players", () => {
-    expect(_gs.initPlayers(st, at, n).length).toBe(n);
+    expect(_gs.createPlayers(st, at, n).length).toBe(n);
   });
 
   test("should return n unique players", () => {
-    const plrs = _gs.initPlayers(st, at, n);
+    const plrs = _gs.createPlayers(st, at, n);
     expect(plrs.length).toBe(new Set(plrs).size);
   });
 
   test("all new players created are stored in the gameState", () => {
-    _gs.initPlayers(st, at, n).forEach((player) => {
+    _gs.createPlayers(st, at, n).forEach((player) => {
       expect(st.players[player.id]).toEqual(player);
+    });
+  });
+
+  test("when a genAge is given should be used to set the players age", () => {
+    const gen = () => 20;
+    _gs.createPlayers(st, at, n, gen).forEach((player) => {
+      expect(_pl.Player.age(player, st.date)).toBe(20);
     });
   });
 });

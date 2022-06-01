@@ -31,7 +31,11 @@ describe("getArea()", () => {
 });
 
 describe("createAge()", () => {
-  const ages = Array.from({ length: 100 }, () => _pl.createAge());
+  const ages = Array.from({ length: 1_000 }, () => _pl.createAge());
+  const teens = ages.filter((a) => a >= _pl.MIN_AGE && a < 20);
+  const age20s = ages.filter((a) => a >= 20 && a < 29);
+  const age30s = ages.filter((a) => a >= 30 && a < 40);
+  const dif = 0.5;
 
   test("should return numbers greater or equal than MIN_AGE", () => {
     ages.forEach((age) => expect(age).toBeGreaterThanOrEqual(_pl.MIN_AGE));
@@ -41,9 +45,47 @@ describe("createAge()", () => {
     ages.forEach((age) => expect(age).toBeLessThanOrEqual(_pl.MAX_AGE));
   });
 
-  xtest("teens should be less frequent of any 20s", () => {});
+  test("loosely around 13% sould be teens", () => {
+    expect(teens.length / ages.length).toBeGreaterThan(0.13 - dif);
+    expect(teens.length / ages.length).toBeLessThan(0.13 + dif);
+  });
 
-  xtest("30s should be less frequent of any 20s", () => {});
+  test("loosely around 58% sould be 20s", () => {
+    expect(age20s.length / ages.length).toBeGreaterThan(0.58 - dif);
+    expect(age20s.length / ages.length).toBeLessThan(0.58 + dif);
+  });
+
+  test("loosely around 22% sould be 30s", () => {
+    expect(age30s.length / ages.length).toBeGreaterThan(0.22 - dif);
+    expect(age30s.length / ages.length).toBeLessThan(0.22 + dif);
+  });
+});
+
+describe("Player.retire()", () => {
+  const date = new Date();
+
+  test("under 30 shouldn't return true", () => {
+    const rdmAge = () =>
+      _pl.MIN_AGE - Math.floor((30 - _pl.MIN_AGE) * Math.random());
+    Array.from(
+      { length: 25 },
+      () => new _pl.Player("cm", date, rdmAge())
+    ).forEach((p) => expect(_pl.Player.retire(p, date)).toBe(false));
+  });
+
+  test("over 30 should sometimes return true", () => {
+    const rdmAge = () => 30 + Math.floor(10 * Math.random());
+    const retired = Array.from(
+      { length: 25 },
+      () => new _pl.Player("cm", date, rdmAge())
+    ).filter((p) => _pl.Player.retire(p, date));
+    expect(retired.length).toBeGreaterThan(0);
+  });
+
+  test("should return true when player is MAX_AGE", () => {
+    const p = new _pl.Player("cm", date, _pl.MAX_AGE);
+    expect(_pl.Player.retire(p, date)).toBe(true);
+  });
 });
 
 describe("getImprovability()", () => {
@@ -251,23 +293,26 @@ describe("Player.getScore()", () => {
     expect(_pl.Player.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
   });
 
-  describe.each(poss)("for position %s", (pos) => {
-    const sample = Array.from({ length: 500 }, () =>
-      _pl.Player.getScore(new _pl.Player(pos, new Date()))
-    );
+  describe.each(poss)(
+    "for a 28 years old (full grown) player at position %s ",
+    (pos) => {
+      const sample = Array.from({ length: 500 }, () =>
+        _pl.Player.getScore(new _pl.Player(pos, new Date(), 28))
+      );
 
-    test("should return a mean score around 60", () => {
-      const m = mean(sample);
-      expect(m).toBeGreaterThan(59);
-      expect(m).toBeLessThan(61);
-    });
+      test("should return a mean score loosely around 64.5", () => {
+        const m = mean(sample);
+        expect(m).toBeGreaterThan(63.5);
+        expect(m).toBeLessThan(65.5);
+      });
 
-    test("should return a standard deviation around 6", () => {
-      const m = Math.sqrt(variance(sample));
-      expect(m).toBeGreaterThan(5);
-      expect(m).toBeLessThan(7);
-    });
-  });
+      test("should return a standard deviation loosely around 5", () => {
+        const m = Math.sqrt(variance(sample));
+        expect(m).toBeGreaterThan(4);
+        expect(m).toBeLessThan(6);
+      });
+    }
+  );
 });
 
 describe("Player.getHeightInCm()", () => {

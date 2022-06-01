@@ -1,6 +1,6 @@
-import { GameStateHandle, GameState } from "./game-state";
+import { GameStateHandle, GameState, createPlayers } from "./game-state";
 import { Schedule } from "./tournament-scheduler";
-import { Player } from "../character/player";
+import { Player, MIN_AGE } from "../character/player";
 import { Team } from "../character/team";
 import { shuffle } from "../util/generator";
 
@@ -16,7 +16,9 @@ type GameEventTypes =
   | "seasonStart"
   | "updateContract"
   | "updateFinances"
-  | "signings";
+  | "signings"
+  | "newPlayers"
+  | "retiring";
 type SimRound = { round: number };
 type Signings = { days: number }; // how many consecutive days should dispatch signings events
 
@@ -85,6 +87,10 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleUpdateFinances(gs);
   } else if (evt.type === "signings") {
     return handleSignings(gs, evt);
+  } else if (evt.type === "retiring") {
+    return handleRetiring(gs);
+  } else if (evt.type === "newPlayers") {
+    return handleNewPlayers(gs);
   }
 
   return false;
@@ -105,7 +111,9 @@ function handleSkillUpdate(gs: GameState): boolean {
 function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   storeEndedSeasonSchedule(gs);
   enqueueSeasonStartEvent(gs);
-  enqueueUpdateContractEvent(gs, e.date);
+  enqueueNextDayEvent(gs, e.date, "retiring");
+  enqueueNextDayEvent(gs, e.date, "newPlayers");
+  enqueueNextDayEvent(gs, e.date, "updateContract");
   return true;
 }
 
@@ -134,6 +142,30 @@ function handleSignings(gs: GameState, e: GameEvent): boolean {
   teamsSignFreeAgents(gs);
   enqueueSigningsEvent(gs, e.date, (e.detail as Signings).days - 1);
   return false;
+}
+
+// retires some old players and remove it from the game
+// TODO: save them on the indexedDb
+function handleRetiring(gs: GameState): boolean {
+  Object.values(gs.players)
+    .filter((p) => Player.retire(p, gs.date))
+    .forEach((p) => {
+      const c = GameState.getContract(gs, p);
+      c && Team.unsignPlayer(gs, c);
+      delete gs.players[p.id];
+    });
+
+  return true;
+}
+
+// add 52 new teens Players in every position area to the game
+function handleNewPlayers(gs: GameState): boolean {
+  const genTeens = () => MIN_AGE + Math.floor(Math.random() * (20 - MIN_AGE));
+  createPlayers(gs, "goolkeeper", 6, genTeens);
+  createPlayers(gs, "defender", 17, genTeens);
+  createPlayers(gs, "midfielder", 17, genTeens);
+  createPlayers(gs, "forward", 12, genTeens);
+  return true;
 }
 
 function updateContracts(gs: GameState): void {
@@ -223,11 +255,11 @@ function enqueueSeasonStartEvent(gs: GameState): void {
   GameState.enqueueGameEvent(gs, { date, type: "seasonStart" });
 }
 
-// enqueues a updateContract type GameEvent on gs.eventQueue for the next day of the given date
-function enqueueUpdateContractEvent(gs: GameState, d: Date): void {
+// enqueues given type GameEvent on gs.eventQueue for the next day of the given date
+function enqueueNextDayEvent(gs: GameState, d: Date, t: GameEventTypes): void {
   const date = new Date(d);
   date.setDate(date.getDate() + 1);
-  GameState.enqueueGameEvent(gs, { date, type: "updateContract" });
+  GameState.enqueueGameEvent(gs, { date, type: t });
 }
 
 // enqueues a signings type GameEvent on gs.eventQueue for the next day of the given date
@@ -295,6 +327,8 @@ export {
   handleUpdateContracts,
   handleUpdateFinances,
   handleSignings,
+  handleRetiring,
+  handleNewPlayers,
   simulateRound,
   updateSkills,
   updateContracts,
@@ -305,9 +339,9 @@ export {
   enqueueSkillUpdateEvent,
   enqueueSeasonEndEvent,
   enqueueSeasonStartEvent,
-  enqueueUpdateContractEvent,
   enqueueUpdateFinancesEvent,
   enqueueSigningsEvent,
+  enqueueNextDayEvent,
   storeEndedSeasonSchedule,
   newSeasonSchedule,
 };

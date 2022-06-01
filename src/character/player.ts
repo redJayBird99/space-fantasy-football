@@ -69,15 +69,23 @@ function getArea(p: Position): PositionArea {
 
 // returns a random number between MIN_AGE and MAX_AGE with end points less frequent
 function createAge(): number {
-  // TOFIX: older an younger player shoul be less frequent
-  return Math.floor(Math.random() * (MAX_AGE - MIN_AGE + 1)) + MIN_AGE;
+  const p = randomGauss();
+
+  if (p < 0.34) {
+    const to19 = 19 - MIN_AGE + 1;
+    return MIN_AGE - 1 + Math.ceil(to19 * Math.sqrt(Math.random()));
+  } else if (p > 0.62) {
+    return 30 + Math.floor(((p - 0.62) / 0.38) * (MAX_AGE - 30));
+  }
+
+  return 20 + Math.floor(10 * Math.random());
 }
 
 // return a value between 0 and 1 depending on the age of the player
 // for players younger than 27 usually the value is less than 1, fro players
 // older than 32 the valueis less than 1
 function createGrowthState(p: Player, now: Date): number {
-  const age = getAgeAt(p.birthday, now);
+  const age = Player.age(p, now);
 
   if (age < END_GROWTH_AGE) {
     const annualGrowthRate = 12 * p.growthRate;
@@ -284,6 +292,10 @@ class Player {
     this.improvability = getImprovability(this.growthRate);
   }
 
+  static age(p: Player, now: Date): number {
+    return getAgeAt(p.birthday, now);
+  }
+
   // get the skill player value taking in cosideration all modifiers like
   // out of position malus and growthState
   static getSkill(p: Player, s: Skill, at = p.position): number {
@@ -305,7 +317,7 @@ class Player {
 
   // get a player at the given PositionArea randomly, some position is more
   // frequent than other cm for midfielder, cf for forward and cb for defender
-  static createPlayerAt(now: Date, at: PositionArea): Player {
+  static createPlayerAt(now: Date, at: PositionArea, age?: number): Player {
     const picks = JSON.parse(JSON.stringify(positionArea)); // in case of performance extract this object
     // raise up the probability to pick the position
     picks.defender.push("cb");
@@ -313,7 +325,7 @@ class Player {
     picks.forward.push("cf");
 
     const pick = Math.floor(Math.random() * picks[at].length);
-    return new Player(picks[at][pick], now);
+    return new Player(picks[at][pick], now, age ?? undefined);
   }
 
   /**
@@ -341,7 +353,7 @@ class Player {
   // update the growthState if the player can still grow, it is meant to be used
   // every end of the month
   static applyMonthlyGrowth(p: Player, now: Date): void {
-    const age = getAgeAt(p.birthday, now);
+    const age = Player.age(p, now);
     const growth = age < END_GROWTH_AGE ? p.growthRate : 0;
     p.growthState = Math.min(1, p.growthState + growth);
   }
@@ -349,7 +361,7 @@ class Player {
   // update the growthState shrinking its value (min 0.5) when the player is old Enough,
   // it is meant to be used every end of the month
   static applyMonthlyDegrowth(p: Player, now: Date): void {
-    if (getAgeAt(p.birthday, now) >= START_DEGROWTH_AGE) {
+    if (Player.age(p, now) >= START_DEGROWTH_AGE) {
       const degrowth = randomGauss() * MAX_GROWTH_RATE;
       p.growthState = Math.max(0.5, p.growthState - degrowth);
     }
@@ -371,6 +383,13 @@ class Player {
     const wage = 2 ** ((Player.getScore(p) - 55) / 5) * MIN_WAGE * posFactor;
 
     return Math.round(Math.max(MIN_WAGE, Math.min(MAX_WAGE, wage)));
+  }
+
+  // returns true when the player wants to retire, a MAX_AGE player return always true
+  // probability is higher for older players
+  static retire(p: Player, now: Date): boolean {
+    const a = Player.age(p, now);
+    return a > 29 && (a >= MAX_AGE || (a - 30) / 25 + 0.2 >= Math.random());
   }
 }
 

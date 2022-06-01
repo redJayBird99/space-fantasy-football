@@ -231,11 +231,11 @@ describe("enqueueSeasonStartEvent()", () => {
   });
 });
 
-describe("enqueueUpdateContractsEvent()", () => {
+describe("enqueueNextDayEvent()", () => {
   const st = new _gs.GameState(endD);
 
-  test("should enqueue a updateContract gameEvent on the gameState for next day", () => {
-    _sm.enqueueUpdateContractEvent(st, endD);
+  test("should enqueue a gameEvent on the gameState for next day", () => {
+    _sm.enqueueNextDayEvent(st, endD, "updateContract");
     const date = new Date(endD);
     date.setDate(date.getDate() + 1);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
@@ -312,15 +312,26 @@ describe("handleSeasonEnd()", () => {
   test("should enqueue a seasonStart GameEvent", () => {
     const date = new Date(startD);
     date.setFullYear(endD.getFullYear());
-    _sm.handleSeasonEnd(st, { date: endD, type: "updateContract" });
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
     expect(st.eventQueue).toContainEqual({ date, type: "seasonStart" });
   });
 
+  const date = new Date(endD);
+  date.setDate(endD.getDate() + 1);
+
   test("should enqueue a updateContract GameEvent", () => {
-    const date = new Date(endD);
-    date.setDate(endD.getDate() + 1);
-    _sm.handleSeasonEnd(st, { date: endD, type: "updateContract" });
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
     expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+  });
+
+  test("should enqueue a retiring GameEvent", () => {
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
+    expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
+  });
+
+  test("should enqueue a newPlayers GameEvent", () => {
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
+    expect(st.eventQueue).toContainEqual({ date, type: "newPlayers" });
   });
 
   test("should save the ended schedule on the st.schedules", () => {
@@ -352,6 +363,38 @@ describe("handleSeasonStart()", () => {
     const date = st.schedules.now[0].date;
     const evt = { date, type: "simRound", detail: { round: 0 } };
     expect(st.eventQueue).toContainEqual(evt);
+  });
+});
+
+describe("handleRetiring()", () => {
+  _gs.initTeams(st, ["a", "b", "c", "d"]);
+  const allPlrs = Object.values(st.players);
+  _sm.handleRetiring(st);
+  const retirees = allPlrs.filter((p) => !st.players[p.id]);
+
+  test("should remove some players from the game", () => {
+    expect(retirees.length).toBeGreaterThan(0);
+  });
+
+  test("should remove all retirees contracs", () => {
+    retirees.forEach((p) =>
+      expect(_gs.GameState.getContract(st, p)).not.toBeDefined()
+    );
+  });
+});
+
+describe("handleNewPlayers()", () => {
+  test("should add 52 new Players to the game", () => {
+    _sm.handleNewPlayers(st);
+    expect(Object.values(st.players).length).toBe(52);
+  });
+
+  test("all players generated should be teens", () => {
+    _sm.handleNewPlayers(st);
+    Object.values(st.players).forEach((p) => {
+      expect(_pl.Player.age(p, st.date)).toBeGreaterThanOrEqual(_pl.MIN_AGE);
+      expect(_pl.Player.age(p, st.date)).toBeLessThan(20);
+    });
   });
 });
 
@@ -486,5 +529,60 @@ describe("process()", () => {
     st.eventQueue.push(...evts);
     _sm.process(st);
     expect(st.eventQueue).toEqual([evts[1]]);
+  });
+
+  // TODO: speed up
+  describe("simulate 10 seasons", () => {
+    const st = _gs.GameState.init();
+
+    for (let i = 0; i < 10; i++) {
+      const end = new Date(
+        st.date.getFullYear() + 1,
+        _sm.SEASON_START_MONTH,
+        _sm.SEASON_START_DATE
+      );
+
+      while (st.date.getTime() <= end.getTime()) {
+        _sm.process(st);
+      }
+
+      describe(`at season ${i} the gameState`, () => {
+        // we need to clone every seasons game state so tests can capture it,
+        // otherwise the tests whould only run with last season gameState mutation
+        const cp = _gs.GameState.parse(JSON.stringify(st));
+        const players = Object.values(cp.players);
+        const teams = Object.values(cp.teams);
+
+        test(`should have at least teams * 30 Players`, () => {
+          expect(players.length).toBeGreaterThan(teams.length * 30);
+        });
+
+        test(`should have at most teams * 50 Players`, () => {
+          expect(players.length).toBeLessThan(teams.length * 50);
+        });
+
+        test(`should have under age 20 players`, () => {
+          expect(players.some((p) => _pl.Player.age(p, cp.date) < 20)).toBe(
+            true
+          );
+        });
+
+        test(`should have under age 30 players`, () => {
+          expect(players.some((p) => _pl.Player.age(p, cp.date) < 30)).toBe(
+            true
+          );
+        });
+
+        test("every team should have at least 21 players", () => {
+          teams.forEach((t) => expect(t.playerIds.length).toBeGreaterThan(20));
+        });
+
+        test("teams should never have a budget less than -SALARY_CAP * 50", () => {
+          teams.forEach((t) =>
+            expect(t.finances.budget).toBeGreaterThan(-_pl.SALARY_CAP * 50)
+          );
+        });
+      });
+    }
   });
 });
