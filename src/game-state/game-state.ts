@@ -100,6 +100,12 @@ class GameState {
       });
     });
   }
+
+  static getSeasonMatches(s: GameState, key: string): Match[] {
+    return s.schedules[key]
+      .map((round) => round.matchIds.map((id) => s.matches[id]))
+      .flat();
+  }
 }
 
 interface GameStateObserver {
