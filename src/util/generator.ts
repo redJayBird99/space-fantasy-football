@@ -81,7 +81,7 @@ export function randomSign(n: number): number {
   return Math.random() > 0.5 ? -n : n;
 }
 
-function swap<T>(arr: T[], i: number, j: number): void {
+export function swap<T>(arr: T[], i: number, j: number): void {
   const t = arr[i];
   arr[i] = arr[j];
   arr[j] = t;

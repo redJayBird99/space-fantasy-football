@@ -12,6 +12,7 @@ const teams: { [team: string]: any } = teamsJson;
 
 type Affordable = (wage: number) => boolean;
 type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
+
 const fanbaseScore: Readonly<Record<Fanbase, number>> = {
   huge: 4,
   big: 3,
@@ -48,6 +49,7 @@ class Team {
   playerIds: string[] = [];
   finances: Finances;
   fanbase: Fanbase;
+  appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
 
   constructor(name: string) {
     this.name = name;
@@ -188,6 +190,18 @@ class Team {
   // monthly update the budget subtracting expenses and adding revenues
   static updateFinances(gs: GameState, t: Team): void {
     t.finances.budget += t.finances.revenue - Team.getMonthlyExpenses(gs, t);
+  }
+
+  // returns a team appeal score between 0 and 5
+  // 3 points for the position in ranking ( the order of the array is the ranking )
+  // 1 point for the fanbase size
+  // 1 point for the position in facilityRanking ( the order of the array is the ranking )
+  static calcAppeal(t: Team, ranking: Team[], facilityRanking: Team[]): number {
+    const fanPoints = fanbaseScore[t.fanbase] / fanbaseScore.huge;
+    const rankNth = ranking.indexOf(t);
+    const facilityNth = facilityRanking.indexOf(t);
+    const l = ranking.length - 1;
+    return fanPoints + 3 * ((l - rankNth) / l) + (l - facilityNth) / l;
   }
 }
 

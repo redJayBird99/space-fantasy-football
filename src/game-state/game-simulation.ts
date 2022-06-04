@@ -1,5 +1,6 @@
 import { GameStateHandle, GameState, createPlayers } from "./game-state";
 import { Schedule } from "./tournament-scheduler";
+import { LeagueTable } from "./league-table";
 import { Player, MIN_AGE } from "../character/player";
 import { Team } from "../character/team";
 import { shuffle } from "../util/generator";
@@ -111,6 +112,7 @@ function handleSkillUpdate(gs: GameState): boolean {
 function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   storeEndedSeasonSchedule(gs);
   enqueueSeasonStartEvent(gs);
+  updateTeamsAppeal(gs);
   enqueueNextDayEvent(gs, e.date, "retiring");
   enqueueNextDayEvent(gs, e.date, "newPlayers");
   enqueueNextDayEvent(gs, e.date, "updateContract");
@@ -191,6 +193,21 @@ function removeExpiredContracts(gs: GameState): void {
 // every results is saved on the gameState
 function simulateRound(gs: GameState, round: number): void {
   gs.schedules.now?.[round]?.matchIds.forEach((id) => simulateMatch(gs, id));
+}
+
+// change the teams appeal according to the season results (and maybe some facilities change).
+// the max magnitude change is of 1 point (the parameter should be stable over time)
+function updateTeamsAppeal(gs: GameState): void {
+  const ranking = new LeagueTable(GameState.getSeasonMatches(gs, "now"))
+    .getSortedTable()
+    .map((e) => gs.teams[e.teamName]);
+  const facilities = Object.values(gs.teams).sort(
+    (a, b) => b.finances.facilities - a.finances.facilities
+  );
+  ranking.forEach((t) => {
+    const newAppeal = Team.calcAppeal(t, ranking, facilities);
+    t.appeal += Math.max(-1, Math.min(1, newAppeal - t.appeal));
+  });
 }
 
 // enqueue in the gameState a new gameEvent for the given current season round if it exists
@@ -333,6 +350,7 @@ export {
   updateSkills,
   updateContracts,
   teamsSignFreeAgents,
+  updateTeamsAppeal,
   renewExipiringContracts,
   removeExpiredContracts,
   enqueueSimRoundEvent,

@@ -33,14 +33,15 @@ class GameState {
 
   // init a new game state filling it with players, team and all the necessary for a new game
   static init(): GameState {
-    const state = new GameState(
+    const s = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
     const teamNames = Object.keys(teamsJson);
-    newSeasonSchedule(state, teamNames);
-    initTeams(state, teamNames);
-    initGameEvents(state);
-    return state;
+    newSeasonSchedule(s, teamNames);
+    initTeams(s, teamNames);
+    initGameEvents(s);
+    initTeamsAppeal(s);
+    return s;
   }
 
   // rehydrate the given gameState JSON
@@ -102,9 +103,11 @@ class GameState {
   }
 
   static getSeasonMatches(s: GameState, key: string): Match[] {
-    return s.schedules[key]
-      .map((round) => round.matchIds.map((id) => s.matches[id]))
-      .flat();
+    return (
+      s.schedules[key]
+        ?.map((round) => round.matchIds.map((id) => s.matches[id]))
+        .flat() ?? []
+    );
   }
 }
 
@@ -200,6 +203,18 @@ function initGameEvents(gs: GameState): void {
   });
 }
 
+// set the teams appeal according wages ranking (large payroll == good team)
+// and facilities expenses etc
+function initTeamsAppeal(s: GameState): void {
+  const ranking = Object.values(s.teams).sort(
+    (a, b) => Team.getWagesAmount(s, b) - Team.getWagesAmount(s, a)
+  );
+  const facilities = Object.values(s.teams).sort(
+    (a, b) => b.finances.facilities - a.finances.facilities
+  );
+  ranking.forEach((t) => (t.appeal = Team.calcAppeal(t, ranking, facilities)));
+}
+
 export {
   GameState,
   GameStateObserver,
@@ -207,4 +222,5 @@ export {
   createPlayers,
   initTeams,
   initGameEvents,
+  initTeamsAppeal,
 };

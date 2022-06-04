@@ -146,6 +146,34 @@ describe("initTeams()", () => {
   });
 });
 
+describe("initTeamsAppeal()", () => {
+  test("should set a new appeal value for every team", () => {
+    // rarel some value don't change it is part of the randomness nature
+    _gs.initTeams(st, teamNames);
+    const old: _tm.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
+    _gs.initTeamsAppeal(st);
+    old.forEach((t) => expect(t.appeal).not.toBe(st.teams[t.name].appeal));
+  });
+
+  test("the team with the highest payroll should have at least 3 points", () => {
+    _gs.initTeams(st, teamNames);
+    const first = Object.values(st.teams).reduce((a, b) =>
+      _tm.Team.getWagesAmount(st, a) >= _tm.Team.getWagesAmount(st, b) ? a : b
+    );
+    _gs.initTeamsAppeal(st);
+    expect(st.teams[first.name].appeal).toBeGreaterThanOrEqual(3);
+  });
+
+  test("the team with the lowest payroll should have at most 2 points", () => {
+    _gs.initTeams(st, teamNames);
+    const last = Object.values(st.teams).reduce((a, b) =>
+      _tm.Team.getWagesAmount(st, a) <= _tm.Team.getWagesAmount(st, b) ? a : b
+    );
+    _gs.initTeamsAppeal(st);
+    expect(st.teams[last.name].appeal).toBeLessThanOrEqual(2);
+  });
+});
+
 describe("GameState.saveSchedule()", () => {
   const date = new Date(2010, 8, 1);
   const schedule = new Schedule(teamsJson.eng.names, date);

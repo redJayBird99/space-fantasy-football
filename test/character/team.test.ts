@@ -1,7 +1,7 @@
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
-import { mean } from "../../src/util/generator";
+import { mean, swap } from "../../src/util/generator";
 
 const areas = Object.keys(_p.positionArea) as _p.PositionArea[];
 const createPlayers = (area: _p.PositionArea, n: number) =>
@@ -573,5 +573,53 @@ describe("Team.updateFinances()", () => {
     expect(st.teams.a.finances.budget).toBe(
       budget + revenue - _t.Team.getMonthlyExpenses(st, st.teams.a)
     );
+  });
+});
+
+describe("Team.calcAppeal()", () => {
+  const st = _gs.GameState.init();
+  const teams = Object.values(st.teams);
+  const first = teams[0];
+  const last = teams[teams.length - 1];
+
+  test("should return a value greater than or equal to 0", () => {
+    teams.forEach((t) =>
+      expect(_t.Team.calcAppeal(t, teams, teams)).toBeGreaterThanOrEqual(0)
+    );
+  });
+
+  test("should return a value less than or equal to 5", () => {
+    teams.forEach((t) =>
+      expect(_t.Team.calcAppeal(t, teams, teams)).toBeLessThanOrEqual(5)
+    );
+  });
+
+  test("should return 5 points when rank first in every metric", () => {
+    first.fanbase = "huge";
+    expect(_t.Team.calcAppeal(first, teams, teams)).toBeCloseTo(5);
+  });
+
+  test("should return 0 points when rank last in every metric", () => {
+    last.fanbase = "verySmall";
+    expect(_t.Team.calcAppeal(last, teams, teams)).toBeCloseTo(0);
+  });
+
+  test("fanbase should worth 1 point at most", () => {
+    last.fanbase = "huge";
+    expect(_t.Team.calcAppeal(last, teams, teams)).toBeCloseTo(1);
+  });
+
+  test("facilityRanking should worth 1 point at most", () => {
+    last.fanbase = "verySmall";
+    const cp = teams.slice();
+    swap(cp, 0, cp.length - 1);
+    expect(_t.Team.calcAppeal(last, teams, cp)).toBeCloseTo(1);
+  });
+
+  test("ranking should worth 3 point at most", () => {
+    last.fanbase = "verySmall";
+    const cp = teams.slice();
+    swap(cp, 0, cp.length - 1);
+    expect(_t.Team.calcAppeal(last, cp, teams)).toBeCloseTo(3);
   });
 });

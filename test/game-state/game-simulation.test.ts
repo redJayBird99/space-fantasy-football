@@ -1,5 +1,6 @@
 import * as _sm from "../../src/game-state/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
+import { LeagueTable } from "../../src/game-state/league-table";
 import * as _pl from "../../src/character/player";
 import * as _t from "../../src/character/team";
 import teamsJson from "../../src/asset/team-names.json";
@@ -188,6 +189,43 @@ describe("teamsSignFreeAgents()", () => {
     const oldFree = getFreeAgents(st);
     _sm.teamsSignFreeAgents(st);
     expect(getFreeAgents(st).length).toBe(oldFree.length - 2);
+  });
+});
+
+describe("updateTeamsAppeal()", () => {
+  const st = _gs.GameState.init();
+  const old: _t.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
+  const table = new LeagueTable(_gs.GameState.getSeasonMatches(st, "now"))
+    .getSortedTable()
+    .map((e) => e.teamName);
+  _sm.updateTeamsAppeal(st);
+
+  test("should update most teams appeal", () => {
+    // it is possible that some team appeal didn't change
+    const changed = old.reduce(
+      (a, t) => (t.appeal !== st.teams[t.name].appeal ? a + 1 : a),
+      0
+    );
+    expect(changed).toBeGreaterThan(old.length / 2);
+  });
+
+  test("the change magnitude should be less than or equal 1", () => {
+    old.forEach((t) =>
+      expect(Math.abs(t.appeal - st.teams[t.name].appeal)).toBeLessThan(1.001)
+    );
+  });
+
+  test("the last in the league should worsen its appeal", () => {
+    // note when the position don't change the appeal don't change
+    const last = table[table.length - 1];
+    const oldAppeal = old.find((t) => t.name === last)?.appeal;
+    expect(oldAppeal).toBeGreaterThan(st.teams[last].appeal);
+  });
+
+  test("the first in the league should improve its appeal", () => {
+    // note when the position don't change the appeal don't change
+    const oldAppeal = old.find((t) => t.name === table[0])?.appeal;
+    expect(oldAppeal).toBeLessThan(st.teams[table[0]].appeal);
   });
 });
 

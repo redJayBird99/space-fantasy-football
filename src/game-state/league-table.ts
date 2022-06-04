@@ -88,8 +88,4 @@ function processResult(r: { home: number; away: number }): EntryResults {
   return { home: draw, away: draw };
 }
 
-export {
-  LeagueTable,
-  Entry,
-  processResult
-}
+export { LeagueTable, Entry, processResult };
