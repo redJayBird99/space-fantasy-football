@@ -8,6 +8,7 @@ import {
 } from "../util/generator";
 import { mod } from "../util/math";
 import { createSkills } from "./create-skills";
+import { Team } from "./team";
 
 const MAX_AGE = 45;
 const MIN_AGE = 16;
@@ -18,7 +19,7 @@ const MAX_GROWTH_RATE = 0.0025; // monthly
 const START_DEGROWTH_AGE = 32;
 const SALARY_CAP = 320_000;
 const MIN_SALARY_CAP = 200_000;
-const MIN_WAGE = Math.round(SALARY_CAP / 90);
+const MIN_WAGE = Math.round(SALARY_CAP / 100);
 const MAX_WAGE = Math.round(SALARY_CAP / 5);
 
 type Foot = "ambidextrous" | "left" | "right";
@@ -372,6 +373,7 @@ class Player {
     return Math.round(150 + 55 * (p.skills.height / MAX_SKILL));
   }
 
+  // use wageRequest when a team is trying to sign a player (except for the draft and init)
   // return a wage between 2000 and 64000 per month wanted by the player it is
   // depended on the score of the player, defenders and goolkeepers usually ask for less
   static wantedWage(p: Player): number {
@@ -383,6 +385,25 @@ class Player {
     const wage = 2 ** ((Player.getScore(p) - 55) / 5) * MIN_WAGE * posFactor;
 
     return Math.round(Math.max(MIN_WAGE, Math.min(MAX_WAGE, wage)));
+  }
+
+  // returns true when the player is willing to sign for the team, depending on
+  // the team appeal and the player score
+  static approachable(p: Player, t: Team): boolean {
+    return (
+      t.appeal > 1.5 ||
+      Math.max(0.2, (76 - Player.getScore(p)) / 10) >= Math.random()
+    );
+  }
+
+  // returns the wage requested by the player to the team, could ask to be overPaid
+  // the team has a low appeal the max overpay is of 20% extra
+  static wageRequest(p: Player, t: Team): number {
+    const appeal = Math.max(0, (2.5 - t.appeal) / 12.5);
+    const wg = Player.wantedWage(p);
+    return Math.round(
+      Player.getScore(p) > 66 ? Math.min((appeal + 1) * wg, MAX_WAGE) : wg
+    );
   }
 
   // returns true when the player wants to retire, a MAX_AGE player return always true

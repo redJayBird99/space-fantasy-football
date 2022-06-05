@@ -106,10 +106,11 @@ class Team {
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
       if (
-        affordable(Player.wantedWage(p)) &&
+        Player.approachable(p, t) &&
+        affordable(Player.wageRequest(p, t)) &&
         Team.shouldRenew(p, rtgs, notExpiring.length)
       ) {
-        Team.signPlayer(gs, gs.teams[t.name], p);
+        Team.signPlayer(gs, t, p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
         affordable = Team.canAfford(gs, t);
@@ -145,7 +146,7 @@ class Team {
 
       const wgs = wages + wage;
       const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
-      const extra = budget > 0 ? budget / 12 : budget / 60; // 12 months when positive and 5 years otherwise
+      const extra = budget > 0 ? budget / 12 : budget / 48; // 12 months when positive and 4 years otherwise
       return revenue + extra - expenses > 0;
     };
   }
@@ -173,16 +174,20 @@ class Team {
     return false;
   }
 
-  // sign the best (by rating) affordable player between the given free agents
-  // returns the signed player
+  // sign the best (by rating) affordable willing to sign player between the
+  // given free agents returns the signed player
   static signFreeAgent(gs: GameState, t: Team, free: Player[]): Player | void {
-    const teamPlayers = Team.getNotExipiringPlayers(gs, t);
-    const rtgs = new RatingAreaByNeed(teamPlayers);
     const affordable = Team.canAfford(gs, t);
-    const target = findBest(free, rtgs, affordable);
+    const signables = free.filter(
+      (p) => Player.approachable(p, t) && affordable(Player.wageRequest(p, t))
+    );
+    const target = findBest(
+      signables,
+      new RatingAreaByNeed(Team.getNotExipiringPlayers(gs, t))
+    );
 
     if (target) {
-      Team.signPlayer(gs, gs.teams[t.name], target);
+      Team.signPlayer(gs, t, target);
       return target;
     }
   }
@@ -211,7 +216,7 @@ function signContract(s: GameState, t: Team, p: Player): Contract {
   const c = {
     teamName: t.name,
     playerId: p.id,
-    wage: Player.wantedWage(p),
+    wage: Player.wageRequest(p, t),
     duration: Math.floor(Math.random() * 4) + 1,
   };
   GameState.saveContract(s, c);
@@ -274,17 +279,15 @@ function minSalaryTax(payroll: number): number {
   return Math.max(0, MIN_SALARY_CAP - payroll);
 }
 
-// returns the best affordable potential new sign between the given players or undefined
-function findBest(ps: Player[], r: RatingAreaByNeed, fn: Affordable) {
-  const affordables = ps.filter((p) => fn(Player.wantedWage(p)));
-
-  if (affordables.length > 1) {
-    return affordables.reduce((a, b) =>
+// returns the best potential new sign between the given players or undefined
+function findBest(ps: Player[], r: RatingAreaByNeed) {
+  if (ps.length > 1) {
+    return ps.reduce((a, b) =>
       ratingPlayerByNeed(b, r) > ratingPlayerByNeed(a, r) ? b : a
     );
   }
 
-  return affordables[0];
+  return ps[0];
 }
 
 export {

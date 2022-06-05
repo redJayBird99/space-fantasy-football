@@ -31,6 +31,7 @@ beforeEach(() => {
   st = new _gs.GameState(new Date());
   _gs.initTeams(st, ["a"]);
   team = st.teams.a;
+  team.appeal = 5; // init it
 });
 
 describe("signContract()", () => {
@@ -472,12 +473,8 @@ describe("findBest()", () => {
     (a, b) => _t.ratingPlayerByNeed(b, rgs) - _t.ratingPlayerByNeed(a, rgs)
   );
 
-  test("should return the player with the highest rating when affordable", () => {
-    expect(_t.findBest([...pls], rgs, (a) => true)).toEqual(pls[0]);
-  });
-
-  test("should return the undefined when no one is affordable", () => {
-    expect(_t.findBest([...pls], rgs, (a) => false)).not.toBeDefined();
+  test("should return the player with the highest rating", () => {
+    expect(_t.findBest([...pls], rgs)).toEqual(pls[0]);
   });
 });
 
