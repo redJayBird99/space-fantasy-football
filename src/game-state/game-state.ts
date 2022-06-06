@@ -181,7 +181,7 @@ function initTeams(s: GameState, names: string[]): Team[] {
     const team = new Team(name);
     GameState.saveTeam(s, team);
     const signPlayers = (plrs: Player[]) =>
-      plrs.forEach((p) => Team.signPlayer(s, team, p));
+      plrs.forEach((p) => Team.signPlayer(s, team, p, Player.wantedWage(p)));
 
     signPlayers(pickBest(createPlayers(s, "goolkeeper", 4), 3));
     signPlayers(pickBest(createPlayers(s, "defender", 10), 8));

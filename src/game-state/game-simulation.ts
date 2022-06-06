@@ -18,7 +18,7 @@ type GameEventTypes =
   | "updateContract"
   | "updateFinances"
   | "signings"
-  | "newPlayers"
+  | "draft"
   | "retiring";
 type SimRound = { round: number };
 type Signings = { days: number }; // how many consecutive days should dispatch signings events
@@ -90,8 +90,8 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleSignings(gs, evt);
   } else if (evt.type === "retiring") {
     return handleRetiring(gs);
-  } else if (evt.type === "newPlayers") {
-    return handleNewPlayers(gs);
+  } else if (evt.type === "draft") {
+    return handleDraft(gs);
   }
 
   return false;
@@ -114,7 +114,7 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
   enqueueNextDayEvent(gs, e.date, "retiring");
-  enqueueNextDayEvent(gs, e.date, "newPlayers");
+  enqueueNextDayEvent(gs, e.date, "draft");
   enqueueNextDayEvent(gs, e.date, "updateContract");
   return true;
 }
@@ -160,14 +160,27 @@ function handleRetiring(gs: GameState): boolean {
   return true;
 }
 
-// add 52 new teens Players in every position area to the game
-function handleNewPlayers(gs: GameState): boolean {
-  const genTeens = () => MIN_AGE + Math.floor(Math.random() * (20 - MIN_AGE));
-  createPlayers(gs, "goolkeeper", 6, genTeens);
-  createPlayers(gs, "defender", 17, genTeens);
-  createPlayers(gs, "midfielder", 17, genTeens);
-  createPlayers(gs, "forward", 12, genTeens);
+// differently from the nba only one player get drafted
+function handleDraft(gs: GameState): boolean {
+  let players = createDraftPlayers(gs);
+
+  shuffle(Object.values(gs.teams)).forEach((team) => {
+    const plr = Team.pickDraftPlayer(gs, team, players);
+    players = players.filter((p) => plr !== p);
+  });
+
   return true;
+}
+
+// add 52 new teens Players in every position area to the game and return them
+function createDraftPlayers(gs: GameState): Player[] {
+  const genTeens = () => MIN_AGE + Math.floor(Math.random() * (20 - MIN_AGE));
+  return [
+    ...createPlayers(gs, "goolkeeper", 6, genTeens),
+    ...createPlayers(gs, "defender", 17, genTeens),
+    ...createPlayers(gs, "midfielder", 17, genTeens),
+    ...createPlayers(gs, "forward", 12, genTeens),
+  ];
 }
 
 function updateContracts(gs: GameState): void {
@@ -345,7 +358,8 @@ export {
   handleUpdateFinances,
   handleSignings,
   handleRetiring,
-  handleNewPlayers,
+  handleDraft,
+  createDraftPlayers,
   simulateRound,
   updateSkills,
   updateContracts,

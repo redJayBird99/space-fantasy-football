@@ -27,11 +27,18 @@ function initMoneyAmount(fb: Fanbase, min: number): number {
 }
 
 // note instances of this class are saved as JSON on the user machine
-interface Contract {
+class Contract {
   teamName: string;
   playerId: string;
   wage: number;
   duration: number; // in seasons
+
+  constructor(t: Team, p: Player, wage: number, duration: number) {
+    this.teamName = t.name;
+    this.playerId = p.id;
+    this.wage = wage;
+    this.duration = duration;
+  }
 }
 
 interface Finances {
@@ -65,10 +72,19 @@ class Team {
 
   // add the player to the team and the signed contract to the gameState
   // returns the signed Contract
-  static signPlayer(gs: GameState, t: Team, p: Player): Contract {
+  static signPlayer(
+    gs: GameState,
+    t: Team,
+    p: Player,
+    wage: number,
+    duration?: number
+  ): Contract {
+    duration = duration ?? Math.floor(Math.random() * 4) + 1;
     p.team = t.name;
     t.playerIds.includes(p.id) || t.playerIds.push(p.id);
-    return signContract(gs, t, p);
+    const contract = new Contract(t, p, wage, duration);
+    GameState.saveContract(gs, contract);
+    return contract;
   }
 
   // remove the player from the team and delete the contract from the gameState
@@ -110,7 +126,7 @@ class Team {
         affordable(Player.wageRequest(p, t)) &&
         Team.shouldRenew(p, rtgs, notExpiring.length)
       ) {
-        Team.signPlayer(gs, t, p);
+        Team.signPlayer(gs, t, p, Player.wageRequest(p, t));
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
         affordable = Team.canAfford(gs, t);
@@ -187,9 +203,20 @@ class Team {
     );
 
     if (target) {
-      Team.signPlayer(gs, t, target);
+      Team.signPlayer(gs, t, target, Player.wageRequest(target, t));
       return target;
     }
+  }
+
+  // pick and sign for 4 seasons a draft player for the given ones
+  // return the signed one
+  static pickDraftPlayer(gs: GameState, t: Team, players: Player[]): Player {
+    const target = findBest(
+      players,
+      new RatingAreaByNeed(Team.getNotExipiringPlayers(gs, t))
+    );
+    Team.signPlayer(gs, t, target, Player.wantedWage(target), 4);
+    return target;
   }
 
   // monthly update the budget subtracting expenses and adding revenues
@@ -208,20 +235,6 @@ class Team {
     const l = ranking.length - 1;
     return fanPoints + 3 * ((l - rankNth) / l) + (l - facilityNth) / l;
   }
-}
-
-// creates new contracts for the given player and save it to the gameState,
-// the min contrat duration is 1 max 5
-function signContract(s: GameState, t: Team, p: Player): Contract {
-  const c = {
-    teamName: t.name,
-    playerId: p.id,
-    wage: Player.wageRequest(p, t),
-    duration: Math.floor(Math.random() * 4) + 1,
-  };
-  GameState.saveContract(s, c);
-
-  return c;
 }
 
 // a rating of how mutch the player area is needed by a team with the given
@@ -294,7 +307,6 @@ export {
   Contract,
   Team,
   RatingAreaByNeed,
-  signContract,
   renewalProbability,
   ratingPlayerByNeed,
   initMoneyAmount,

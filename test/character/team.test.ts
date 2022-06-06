@@ -34,58 +34,39 @@ beforeEach(() => {
   team.appeal = 5; // init it
 });
 
-describe("signContract()", () => {
-  const pl = new _p.Player("am", new Date());
-
-  test("save a new contract to the gameState", () => {
-    const c = _t.signContract(st, team, pl);
-    expect(_gs.GameState.getContract(st, pl)).toEqual(c);
-  });
-
-  test("the contract duration should be greater than or equal 1", () => {
-    const c = _t.signContract(st, team, pl);
-    expect(c.duration).toBeGreaterThanOrEqual(1);
-  });
-
-  test("the contract duration should be less than or equal 5", () => {
-    const c = _t.signContract(st, team, pl);
-    expect(c.duration).toBeLessThanOrEqual(5);
-  });
-
-  test("should have the id of the player", () => {
-    const c = _t.signContract(st, team, pl);
-    expect(c.playerId).toBe(pl.id);
-  });
-
-  test("should have the name of the team", () => {
-    const c = _t.signContract(st, team, pl);
-    expect(c.teamName).toBe(team.name);
-  });
-});
-
 describe("Team.signPlayer()", () => {
   const pl = new _p.Player("cm", new Date());
 
   test("should add the player id to the team", () => {
-    _t.Team.signPlayer(st, team, pl);
+    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
     expect(team.playerIds).toContainEqual(pl.id);
   });
 
   test("should set player.team to the team name", () => {
-    _t.Team.signPlayer(st, team, pl);
+    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
     expect(pl.team).toBe(team.name);
   });
 
   test("should add the contract to the gameState", () => {
-    const c = _t.Team.signPlayer(st, team, pl);
+    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
     expect(_gs.GameState.getContract(st, pl)).toEqual(c);
   });
 
   test("when called twice shouldn't duplicate the player id stored", () => {
     team.playerIds = [];
-    _t.Team.signPlayer(st, team, pl);
-    _t.Team.signPlayer(st, team, pl);
+    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
+    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
     expect(team.playerIds).toEqual([pl.id]);
+  });
+
+  test("the contract duration should be greater than or equal 1", () => {
+    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
+    expect(c.duration).toBeGreaterThanOrEqual(1);
+  });
+
+  test("the contract duration should be less than or equal 4", () => {
+    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
+    expect(c.duration).toBeLessThanOrEqual(4);
   });
 });
 
@@ -95,7 +76,7 @@ describe("Team.unsignPlayer()", () => {
   const team = new _t.Team("Smokers");
   st.teams.Smokers = team;
   st.players[pl.id] = pl;
-  _t.Team.unsignPlayer(st, _t.Team.signPlayer(st, team, pl));
+  _t.Team.unsignPlayer(st, _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE));
 
   test("should remove the player id from the team", () => {
     expect(team.playerIds).not.toContainEqual(pl.id);
@@ -560,6 +541,28 @@ describe("Team.signFreeAgent()", () => {
 
   test("should return undefined when can't sign any players", () => {
     expect(_t.Team.signFreeAgent(st, team, [])).not.toBeDefined();
+  });
+});
+
+describe("Team.pickDraftPlayer()", () => {
+  const plrs = rdmPlayers(30).sort(
+    (a, b) => _p.Player.getScore(b) - _p.Player.getScore(a)
+  );
+
+  test("should add the signed player to the team", () => {
+    const sign = _t.Team.pickDraftPlayer(st, team, plrs);
+    expect(team.playerIds).toContainEqual(sign.id);
+  });
+
+  test("should sign one of the best score player when positionArea isn't a factor", () => {
+    const nthBest = plrs.indexOf(_t.Team.pickDraftPlayer(st, team, plrs));
+    expect(nthBest).not.toBe(-1);
+    expect(nthBest).toBeLessThan(6);
+  });
+
+  test("the picked player should sign a 4 seasons contracts", () => {
+    const sign = _t.Team.pickDraftPlayer(st, team, plrs);
+    expect(_gs.GameState.getContract(st, sign)?.duration).toBe(4);
   });
 });
 

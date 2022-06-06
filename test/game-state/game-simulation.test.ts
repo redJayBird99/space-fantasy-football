@@ -252,6 +252,21 @@ describe("storeEndedSeasonSchedule()", () => {
   });
 });
 
+describe("createDraftPlayers()", () => {
+  test("should add 52 new Players to the game", () => {
+    _sm.createDraftPlayers(st);
+    expect(Object.values(st.players).length).toBe(52);
+  });
+
+  test("all players generated should be teens", () => {
+    _sm.createDraftPlayers(st);
+    Object.values(st.players).forEach((p) => {
+      expect(_pl.Player.age(p, st.date)).toBeGreaterThanOrEqual(_pl.MIN_AGE);
+      expect(_pl.Player.age(p, st.date)).toBeLessThan(20);
+    });
+  });
+});
+
 describe("enqueueSeasonEndEvent()", () => {
   test("should enqueue a new seasonEnd GameEvent for june firts of next year", () => {
     _sm.enqueueSeasonEndEvent(st);
@@ -367,9 +382,9 @@ describe("handleSeasonEnd()", () => {
     expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
   });
 
-  test("should enqueue a newPlayers GameEvent", () => {
+  test("should enqueue a draft GameEvent", () => {
     _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual({ date, type: "newPlayers" });
+    expect(st.eventQueue).toContainEqual({ date, type: "draft" });
   });
 
   test("should save the ended schedule on the st.schedules", () => {
@@ -421,18 +436,15 @@ describe("handleRetiring()", () => {
   });
 });
 
-describe("handleNewPlayers()", () => {
-  test("should add 52 new Players to the game", () => {
-    _sm.handleNewPlayers(st);
-    expect(Object.values(st.players).length).toBe(52);
-  });
-
-  test("all players generated should be teens", () => {
-    _sm.handleNewPlayers(st);
-    Object.values(st.players).forEach((p) => {
-      expect(_pl.Player.age(p, st.date)).toBeGreaterThanOrEqual(_pl.MIN_AGE);
-      expect(_pl.Player.age(p, st.date)).toBeLessThan(20);
-    });
+describe("handleDraft()", () => {
+  test("every team should sign one players", () => {
+    _gs.initTeams(st, ["a", "b", "c", "d"]);
+    const teams = Object.values(st.teams);
+    const cp = JSON.parse(JSON.stringify(teams));
+    _sm.handleDraft(st);
+    teams.forEach((t, i) =>
+      expect(t.playerIds.length).toBe(cp[i].playerIds.length + 1)
+    );
   });
 });
 
