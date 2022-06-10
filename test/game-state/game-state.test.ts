@@ -158,7 +158,10 @@ describe("initTeamsAppeal()", () => {
   test("the team with the highest payroll should have at least 3 points", () => {
     _gs.initTeams(st, teamNames);
     const first = Object.values(st.teams).reduce((a, b) =>
-      _tm.Team.getWagesAmount(st, a) >= _tm.Team.getWagesAmount(st, b) ? a : b
+      _tm.Team.getWagesAmount({ gs: st, t: a }) >=
+      _tm.Team.getWagesAmount({ gs: st, t: b })
+        ? a
+        : b
     );
     _gs.initTeamsAppeal(st);
     expect(st.teams[first.name].appeal).toBeGreaterThanOrEqual(3);
@@ -167,7 +170,10 @@ describe("initTeamsAppeal()", () => {
   test("the team with the lowest payroll should have at most 2 points", () => {
     _gs.initTeams(st, teamNames);
     const last = Object.values(st.teams).reduce((a, b) =>
-      _tm.Team.getWagesAmount(st, a) <= _tm.Team.getWagesAmount(st, b) ? a : b
+      _tm.Team.getWagesAmount({ gs: st, t: a }) <=
+      _tm.Team.getWagesAmount({ gs: st, t: b })
+        ? a
+        : b
     );
     _gs.initTeamsAppeal(st);
     expect(st.teams[last.name].appeal).toBeLessThanOrEqual(2);

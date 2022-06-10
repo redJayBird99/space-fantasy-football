@@ -96,3 +96,14 @@ export function shuffle<T>(arr: T[]): T[] {
 
   return arr;
 }
+
+// https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
+export function hash(s: string, mod: number): number {
+  let h = 0;
+
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.codePointAt(i)!) % mod;
+  }
+
+  return h;
+}

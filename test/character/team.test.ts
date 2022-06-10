@@ -25,7 +25,9 @@ function getContracts(st: _gs.GameState, team: _t.Team): _t.Contract[] {
 }
 
 let st = new _gs.GameState(new Date());
-let team = st.teams.titans;
+_gs.initTeams(st, ["a"]);
+let team = st.teams.a;
+team.appeal = 5;
 
 beforeEach(() => {
   st = new _gs.GameState(new Date());
@@ -35,37 +37,37 @@ beforeEach(() => {
 });
 
 describe("Team.signPlayer()", () => {
-  const pl = new _p.Player("cm", new Date());
+  const p = new _p.Player("cm", new Date());
 
   test("should add the player id to the team", () => {
-    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
-    expect(team.playerIds).toContainEqual(pl.id);
+    _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+    expect(team.playerIds).toContainEqual(p.id);
   });
 
   test("should set player.team to the team name", () => {
-    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
-    expect(pl.team).toBe(team.name);
+    _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+    expect(p.team).toBe(team.name);
   });
 
   test("should add the contract to the gameState", () => {
-    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
-    expect(_gs.GameState.getContract(st, pl)).toEqual(c);
+    const c = _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+    expect(_gs.GameState.getContract(st, p)).toEqual(c);
   });
 
   test("when called twice shouldn't duplicate the player id stored", () => {
     team.playerIds = [];
-    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
-    _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
-    expect(team.playerIds).toEqual([pl.id]);
+    _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+    _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+    expect(team.playerIds).toEqual([p.id]);
   });
 
   test("the contract duration should be greater than or equal 1", () => {
-    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
+    const c = _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     expect(c.duration).toBeGreaterThanOrEqual(1);
   });
 
   test("the contract duration should be less than or equal 4", () => {
-    const c = _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE);
+    const c = _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     expect(c.duration).toBeLessThanOrEqual(4);
   });
 });
@@ -76,7 +78,10 @@ describe("Team.unsignPlayer()", () => {
   const team = new _t.Team("Smokers");
   st.teams.Smokers = team;
   st.players[pl.id] = pl;
-  _t.Team.unsignPlayer(st, _t.Team.signPlayer(st, team, pl, _p.MIN_WAGE));
+  _t.Team.unsignPlayer(
+    st,
+    _t.Team.signPlayer({ gs: st, t: team, p: pl }, _p.MIN_WAGE)
+  );
 
   test("should remove the player id from the team", () => {
     expect(team.playerIds).not.toContainEqual(pl.id);
@@ -169,21 +174,29 @@ describe("renewalProbability()", () => {
     const p = rdmPlayers(1)[0];
 
     test("should return a value greater than or equal 0", () => {
-      expect(_t.renewalProbability(p, rtgs)).toBeGreaterThanOrEqual(0);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p }, rtgs)
+      ).toBeGreaterThanOrEqual(0);
     });
 
     test("should return a value less than or equal 1", () => {
-      expect(_t.renewalProbability(p, rtgs)).toBeLessThanOrEqual(1);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p }, rtgs)
+      ).toBeLessThanOrEqual(1);
     });
 
     test("a player with score 72 should return 1", () => {
       setSkillsTo(pl, 72);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(1);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
+      ).toBeCloseTo(1);
     });
 
     test("a player with score 60 should return 0.5", () => {
       setSkillsTo(pl, 60);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.52);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
+      ).toBeCloseTo(0.52);
     });
   });
 
@@ -191,12 +204,14 @@ describe("renewalProbability()", () => {
     test("a player with score 72 should return 0.5", () => {
       rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
       setSkillsTo(pl, 72);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.5);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
+      ).toBeCloseTo(0.5);
     });
 
     test("a player with score 54 should return 0", () => {
       setSkillsTo(pl, 54);
-      expect(_t.renewalProbability(pl, rtgs)).toBe(0);
+      expect(_t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)).toBe(0);
     });
   });
 
@@ -204,52 +219,70 @@ describe("renewalProbability()", () => {
     test("a player with score 54 should return 0", () => {
       rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
       setSkillsTo(pl, 54);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
+      ).toBeCloseTo(0);
     });
 
     test("a player with score 60 should return 0.7", () => {
       setSkillsTo(pl, 60);
-      expect(_t.renewalProbability(pl, rtgs)).toBeCloseTo(0.7);
+      expect(
+        _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
+      ).toBeCloseTo(0.7);
     });
   });
 });
 
-describe("ratingPlayerByNeed()", () => {
-  const pl = new _p.Player("cf", new Date(), 28);
+describe("Team.ratingPlayerByNeed()", () => {
+  const d = new Date();
+  const gs = new _gs.GameState(d);
+  const team = new _t.Team("insert name");
+  const pl = new _p.Player("cf", d, 28);
   let rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
   const pls = rdmPlayers(20).sort(
-    (p1, p2) => _p.Player.getScore(p2) - _p.Player.getScore(p1)
+    (p1, p2) =>
+      _t.Team.evaluatePlayer({ t: team, p: p2, gs }) -
+      _t.Team.evaluatePlayer({ t: team, p: p1, gs })
   );
 
   describe("when the area rating is 0", () => {
     test("rate the players according the score", () => {
       const pRatings = [...pls].sort(
         (a, b) =>
-          _t.ratingPlayerByNeed(b, rtgs) - _t.ratingPlayerByNeed(a, rtgs)
+          _t.Team.ratingPlayerByNeed({ p: b, t: team, gs }, rtgs) -
+          _t.Team.ratingPlayerByNeed({ p: a, t: team, gs }, rtgs)
       );
       expect(pRatings).toEqual(pls);
     });
 
     test("should return a value greater than or equal 0", () => {
       pls.forEach((p) =>
-        expect(_t.ratingPlayerByNeed(p, rtgs)).toBeGreaterThanOrEqual(0)
+        expect(
+          _t.Team.ratingPlayerByNeed({ p, t: team, gs }, rtgs)
+        ).toBeGreaterThanOrEqual(0)
       );
     });
 
     test("should return a value less than or equal 5", () => {
       pls.forEach((p) =>
-        expect(_t.ratingPlayerByNeed(p, rtgs)).toBeLessThanOrEqual(5)
+        expect(
+          _t.Team.ratingPlayerByNeed({ p, t: team, gs }, rtgs)
+        ).toBeLessThanOrEqual(5)
       );
     });
 
     test("a player with MAX score should return 4", () => {
       setSkillsTo(pl, _p.MAX_SKILL);
-      expect(_t.ratingPlayerByNeed(pl, rtgs)).toBeCloseTo(4);
+      expect(
+        _t.Team.ratingPlayerByNeed({ p: pl, t: team, gs }, rtgs)
+      ).toBeCloseTo(4);
     });
 
     test("a player with MIN score should return 0", () => {
       setSkillsTo(pl, _p.MIN_SKILL);
-      expect(_t.ratingPlayerByNeed(pl, rtgs)).toBeCloseTo(0);
+      expect(
+        _t.Team.ratingPlayerByNeed({ p: pl, t: team, gs }, rtgs)
+      ).toBeCloseTo(0);
     });
   });
 
@@ -257,12 +290,16 @@ describe("ratingPlayerByNeed()", () => {
     test("a player with MAX score should return 5", () => {
       rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
       setSkillsTo(pl, _p.MAX_SKILL);
-      expect(_t.ratingPlayerByNeed(pl, rtgs)).toBeCloseTo(5);
+      expect(
+        _t.Team.ratingPlayerByNeed({ p: pl, t: team, gs }, rtgs)
+      ).toBeCloseTo(5);
     });
 
     test("a player with MIN score should return 1", () => {
       setSkillsTo(pl, _p.MIN_SKILL);
-      expect(_t.ratingPlayerByNeed(pl, rtgs)).toBeCloseTo(1);
+      expect(
+        _t.Team.ratingPlayerByNeed({ p: pl, t: team, gs }, rtgs)
+      ).toBeCloseTo(1);
     });
   });
 });
@@ -270,28 +307,28 @@ describe("ratingPlayerByNeed()", () => {
 describe("Team.getExipiringPlayers()", () => {
   test("should return all expiring players", () => {
     getContracts(st, team).forEach((c) => (c.duration = 0));
-    expect(_t.Team.getExipiringPlayers(st, team)).toEqual(
+    expect(_t.Team.getExipiringPlayers({ gs: st, t: team })).toEqual(
       _gs.GameState.getTeamPlayers(st, team.name)
     );
   });
 
   test("should return 0 players when no contract is expiring", () => {
     getContracts(st, team).forEach((c) => (c.duration = 1));
-    expect(_t.Team.getExipiringPlayers(st, team)).toEqual([]);
+    expect(_t.Team.getExipiringPlayers({ gs: st, t: team })).toEqual([]);
   });
 });
 
 describe("Team.getNotExipiringPlayers()", () => {
   test("should return all not expiring players", () => {
     getContracts(st, team).forEach((c) => (c.duration = 1));
-    expect(_t.Team.getNotExipiringPlayers(st, team)).toEqual(
+    expect(_t.Team.getNotExipiringPlayers({ gs: st, t: team })).toEqual(
       _gs.GameState.getTeamPlayers(st, team.name)
     );
   });
 
   test("should return 0 players when all contracts are expiring", () => {
     getContracts(st, team).forEach((c) => (c.duration = 0));
-    expect(_t.Team.getNotExipiringPlayers(st, team)).toEqual([]);
+    expect(_t.Team.getNotExipiringPlayers({ gs: st, t: team })).toEqual([]);
   });
 });
 
@@ -361,7 +398,7 @@ describe("Team.getWagesAmount()", () => {
   test("should return the sum of every wage", () => {
     const cts = getContracts(st, team);
     cts.forEach((c) => c && (c.wage = 100));
-    expect(_t.Team.getWagesAmount(st, team)).toBe(100 * cts.length);
+    expect(_t.Team.getWagesAmount({ gs: st, t: team })).toBe(100 * cts.length);
   });
 });
 
@@ -371,7 +408,7 @@ describe("Team.getMonthlyExpenses()", () => {
     const wage = _p.SALARY_CAP / 10;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
     const wages = wage * getContracts(st, team).length;
-    expect(_t.Team.getMonthlyExpenses(st, team)).toBe(
+    expect(_t.Team.getMonthlyExpenses({ gs: st, t: team })).toBe(
       wages + _t.luxuryTax(wages) + health + facilities + scouting
     );
   });
@@ -381,7 +418,7 @@ describe("Team.getMonthlyExpenses()", () => {
     const wage = _p.MIN_WAGE;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
     const wages = wage * getContracts(st, team).length;
-    expect(_t.Team.getMonthlyExpenses(st, team)).toBe(
+    expect(_t.Team.getMonthlyExpenses({ gs: st, t: team })).toBe(
       wages + _t.minSalaryTax(wages) + health + facilities + scouting
     );
   });
@@ -390,31 +427,32 @@ describe("Team.getMonthlyExpenses()", () => {
 describe("Team.canAfford()", () => {
   test("should return always true for MIN_WAGE", () => {
     getContracts(st, team).forEach((c) => c && (c.wage = _p.MAX_WAGE));
-    expect(_t.Team.canAfford(st, team)(_p.MIN_WAGE)).toBe(true);
+    expect(_t.Team.canAfford({ gs: st, t: team })(_p.MIN_WAGE)).toBe(true);
   });
 
   test("should return true when all expenses are small", () => {
     const wage = _p.MIN_SALARY_CAP / 20;
     getContracts(st, team).forEach((c) => c && (c.wage = wage));
-    expect(_t.Team.canAfford(st, team)(wage)).toBe(true);
+    expect(_t.Team.canAfford({ gs: st, t: team })(wage)).toBe(true);
   });
 
   test("should return true when wages are under MIN_SALARY_CAP no matter the budget", () => {
     team.finances.budget = -100 * _p.SALARY_CAP;
     getContracts(st, team).forEach((c) => c && (c.wage = _p.MIN_WAGE));
-    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(true);
+    expect(_t.Team.canAfford({ gs: st, t: team })(2 * _p.MIN_WAGE)).toBe(true);
   });
 
   test("should return true when all expenses are larger than the revenue but have a large enough budget", () => {
     team.finances.health = team.finances.revenue;
-    team.finances.budget = 100 * _t.Team.getMonthlyExpenses(st, team);
-    expect(_t.Team.canAfford(st, team)(3 * _p.MIN_WAGE)).toBe(true);
+    team.finances.budget =
+      100 * _t.Team.getMonthlyExpenses({ gs: st, t: team });
+    expect(_t.Team.canAfford({ gs: st, t: team })(3 * _p.MIN_WAGE)).toBe(true);
   });
 
   test("should return false when all expenses are larger than the revenue and the budget isn't large enough", () => {
     team.finances.health = team.finances.revenue;
     team.finances.budget = 0;
-    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(false);
+    expect(_t.Team.canAfford({ gs: st, t: team })(2 * _p.MIN_WAGE)).toBe(false);
   });
 
   test("should return false when a large luxury tax is applied and the budget isn't larger enough", () => {
@@ -426,7 +464,7 @@ describe("Team.canAfford()", () => {
       facilities: _p.SALARY_CAP / 100,
     };
     getContracts(st, team).forEach((c) => c && (c.wage = _p.SALARY_CAP / 15));
-    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(false);
+    expect(_t.Team.canAfford({ gs: st, t: team })(2 * _p.MIN_WAGE)).toBe(false);
   });
 
   test("should return true when the budget is negative but can compensate with revenue", () => {
@@ -438,11 +476,14 @@ describe("Team.canAfford()", () => {
       facilities: _p.SALARY_CAP / 100,
     };
     getContracts(st, team).forEach((c) => c && (c.wage = _p.SALARY_CAP / 30));
-    expect(_t.Team.canAfford(st, team)(2 * _p.MIN_WAGE)).toBe(true);
+    expect(_t.Team.canAfford({ gs: st, t: team })(2 * _p.MIN_WAGE)).toBe(true);
   });
 });
 
 describe("findBest()", () => {
+  const d = new Date();
+  const gs = new _gs.GameState(d);
+  const team = new _t.Team("Smokers");
   const rgs = {
     teamPlayers: [],
     goolkeeper: 0,
@@ -451,26 +492,28 @@ describe("findBest()", () => {
     forward: 0,
   };
   const pls = rdmPlayers(30).sort(
-    (a, b) => _t.ratingPlayerByNeed(b, rgs) - _t.ratingPlayerByNeed(a, rgs)
+    (a, b) =>
+      _t.Team.ratingPlayerByNeed({ p: b, t: team, gs }, rgs) -
+      _t.Team.ratingPlayerByNeed({ p: a, t: team, gs }, rgs)
   );
 
   test("should return the player with the highest rating", () => {
-    expect(_t.findBest([...pls], rgs)).toEqual(pls[0]);
+    expect(_t.findBest([...pls], { t: team, gs }, rgs)).toEqual(pls[0]);
   });
 });
 
 describe("Team.shouldRenew()", () => {
-  const pl = new _p.Player("cf", new Date(), 28);
-  setSkillsTo(pl, 70);
+  const p = new _p.Player("cf", new Date(), 28);
+  setSkillsTo(p, 70);
   let rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
 
   test("should return false when there are 30 and no particular position need", () => {
-    expect(_t.Team.shouldRenew(pl, rtgs, 30)).toBe(false);
+    expect(_t.Team.shouldRenew({ p, t: team, gs: st }, rtgs, 30)).toBe(false);
   });
 
   test("should return true for a very good player when the team has less than 30 players and need the position", () => {
     rtgs = { ...rtgs, forward: 1 };
-    expect(_t.Team.shouldRenew(pl, rtgs, 10)).toBe(true);
+    expect(_t.Team.shouldRenew({ p, t: team, gs: st }, rtgs, 10)).toBe(true);
   });
 });
 
@@ -478,18 +521,18 @@ describe("Team.renewExipiringContracts()", () => {
   test("should renew most players when the team is short of Players and can afford it", () => {
     team.finances.revenue = 3 * _p.SALARY_CAP;
     getContracts(st, team).forEach((c) => (c.duration = 0));
-    _t.Team.renewExipiringContracts(st, team);
-    const renewed = _t.Team.getNotExipiringPlayers(st, team);
-    const expired = _t.Team.getExipiringPlayers(st, team);
+    _t.Team.renewExipiringContracts({ gs: st, t: team });
+    const renewed = _t.Team.getNotExipiringPlayers({ gs: st, t: team });
+    const expired = _t.Team.getExipiringPlayers({ gs: st, t: team });
     expect(renewed.length).toBeGreaterThan(expired.length);
   });
 
   test("renewed players should have a mean score greater than unrenewed ones when can afford it", () => {
     team.finances.revenue = 3 * _p.SALARY_CAP;
     getContracts(st, team).forEach((c) => (c.duration = 0));
-    _t.Team.renewExipiringContracts(st, team);
-    const renewed = _t.Team.getNotExipiringPlayers(st, team);
-    const expired = _t.Team.getExipiringPlayers(st, team);
+    _t.Team.renewExipiringContracts({ gs: st, t: team });
+    const renewed = _t.Team.getNotExipiringPlayers({ gs: st, t: team });
+    const expired = _t.Team.getExipiringPlayers({ gs: st, t: team });
     expect(mean(renewed.map((p) => _p.Player.getScore(p)))).toBeGreaterThan(
       mean(expired.map((p) => _p.Player.getScore(p)))
     );
@@ -499,69 +542,85 @@ describe("Team.renewExipiringContracts()", () => {
     team.finances.revenue = _p.MIN_SALARY_CAP;
     team.finances.budget = 0;
     getContracts(st, team).forEach((c) => (c.duration = 0));
-    _t.Team.getExipiringPlayers(st, team).forEach((p) => {
+    _t.Team.getExipiringPlayers({ gs: st, t: team }).forEach((p) => {
       // so they ask for the max wage
       Object.keys(p.skills).forEach((s) => (p.skills[s as _p.Skill] = 80));
     });
-    _t.Team.renewExipiringContracts(st, team);
-    expect(_t.Team.getExipiringPlayers(st, team).length).toBeGreaterThan(
-      _t.Team.getNotExipiringPlayers(st, team).length
+    _t.Team.renewExipiringContracts({ gs: st, t: team });
+    expect(
+      _t.Team.getExipiringPlayers({ gs: st, t: team }).length
+    ).toBeGreaterThan(
+      _t.Team.getNotExipiringPlayers({ gs: st, t: team }).length
     );
   });
 });
 
 describe("Team.needPlayer()", () => {
   test("should return false when all positionArea are covered", () => {
-    expect(_t.Team.needPlayer(st, team)).toBe(false);
+    expect(_t.Team.needPlayer({ gs: st, t: team })).toBe(false);
   });
 
   test("should return true when is short of players", () => {
     team.playerIds = team.playerIds.slice(15, team.playerIds.length);
-    expect(_t.Team.needPlayer(st, team)).toBe(true);
+    expect(_t.Team.needPlayer({ gs: st, t: team })).toBe(true);
   });
 });
 
 describe("Team.signFreeAgent()", () => {
+  const d = new Date();
+  const st = new _gs.GameState(d);
+  const team = new _t.Team("insert name");
   const plrs = rdmPlayers(30).sort(
-    (a, b) => _p.Player.getScore(b) - _p.Player.getScore(a)
+    (a, b) =>
+      _t.Team.evaluatePlayer({ t: team, p: b, gs: st }) -
+      _t.Team.evaluatePlayer({ t: team, p: a, gs: st })
   );
 
   test("should sign a player when can afford it and return it", () => {
     team.finances.revenue = 10 * _p.SALARY_CAP;
-    const sign = _t.Team.signFreeAgent(st, team, plrs);
+    const sign = _t.Team.signFreeAgent({ gs: st, t: team }, plrs);
     expect(team.playerIds).toContainEqual(sign?.id);
   });
 
   test("should sign one of the best score player when positionArea isn't a factor", () => {
     team.finances.revenue = 10 * _p.SALARY_CAP;
-    const nthBest = plrs.indexOf(_t.Team.signFreeAgent(st, team, plrs)!);
+    const nthBest = plrs.indexOf(
+      _t.Team.signFreeAgent({ gs: st, t: team }, plrs)!
+    );
     expect(nthBest).not.toBe(-1);
     expect(nthBest).toBeLessThan(6);
   });
 
   test("should return undefined when can't sign any players", () => {
-    expect(_t.Team.signFreeAgent(st, team, [])).not.toBeDefined();
+    expect(_t.Team.signFreeAgent({ gs: st, t: team }, [])).not.toBeDefined();
   });
 });
 
 describe("Team.pickDraftPlayer()", () => {
+  const d = new Date();
+  const st = new _gs.GameState(d);
+  const team = new _t.Team("insert name");
   const plrs = rdmPlayers(30).sort(
-    (a, b) => _p.Player.getScore(b) - _p.Player.getScore(a)
+    (a, b) =>
+      _t.Team.evaluatePlayer({ t: team, p: b, gs: st }) -
+      _t.Team.evaluatePlayer({ t: team, p: a, gs: st })
   );
 
   test("should add the signed player to the team", () => {
-    const sign = _t.Team.pickDraftPlayer(st, team, plrs);
+    const sign = _t.Team.pickDraftPlayer({ gs: st, t: team }, plrs);
     expect(team.playerIds).toContainEqual(sign.id);
   });
 
   test("should sign one of the best score player when positionArea isn't a factor", () => {
-    const nthBest = plrs.indexOf(_t.Team.pickDraftPlayer(st, team, plrs));
+    const nthBest = plrs.indexOf(
+      _t.Team.pickDraftPlayer({ gs: st, t: team }, plrs)
+    );
     expect(nthBest).not.toBe(-1);
     expect(nthBest).toBeLessThan(6);
   });
 
   test("the picked player should sign a 4 seasons contracts", () => {
-    const sign = _t.Team.pickDraftPlayer(st, team, plrs);
+    const sign = _t.Team.pickDraftPlayer({ gs: st, t: team }, plrs);
     expect(_gs.GameState.getContract(st, sign)?.duration).toBe(4);
   });
 });
@@ -569,9 +628,9 @@ describe("Team.pickDraftPlayer()", () => {
 describe("Team.updateFinances()", () => {
   test("should update the budget removing expenses and adding revenue", () => {
     const { revenue, budget } = team.finances;
-    _t.Team.updateFinances(st, team);
+    _t.Team.updateFinances({ gs: st, t: team });
     expect(st.teams.a.finances.budget).toBe(
-      budget + revenue - _t.Team.getMonthlyExpenses(st, st.teams.a)
+      budget + revenue - _t.Team.getMonthlyExpenses({ gs: st, t: st.teams.a })
     );
   });
 });
@@ -621,5 +680,50 @@ describe("Team.calcAppeal()", () => {
     const cp = teams.slice();
     swap(cp, 0, cp.length - 1);
     expect(_t.Team.calcAppeal(last, cp, teams)).toBeCloseTo(3);
+  });
+});
+
+describe("Team.evaluatePlayer()", () => {
+  const d = new Date();
+  const st = new _gs.GameState(d);
+
+  test("should return a value equal to the current score for a mature player", () => {
+    const p = new _p.Player("gk", d, _p.END_GROWTH_AGE + 1);
+    expect(_t.Team.evaluatePlayer({ t: team, p, gs: st })).toBeCloseTo(
+      _p.Player.getScore(p)
+    );
+  });
+
+  test("should return a value greater than the current score for a young player", () => {
+    const p = new _p.Player("gk", d, 18);
+    expect(_t.Team.evaluatePlayer({ t: team, p, gs: st })).toBeGreaterThan(
+      _p.Player.getScore(p)
+    );
+  });
+});
+
+describe("pickBest()", () => {
+  const pls = Array.from({ length: 9 }, () => new _p.Player("am", new Date()));
+  const n = 5;
+
+  test("should return n players", () => {
+    expect(_t.pickBest({ gs: st, t: team }, pls, n).length).toBe(n);
+  });
+
+  test("should return the best n players", () => {
+    const best = pls
+      .sort(
+        (p1, p2) =>
+          _t.Team.evaluatePlayer({ t: team, p: p2, gs: st }) -
+          _t.Team.evaluatePlayer({ t: team, p: p1, gs: st })
+      )
+      .slice(0, n);
+    expect(_t.pickBest({ t: team, gs: st }, pls, n)).toEqual(
+      expect.arrayContaining(best)
+    );
+  });
+
+  test("throw an error when n is larger than player.length", () => {
+    expect(() => _t.pickBest({ gs: st, t: team }, pls, 10)).toThrow();
   });
 });

@@ -5,6 +5,7 @@ import {
   createBirthday,
   randomSign,
   getAgeAt,
+  hash,
 } from "../util/generator";
 import { mod } from "../util/math";
 import { createSkills } from "./create-skills";
@@ -299,20 +300,32 @@ class Player {
 
   // get the skill player value taking in cosideration all modifiers like
   // out of position malus and growthState
-  static getSkill(p: Player, s: Skill, at = p.position): number {
-    const v = noGrowthSkill.has(s) ? p.skills[s] : p.skills[s] * p.growthState;
+  // if growth is false the growthState modifier isn't applied
+  static getSkill(p: Player, s: Skill, at = p.position, growth = true): number {
+    const v =
+      noGrowthSkill.has(s) || !growth
+        ? p.skills[s]
+        : p.skills[s] * p.growthState;
     return Math.round(
       skillsApplicableMalus.has(s) ? v - v * getOutOfPositionMalus(p, at) : v
     );
   }
 
   // get the macroskill player value taking in cosideration all modifiers
+  // if growth is false the growthState modifier isn't applied
   // the value is between MIN_SKILL and MAX_SKILL
   // check macroskills for all possible macroskills
-  static getMacroskill(p: Player, m: Macroskill, at = p.position): number {
+  static getMacroskill(
+    p: Player,
+    m: Macroskill,
+    at = p.position,
+    growth = true
+  ): number {
     return Math.round(
-      macroskills[m].reduce((sum, sk) => Player.getSkill(p, sk, at) + sum, 0) /
-        macroskills[m].length
+      macroskills[m].reduce(
+        (sum, sk) => Player.getSkill(p, sk, at, growth) + sum,
+        0
+      ) / macroskills[m].length
     );
   }
 
@@ -338,17 +351,38 @@ class Player {
     TODO: some statistical analysis
 
     @param at take in cosideration out of position malus
+    @param growth if false the growthState modifier isn't applied
     @Returns a value between MIN_SKILL and MAX_SKILL
   */
-  static getScore(p: Player, at = p.position): number {
+  static getScore(p: Player, at = p.position, growth = true): number {
     let score = 0;
 
     for (const macro in positionScoreFactors[at]) {
       const mk = macro as Macroskill;
-      score += Player.getMacroskill(p, mk, at) * positionScoreFactors[at][mk];
+      score +=
+        Player.getMacroskill(p, mk, at, growth) * positionScoreFactors[at][mk];
     }
 
     return score;
+  }
+
+  // returns a player peak score prediction by the team when the player is
+  // younger than END_GROWTH_AGE, otherwise the current score,
+  // the prediction accuracy is depended on team scountig and luck
+  // the max prediction offeset is team.scoutOffset percentage
+  static predictScore(p: Player, now: Date, t: Team): number {
+    if (Player.age(p, now) >= END_GROWTH_AGE) {
+      return Player.getScore(p);
+    }
+
+    // the hash it used to get a deterministic value for each player and team without storing anything extra
+    const h = (hash(p.id + t.name, 200) - 100) / 100;
+    const maxOffset =
+      ((END_GROWTH_AGE - Player.age(p, now)) / (END_GROWTH_AGE - MIN_AGE)) *
+      t.scoutOffset;
+    const prdction = (1 + maxOffset * h) * Player.getScore(p, undefined, false);
+    const scoreNow = Player.getScore(p);
+    return prdction <= scoreNow ? scoreNow : prdction;
   }
 
   // update the growthState if the player can still grow, it is meant to be used
@@ -412,20 +446,6 @@ class Player {
     const a = Player.age(p, now);
     return a > 29 && (a >= MAX_AGE || (a - 30) / 25 + 0.2 >= Math.random());
   }
-}
-
-/**
- * returns the best (according to player score) n players
- * @param n amount of player to pick, when n > players.length throw an error
- */
-function pickBest(players: Player[], n: number): Player[] {
-  if (players.length < n) {
-    throw new Error(`players have less than ${n} players`);
-  }
-
-  return players
-    .sort((p1, p2) => Player.getScore(p2) - Player.getScore(p1))
-    .slice(0, n);
 }
 
 // the sum of scoreFactors should always be 1 (expect for rounding error)
@@ -546,6 +566,5 @@ export {
   getOutOfPositionMalus,
   positionScoreFactors,
   noGrowthSkill,
-  pickBest,
   skillsApplicableMalus,
 };

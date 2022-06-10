@@ -135,7 +135,7 @@ function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
 }
 
 function handleUpdateFinances(gs: GameState): boolean {
-  Object.values(gs.teams).forEach((t) => Team.updateFinances(gs, t));
+  Object.values(gs.teams).forEach((t) => Team.updateFinances({ gs, t }));
   enqueueUpdateFinancesEvent(gs);
   return false;
 }
@@ -164,8 +164,8 @@ function handleRetiring(gs: GameState): boolean {
 function handleDraft(gs: GameState): boolean {
   let players = createDraftPlayers(gs);
 
-  shuffle(Object.values(gs.teams)).forEach((team) => {
-    const plr = Team.pickDraftPlayer(gs, team, players);
+  shuffle(Object.values(gs.teams)).forEach((t) => {
+    const plr = Team.pickDraftPlayer({ gs, t }, players);
     players = players.filter((p) => plr !== p);
   });
 
@@ -189,8 +189,8 @@ function updateContracts(gs: GameState): void {
 
 // every team try to resign most exipiring players according to their needs
 function renewExipiringContracts(gs: GameState): void {
-  Object.values(gs.teams).forEach((team) => {
-    Team.renewExipiringContracts(gs, team);
+  Object.values(gs.teams).forEach((t) => {
+    Team.renewExipiringContracts({ gs, t });
   });
 }
 
@@ -252,11 +252,13 @@ function updateSkills(gs: GameState): void {
 // simulate the teams signing new players, sign only one player per team and
 // only if the team needs it
 function teamsSignFreeAgents(gs: GameState): void {
-  const teams = Object.values(gs.teams).filter((t) => Team.needPlayer(gs, t));
+  const teams = Object.values(gs.teams).filter((t) =>
+    Team.needPlayer({ gs, t })
+  );
   let free = Object.values(gs.players).filter((p) => p.team === "free agent");
 
   shuffle(teams).forEach((team) => {
-    const signed = Team.signFreeAgent(gs, team, free);
+    const signed = Team.signFreeAgent({ gs, t: team }, free);
 
     if (signed) {
       free = free.filter((p) => p !== signed);

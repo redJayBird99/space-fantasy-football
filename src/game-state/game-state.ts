@@ -1,5 +1,5 @@
-import { Player, PositionArea, pickBest } from "../character/player";
-import { Team, Contract } from "../character/team";
+import { Player, PositionArea } from "../character/player";
+import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "./tournament-scheduler";
 import {
   GameEvent,
@@ -176,17 +176,20 @@ function createPlayers(
 
 // create new teams with the given names fill them with some new created players
 // add everything to the given gameState and returns created teams
-function initTeams(s: GameState, names: string[]): Team[] {
+function initTeams(gs: GameState, names: string[]): Team[] {
   return names.map((name) => {
     const team = new Team(name);
-    GameState.saveTeam(s, team);
+    GameState.saveTeam(gs, team);
     const signPlayers = (plrs: Player[]) =>
-      plrs.forEach((p) => Team.signPlayer(s, team, p, Player.wantedWage(p)));
+      plrs.forEach((p) =>
+        Team.signPlayer({ gs, t: team, p }, Player.wantedWage(p))
+      );
 
-    signPlayers(pickBest(createPlayers(s, "goolkeeper", 4), 3));
-    signPlayers(pickBest(createPlayers(s, "defender", 10), 8));
-    signPlayers(pickBest(createPlayers(s, "midfielder", 10), 8));
-    signPlayers(pickBest(createPlayers(s, "forward", 8), 6));
+    const arg = { gs, t: team };
+    signPlayers(pickBest(arg, createPlayers(gs, "goolkeeper", 4), 3));
+    signPlayers(pickBest(arg, createPlayers(gs, "defender", 10), 8));
+    signPlayers(pickBest(arg, createPlayers(gs, "midfielder", 10), 8));
+    signPlayers(pickBest(arg, createPlayers(gs, "forward", 8), 6));
     return team;
   });
 }
@@ -205,11 +208,12 @@ function initGameEvents(gs: GameState): void {
 
 // set the teams appeal according wages ranking (large payroll == good team)
 // and facilities expenses etc
-function initTeamsAppeal(s: GameState): void {
-  const ranking = Object.values(s.teams).sort(
-    (a, b) => Team.getWagesAmount(s, b) - Team.getWagesAmount(s, a)
+function initTeamsAppeal(gs: GameState): void {
+  const ranking = Object.values(gs.teams).sort(
+    (a, b) =>
+      Team.getWagesAmount({ gs, t: b }) - Team.getWagesAmount({ gs, t: a })
   );
-  const facilities = Object.values(s.teams).sort(
+  const facilities = Object.values(gs.teams).sort(
     (a, b) => b.finances.facilities - a.finances.facilities
   );
   ranking.forEach((t) => (t.appeal = Team.calcAppeal(t, ranking, facilities)));

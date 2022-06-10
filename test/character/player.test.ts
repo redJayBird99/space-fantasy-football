@@ -187,6 +187,13 @@ describe("getOutOfPositionMalus()", () => {
 });
 
 describe("Player.getSkill()", () => {
+  test("when growth argument is false shouldn't apply the growthState", () => {
+    const p = new _pl.Player("cf", new Date(), 18);
+    expect(p.skills.passing).toBe(
+      _pl.Player.getSkill(p, "passing", undefined, false)
+    );
+  });
+
   _pl.skillsApplicableMalus.forEach((sk) => {
     test(`when is playing out of position the ${sk} value is reduced`, () => {
       expect(_pl.Player.getSkill(smpPlr, sk)).toBeGreaterThan(
@@ -314,6 +321,82 @@ describe("Player.getScore()", () => {
       });
     }
   );
+});
+
+describe("predictScore()", () => {
+  const team = new Team("empty name");
+  const dt = new Date();
+  const p = new _pl.Player("lm", dt, 17);
+
+  test("should be deterministic given the same imput", () => {
+    expect(_pl.Player.predictScore(p, dt, team)).toBe(
+      _pl.Player.predictScore(p, dt, team)
+    );
+  });
+
+  test("should return the current score when older than END_GROWTH_AGE", () => {
+    const p = new _pl.Player("gk", dt, _pl.END_GROWTH_AGE + 1);
+    expect(_pl.Player.getScore(p)).toBe(_pl.Player.predictScore(p, dt, team));
+  });
+
+  test("should usually return a different score when younger than END_GROWTH_AGE", () => {
+    team.scoutOffset = 0.2;
+    expect(_pl.Player.getScore(p, undefined, false)).not.toBe(
+      _pl.Player.predictScore(p, dt, team)
+    );
+  });
+
+  test("should return a value within scoutOffset% of the real score", () => {
+    team.scoutOffset = 0.1;
+    const fct =
+      _pl.Player.getScore(p, undefined, false) /
+      _pl.Player.predictScore(p, dt, team);
+    expect(fct).toBeGreaterThanOrEqual(1 - team.scoutOffset);
+    expect(fct).toBeLessThanOrEqual(1 + team.scoutOffset);
+  });
+
+  test("the accuracy should improve when the player age get closer to END_GROWTH_AGE", () => {
+    const now = new Date(dt);
+    const p = new _pl.Player("gk", now, _pl.MIN_AGE);
+    const after3Years = new Date(now.getFullYear() + 3, now.getMonth() + 1);
+    const peakScore = _pl.Player.getScore(p, undefined, false);
+    expect(
+      Math.abs(peakScore - _pl.Player.predictScore(p, after3Years, team))
+    ).toBeLessThan(Math.abs(peakScore - _pl.Player.predictScore(p, dt, team)));
+  });
+
+  test("two different teams should get two different score", () => {
+    // cause the function random nature in rare occasions they could be the same
+    const team2 = new Team("insert name");
+    expect(_pl.Player.predictScore(p, dt, team2)).not.toBe(
+      _pl.Player.predictScore(p, dt, team)
+    );
+  });
+
+  test("lower is team.scoutOffset closer should be to the real score", () => {
+    const dist = (p: _pl.Player, team: Team) =>
+      Math.abs(
+        _pl.Player.getScore(p, undefined, false) -
+          _pl.Player.predictScore(p, dt, team)
+      );
+    const plrs = poss.map((p) => new _pl.Player(p, dt, 18));
+    const team2 = new Team("insert name");
+    team2.scoutOffset = 0.2;
+    team.scoutOffset = 0.05;
+    const offset = plrs.reduce((a, p) => a + dist(p, team), 0) / plrs.length;
+    const offset2 = plrs.reduce((a, p) => a + dist(p, team2), 0) / plrs.length;
+    expect(offset).toBeLessThan(offset2);
+  });
+
+  test("should never return a value less than current score", () => {
+    const plrs = poss.map((p) => new _pl.Player(p, dt, _pl.END_GROWTH_AGE - 2));
+    team.scoutOffset = 0.5;
+    plrs.forEach((p) =>
+      expect(_pl.Player.predictScore(p, dt, team)).toBeGreaterThanOrEqual(
+        _pl.Player.getScore(p)
+      )
+    );
+  });
 });
 
 describe("Player.getHeightInCm()", () => {
@@ -556,25 +639,5 @@ describe("Player.applyMonthlyDegrowth()", () => {
     plr.growthState = 0.5;
     _pl.Player.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBe(0.5);
-  });
-});
-
-describe("pickBest()", () => {
-  const pls = Array.from({ length: 9 }, () => new _pl.Player("am", new Date()));
-  const n = 5;
-
-  test("should return n players", () => {
-    expect(_pl.pickBest(pls, n).length).toBe(n);
-  });
-
-  test("should return the best n players", () => {
-    const best = pls
-      .sort((p1, p2) => _pl.Player.getScore(p2) - _pl.Player.getScore(p1))
-      .slice(0, n);
-    expect(_pl.pickBest(pls, n)).toEqual(expect.arrayContaining(best));
-  });
-
-  test("throw an error when n is larger than player.length", () => {
-    expect(() => _pl.pickBest(pls, 10)).toThrow();
   });
 });

@@ -137,3 +137,18 @@ describe("createBirthday()", () => {
 describe("createName", () => {
   xtest("should depend on the nationality", () => {});
 });
+
+describe("hash()", () => {
+  const mod = 8_191;
+
+  test("should return two different ouputs when given two different input", () => {
+    expect(gen.hash(gen.createId(), mod)).not.toBe(
+      gen.hash(gen.createId(), mod)
+    );
+  });
+
+  test("should return ouput when given two equal input", () => {
+    const id = gen.createId();
+    expect(gen.hash(id, mod)).toBe(gen.hash(id, mod));
+  });
+});
