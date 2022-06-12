@@ -3,11 +3,10 @@ import {
   createName,
   randomGauss,
   createBirthday,
-  randomSign,
   getAgeAt,
   hash,
 } from "../util/generator";
-import { mod } from "../util/math";
+import { within } from "../util/math";
 import { createSkills } from "./create-skills";
 import { Team } from "./team";
 
@@ -25,13 +24,6 @@ const MAX_WAGE = Math.round(SALARY_CAP / 5);
 
 type Foot = "ambidextrous" | "left" | "right";
 type FootChance = { left: number; right: number };
-
-type Improvability =
-  | "A" // the growth rate is very high
-  | "B" // the growth rate is high
-  | "C" // the growth rate is medium
-  | "D" // the growth rate is low
-  | "E"; // the growth rate is very low or none
 
 type Position =
   | "gk"
@@ -99,19 +91,9 @@ function createGrowthState(p: Player, now: Date): number {
   return 1 - annualDegrowthRate * Math.max(0, age - START_DEGROWTH_AGE);
 }
 
-// convert the growth rate to improvability rating
-function getImprovability(growthRate: number): Improvability {
-  const ratings: Improvability[] = ["E", "D", "C", "B", "A"];
-  const step = MAX_GROWTH_RATE / ratings.length;
-  return ratings[Math.floor(growthRate / step)];
-}
-
-// deceiving the improvability rating (for user)
-// TODO: use it
-// TODO: depending on the scountig
-function addGrowthRateNoise(gRate: number): number {
-  const noise = randomSign((MAX_GROWTH_RATE / 3) * Math.random());
-  return mod(gRate + noise, MAX_GROWTH_RATE);
+// convert the growth rate to an improvability rating value between 0 and 10
+function getImprovabilityRating(growthRate: number): number {
+  return Math.round((growthRate / MAX_GROWTH_RATE) * 10);
 }
 
 // returns the probability for the preferred foot between left and right
@@ -277,7 +259,6 @@ class Player {
   foot: Foot;
   growthRate: number; // monthly growth rate of growthState
   growthState: number; // (percentage 0-1) applying it: skillValue * growthState
-  improvability: Improvability; // the user see this value instead of the growthRate
   skills: Skills; // to get the skill values with all modifiers (growth, malus and etc) applied use getSkill
 
   constructor(pos: Position, now: Date, age?: number) {
@@ -291,7 +272,6 @@ class Player {
     this.growthRate =
       ((randomGauss() + 2 * Math.random()) / 3) * MAX_GROWTH_RATE; // loosen up a bit the randomGauss;
     this.growthState = createGrowthState(this, now);
-    this.improvability = getImprovability(this.growthRate);
   }
 
   static age(p: Player, now: Date): number {
@@ -418,7 +398,7 @@ class Player {
         : 1;
     const wage = 2 ** ((Player.getScore(p) - 55) / 5) * MIN_WAGE * posFactor;
 
-    return Math.round(Math.max(MIN_WAGE, Math.min(MAX_WAGE, wage)));
+    return within(wage, MIN_WAGE, MAX_WAGE);
   }
 
   // returns true when the player is willing to sign for the team, depending on
@@ -548,7 +528,6 @@ export {
   MIN_WAGE,
   MAX_WAGE,
   Foot,
-  Improvability,
   Position,
   PositionArea,
   Skills,
@@ -559,7 +538,7 @@ export {
   getArea,
   createAge,
   createGrowthState,
-  getImprovability,
+  getImprovabilityRating,
   preferredFootChance,
   createPreferredFoot,
   macroskills,

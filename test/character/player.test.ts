@@ -89,27 +89,17 @@ describe("Player.retire()", () => {
   });
 });
 
-describe("getImprovability()", () => {
-  const step = _pl.MAX_GROWTH_RATE / 5; // 5 improvability ratings
-
-  test("should return E", () => {
-    expect(_pl.getImprovability(step / 2)).toBe("E");
+describe("getImprovabilityRating()", () => {
+  test("should return 0 when given 0", () => {
+    expect(_pl.getImprovabilityRating(0)).toBe(0);
   });
 
-  test("should return D", () => {
-    expect(_pl.getImprovability(step / 2 + step)).toBe("D");
+  test("should return 10 when given MAX_GROWTH_RATE", () => {
+    expect(_pl.getImprovabilityRating(_pl.MAX_GROWTH_RATE)).toBe(10);
   });
 
-  test("should return C", () => {
-    expect(_pl.getImprovability(step / 2 + 2 * step)).toBe("C");
-  });
-
-  test("should return B", () => {
-    expect(_pl.getImprovability(step / 2 + 3 * step)).toBe("B");
-  });
-
-  test("should return A", () => {
-    expect(_pl.getImprovability(step / 2 + 4 * step)).toBe("A");
+  test("should return 3 when given 3 * MAX_GROWTH_RATE / 10", () => {
+    expect(_pl.getImprovabilityRating((3 * _pl.MAX_GROWTH_RATE) / 10)).toBe(3);
   });
 });
 

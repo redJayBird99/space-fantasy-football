@@ -737,3 +737,43 @@ describe("initScoutOffset()", () => {
     expect(_t.initScoutOffset(team)).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("Team.estimateGrowthRate()", () => {
+  const team = new _t.Team("some name");
+  const p = new _p.Player("am", new Date());
+
+  test("should be deterministic given the same imput", () => {
+    expect(_t.Team.estimateGrowthRate(team, p)).toBe(
+      _t.Team.estimateGrowthRate(team, p)
+    );
+  });
+
+  test("most of the times teams should get different results", () => {
+    const team2 = new _t.Team("some other name");
+    expect(_t.Team.estimateGrowthRate(team2, p)).not.toBe(
+      _t.Team.estimateGrowthRate(team, p)
+    );
+  });
+
+  test("should return a value within (2 * MAX_SCOUTING_OFFSET)% of the real growthRate", () => {
+    team.scoutOffset = _t.MAX_SCOUTING_OFFSET;
+    expect(_t.Team.estimateGrowthRate(team, p)).toBeLessThanOrEqual(
+      (1 + 2 * _t.MAX_SCOUTING_OFFSET) * p.growthRate
+    );
+    expect(_t.Team.estimateGrowthRate(team, p)).toBeGreaterThanOrEqual(
+      (1 - 2 * _t.MAX_SCOUTING_OFFSET) * p.growthRate
+    );
+  });
+
+  test("lower is team.scoutOffset closer should be to the real growthRate", () => {
+    const team2 = new _t.Team("some other name");
+    const dist = (p: _p.Player, t: _t.Team) =>
+      Math.abs(_t.Team.estimateGrowthRate(t, p) - p.growthRate);
+    const plrs = rdmPlayers(20);
+    team.scoutOffset = 0.05;
+    team2.scoutOffset = 0.2;
+    const offset = plrs.reduce((a, p) => a + dist(p, team), 0) / plrs.length;
+    const offset2 = plrs.reduce((a, p) => a + dist(p, team2), 0) / plrs.length;
+    expect(offset).toBeLessThan(offset2);
+  });
+});

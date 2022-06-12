@@ -8,6 +8,8 @@ import {
 } from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
+import { hash } from "../util/generator";
+import { within } from "../util/math";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 
@@ -30,15 +32,12 @@ function initMoneyAmount(fb: Fanbase, min: number): number {
 }
 
 function initScoutOffset(t: Team): number {
-  const offset = MAX_SCOUTING_OFFSET / 2;
-  return Math.max(
+  const hf = MAX_SCOUTING_OFFSET / 2;
+  return within(
+    hf * ((fanbaseScore.huge - fanbaseScore[t.fanbase]) / fanbaseScore.huge) +
+      Math.random() * hf,
     0,
-    Math.min(
-      MAX_SCOUTING_OFFSET,
-      offset *
-        ((fanbaseScore.huge - fanbaseScore[t.fanbase]) / fanbaseScore.huge) +
-        Math.random() * offset
-    )
+    MAX_SCOUTING_OFFSET
   );
 }
 
@@ -247,7 +246,7 @@ class Team {
     return fanPoints + 3 * ((l - rankNth) / l) + (l - facilityNth) / l;
   }
 
-  // return a weighted score of a player between the current score and the
+  // returns a weighted score of a player between the current score and the
   // peak predicted score (when young) by the team
   static evaluatePlayer({ gs, t, p }: GsTmPl): number {
     return 0.7 * Player.predictScore(p, gs.date, t) + 0.3 * Player.getScore(p);
@@ -258,6 +257,15 @@ class Team {
   // and 4 on the score of the player
   static ratingPlayerByNeed(g: GsTmPl, r: RatingAreaByNeed) {
     return 4 * (Team.evaluatePlayer(g) / MAX_SKILL) + r[getArea(g.p.position)];
+  }
+
+  // this method is meant for the user when he want to see the player improvability
+  // returns a predicted player growth rate by the team scountig, the max offset
+  // from the real growth is of (2 * MAX_SCOUTING_OFFSET)% percentage
+  static estimateGrowthRate(t: Team, p: Player): number {
+    // the hash it used to get a deterministic value for each player and team without storing anything extra
+    const h = (hash(p.id + t.name, 200) - 100) / 100;
+    return (1 + 2 * t.scoutOffset * h) * p.growthRate;
   }
 }
 
@@ -270,13 +278,14 @@ class RatingAreaByNeed {
   forward = 0;
 
   constructor(teamPlayers: Player[]) {
-    const bound = (r: number) => Math.min(1, Math.max(0, r));
+    const minRt = 0;
+    const maxRt = 1;
     // counts the players per area
     teamPlayers.forEach((p) => this[getArea(p.position)]++);
-    this.goolkeeper = bound((3 - this.goolkeeper) / 3);
-    this.defender = bound((8 - this.defender) / 8);
-    this.midfielder = bound((8 - this.midfielder) / 8);
-    this.forward = bound((6 - this.forward) / 6);
+    this.goolkeeper = within((3 - this.goolkeeper) / 3, minRt, maxRt);
+    this.defender = within((8 - this.defender) / 8, minRt, maxRt);
+    this.midfielder = within((8 - this.midfielder) / 8, minRt, maxRt);
+    this.forward = within((6 - this.forward) / 6, minRt, maxRt);
   }
 }
 
@@ -291,7 +300,7 @@ function renewalProbability(g: GsTmPl, need: RatingAreaByNeed): number {
     return 0;
   }
 
-  const scoreFct = Math.min(1, Math.max(0, (Team.evaluatePlayer(g) - 48) / 24));
+  const scoreFct = within((Team.evaluatePlayer(g) - 48) / 24, 0, 1);
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(g.p.position)];
   const probability = scoreFct + areaFct;
   return need[getArea(g.p.position)] === 0 ? probability / 2 : probability;
