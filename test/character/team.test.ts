@@ -727,3 +727,13 @@ describe("pickBest()", () => {
     expect(() => _t.pickBest({ gs: st, t: team }, pls, 10)).toThrow();
   });
 });
+
+describe("initScoutOffset()", () => {
+  test("should return a value less than or equal to MAX_SCOUTING_OFFSET", () => {
+    expect(_t.initScoutOffset(team)).toBeLessThanOrEqual(2);
+  });
+
+  test("should return a value greater than or equal to 0", () => {
+    expect(_t.initScoutOffset(team)).toBeGreaterThanOrEqual(0);
+  });
+});

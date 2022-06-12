@@ -219,13 +219,48 @@ describe("updateTeamsAppeal()", () => {
     // note when the position don't change the appeal don't change
     const last = table[table.length - 1];
     const oldAppeal = old.find((t) => t.name === last)?.appeal;
-    expect(oldAppeal).toBeGreaterThan(st.teams[last].appeal);
+    expect(oldAppeal).toBeGreaterThanOrEqual(st.teams[last].appeal);
   });
 
-  test("the first in the league should improve its appeal", () => {
+  test("the first in the league should increase its appeal", () => {
     // note when the position don't change the appeal don't change
     const oldAppeal = old.find((t) => t.name === table[0])?.appeal;
-    expect(oldAppeal).toBeLessThan(st.teams[table[0]].appeal);
+    expect(oldAppeal).toBeLessThanOrEqual(st.teams[table[0]].appeal);
+  });
+});
+
+describe("updateTeamsScouting()", () => {
+  const st = _gs.GameState.init();
+  const old: _t.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
+  _sm.updateTeamsScouting(st);
+
+  test("should update some team.scoutOffset", () => {
+    expect(
+      old.some((t) => t.scoutOffset !== st.teams[t.name].scoutOffset)
+    ).toBe(true);
+  });
+
+  test("the change magnitude should be less than or equal MAX_SCOUTING_OFFSET / 10", () => {
+    old.forEach(
+      (t) =>
+        expect(
+          Math.abs(t.scoutOffset - st.teams[t.name].scoutOffset)
+        ).toBeLessThan(_t.MAX_SCOUTING_OFFSET / 10 + 0.0001) // rounding
+    );
+  });
+
+  test("scoutOffset should decrease or stay the same for high spending teams", () => {
+    const rank = old.sort((a, b) => b.finances.scouting - a.finances.scouting);
+    expect(rank[0].scoutOffset).toBeGreaterThanOrEqual(
+      st.teams[rank[0].name].scoutOffset
+    );
+  });
+
+  test("scoutOffset should increase or stay the same for low spending teams", () => {
+    const rank = old.sort((a, b) => a.finances.scouting - b.finances.scouting);
+    expect(rank[0].scoutOffset).toBeLessThanOrEqual(
+      st.teams[rank[0].name].scoutOffset
+    );
   });
 });
 

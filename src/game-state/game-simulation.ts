@@ -2,8 +2,9 @@ import { GameStateHandle, GameState, createPlayers } from "./game-state";
 import { Schedule } from "./tournament-scheduler";
 import { LeagueTable } from "./league-table";
 import { Player, MIN_AGE } from "../character/player";
-import { Team } from "../character/team";
+import { Team, MAX_SCOUTING_OFFSET } from "../character/team";
 import { shuffle } from "../util/generator";
+import { within } from "../util/math";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september
@@ -113,6 +114,7 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   storeEndedSeasonSchedule(gs);
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
+  updateTeamsScouting(gs);
   enqueueNextDayEvent(gs, e.date, "retiring");
   enqueueNextDayEvent(gs, e.date, "draft");
   enqueueNextDayEvent(gs, e.date, "updateContract");
@@ -219,8 +221,22 @@ function updateTeamsAppeal(gs: GameState): void {
   );
   ranking.forEach((t) => {
     const newAppeal = Team.calcAppeal(t, ranking, facilities);
-    t.appeal += Math.max(-1, Math.min(1, newAppeal - t.appeal));
+    t.appeal += within(newAppeal - t.appeal, -1, 1);
   });
+}
+
+// change the teams.scoutOffset according to team scountig expenses ranking and
+// randomness the max magnitude change MAX_SCOUTING_OFFSET / 10
+function updateTeamsScouting(gs: GameState): void {
+  const dif = MAX_SCOUTING_OFFSET / 10;
+  const teams = Object.values(gs.teams);
+  teams
+    .sort((a, b) => b.finances.scouting - a.finances.scouting)
+    .forEach((t, i) => {
+      const to = (MAX_SCOUTING_OFFSET - dif) * (i / (teams.length - 1)) + dif;
+      const mv = within((to - t.scoutOffset) * Math.random(), -dif, dif);
+      t.scoutOffset = within(t.scoutOffset + mv, 0, MAX_SCOUTING_OFFSET);
+    });
 }
 
 // enqueue in the gameState a new gameEvent for the given current season round if it exists
@@ -367,6 +383,7 @@ export {
   updateContracts,
   teamsSignFreeAgents,
   updateTeamsAppeal,
+  updateTeamsScouting,
   renewExipiringContracts,
   removeExpiredContracts,
   enqueueSimRoundEvent,

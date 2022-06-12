@@ -29,6 +29,19 @@ function initMoneyAmount(fb: Fanbase, min: number): number {
   return Math.round(min + fanbaseScore[fb] * extra + Math.random() * extra);
 }
 
+function initScoutOffset(t: Team): number {
+  const offset = MAX_SCOUTING_OFFSET / 2;
+  return Math.max(
+    0,
+    Math.min(
+      MAX_SCOUTING_OFFSET,
+      offset *
+        ((fanbaseScore.huge - fanbaseScore[t.fanbase]) / fanbaseScore.huge) +
+        Math.random() * offset
+    )
+  );
+}
+
 // note instances of this class are saved as JSON on the user machine
 class Contract {
   teamName: string;
@@ -60,11 +73,12 @@ class Team {
   finances: Finances;
   fanbase: Fanbase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
-  scoutOffset = Math.random() * MAX_SCOUTING_OFFSET; // percentage value higher is worse
+  scoutOffset: number; // percentage value higher is worse
 
   constructor(name: string) {
     this.name = name;
     this.fanbase = teams[name] ? teams[name].fanbase : "verySmall";
+    this.scoutOffset = initScoutOffset(this);
     this.finances = {
       budget: initMoneyAmount(this.fanbase, 10 * SALARY_CAP),
       revenue: initMoneyAmount(this.fanbase, SALARY_CAP + SALARY_CAP / 10),
@@ -328,6 +342,7 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
 }
 
 export {
+  MAX_SCOUTING_OFFSET,
   Contract,
   Team,
   RatingAreaByNeed,
@@ -337,4 +352,5 @@ export {
   minSalaryTax,
   findBest,
   pickBest,
+  initScoutOffset,
 };
