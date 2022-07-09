@@ -9,6 +9,7 @@ import {
   newSeasonSchedule,
 } from "./game-simulation";
 import teamsJson from "../asset/teams.json";
+import { getPopStats, PopStats } from "./population-stats";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -26,6 +27,7 @@ class GameState {
   contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
+  popStats: PopStats = getPopStats([]);
 
   constructor(date: Date) {
     this.date = new Date(date.getTime());
@@ -41,6 +43,8 @@ class GameState {
     initTeams(s, teamNames);
     initGameEvents(s);
     initTeamsAppeal(s);
+    s.popStats = getPopStats(Object.values(s.players));
+
     return s;
   }
 

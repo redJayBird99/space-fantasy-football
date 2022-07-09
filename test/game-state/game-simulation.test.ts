@@ -4,6 +4,7 @@ import { LeagueTable } from "../../src/game-state/league-table";
 import * as _pl from "../../src/character/player";
 import * as _t from "../../src/character/team";
 import teamsJson from "../../src/asset/team-names.json";
+import { getPopStats } from "../../src/game-state/population-stats";
 
 const rdmYear = 1990 + Math.floor(Math.random() * 35);
 let startD = new Date(rdmYear, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);
@@ -386,6 +387,14 @@ describe("handleSkillUpdate()", () => {
     st.players[p1.id] = p1;
     _sm.handleSkillUpdate(st);
     expect(p1.growthState).toBeGreaterThan(oldGrowthState);
+  });
+
+  test("should update the pupulation stats", () => {
+    _gs.GameState.savePlayer(st, new _pl.Player("am", new Date(), 18));
+    const old = getPopStats(Object.values(st.players));
+    st.popStats = old;
+    _sm.handleSkillUpdate(st);
+    expect(st.popStats).not.toEqual(old);
   });
 });
 

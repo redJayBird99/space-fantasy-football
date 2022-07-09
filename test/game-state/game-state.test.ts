@@ -302,6 +302,20 @@ describe("GameState.init()", () => {
   test("should have a schedule for the current season", () => {
     expect(game.schedules.now).toBeDefined();
   });
+
+  describe(".popStats", () => {
+    test(".sampleSize should equal to the amount of players", () => {
+      expect(game.popStats.sampleSize).toBe(Object.keys(game.players).length);
+    });
+
+    test("all properties should be greater than 0", () => {
+      expect(game.popStats.meanScore).toBeGreaterThan(0);
+      expect(game.popStats.medianScore).toBeGreaterThan(0);
+      expect(game.popStats.lowestScore).toBeGreaterThan(0);
+      expect(game.popStats.highestScore).toBeGreaterThan(0);
+      expect(game.popStats.standardDev).toBeGreaterThan(0);
+    });
+  });
 });
 
 // TODO: jest has some problem with structuredClone...

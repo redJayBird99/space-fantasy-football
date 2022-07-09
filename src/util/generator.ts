@@ -17,8 +17,7 @@ export function randomGauss(): number {
 // (non inclusive) seemingly taken from a normal distribution
 // the standard deviation is loosely around 14.4 when max maxOffeset is 50
 export function customGaussian(mean: number, maxOffeset: number): number {
-  const point = randomGauss();
-  return mean + (point - 0.5) * 2 * maxOffeset;
+  return mean + (randomGauss() - 0.5) * 2 * maxOffeset;
 }
 
 // returns an randomly generated id (with a very low collision probability)
@@ -67,12 +66,11 @@ export function getAgeAt(birthdayDateString: string, now: Date) {
 }
 
 export function mean(sample: number[]): number {
-  return sample.reduce((a, v) => a + v) / sample.length;
+  return sample.reduce((a, v) => a + v, 0) / sample.length;
 }
 
 // https://en.wikipedia.org/wiki/Variance
-export function variance(sample: number[]): number {
-  const m = mean(sample);
+export function variance(sample: number[], m = mean(sample)): number {
   return sample.reduce((a, v) => a + (v - m) ** 2, 0) / (sample.length - 1);
 }
 

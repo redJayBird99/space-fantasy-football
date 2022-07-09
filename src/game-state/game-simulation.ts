@@ -5,6 +5,7 @@ import { Player, MIN_AGE } from "../character/player";
 import { Team, MAX_SCOUTING_OFFSET } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
+import { getPopStats } from "./population-stats";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september
@@ -107,6 +108,7 @@ function handleSimRound(gs: GameState, r: SimRound): boolean {
 function handleSkillUpdate(gs: GameState): boolean {
   updateSkills(gs);
   enqueueSkillUpdateEvent(gs);
+  gs.popStats = getPopStats(Object.values(gs.players));
   return true;
 }
 
