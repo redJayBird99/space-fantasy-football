@@ -1,9 +1,6 @@
 import * as _p from "../../src/character/player";
+import { setSkillsTo } from "../../src/character/util";
 import { getPopStats } from "../../src/game-state/population-stats";
-
-function setSkillsTo(p: _p.Player, v: number): void {
-  Object.keys(p.skills).forEach((k) => (p.skills[k as _p.Skill] = v));
-}
 
 describe("getPopStats()", () => {
   const sample = [

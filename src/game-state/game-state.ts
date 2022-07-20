@@ -34,11 +34,10 @@ class GameState {
   }
 
   // init a new game state filling it with players, team and all the necessary for a new game
-  static init(): GameState {
+  static init(teamNames = Object.keys(teamsJson)): GameState {
     const s = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
-    const teamNames = Object.keys(teamsJson);
     newSeasonSchedule(s, teamNames);
     initTeams(s, teamNames);
     initGameEvents(s);

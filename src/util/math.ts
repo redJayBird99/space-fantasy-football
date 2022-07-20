@@ -3,13 +3,23 @@ export function mod(v: number, n: number): number {
   return ((v % n) + n) % n;
 }
 
-// returns min when v is less than min
-// returns max when v is greater than max
-// returns v otherwise
+/**
+ *
+ * @param min the min returnable value
+ * @param max the max returnable value
+ * @returns v when within min and max
+ */
 export function within(v: number, min: number, max: number): number {
   if (min > max) {
     throw new Error("the min can be greater than max");
   }
 
   return Math.max(min, Math.min(max, v));
+}
+
+/**
+ * @returns the distance between a and b
+ */
+export function dist(a: number, b: number): number {
+  return Math.abs(a - b);
 }

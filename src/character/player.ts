@@ -286,9 +286,10 @@ class Player {
       noGrowthSkill.has(s) || !growth
         ? p.skills[s]
         : p.skills[s] * p.growthState;
-    return Math.round(
-      skillsApplicableMalus.has(s) ? v - v * getOutOfPositionMalus(p, at) : v
-    );
+
+    return skillsApplicableMalus.has(s)
+      ? v - v * getOutOfPositionMalus(p, at)
+      : v;
   }
 
   // get the macroskill player value taking in cosideration all modifiers
@@ -301,7 +302,7 @@ class Player {
     at = p.position,
     growth = true
   ): number {
-    return Math.round(
+    return (
       macroskills[m].reduce(
         (sum, sk) => Player.getSkill(p, sk, at, growth) + sum,
         0
@@ -323,17 +324,17 @@ class Player {
   }
 
   /**
-    a player score is like an overall but this game doesn't use it explicitly
-    an overall is a tricky concept but a way to compare two player is necessary
-    which skills are more important for a position is subjective, the most
-    important thing is to have a good balance between postions score so every
-    position have equal opportunities to be picked by a team when compared
-    TODO: some statistical analysis
-
-    @param at take in cosideration out of position malus
-    @param growth if false the growthState modifier isn't applied
-    @Returns a value between MIN_SKILL and MAX_SKILL
-  */
+   *  a player score is like an overall but this game doesn't use it explicitly
+   *  an overall is a tricky concept but a way to compare two player is necessary
+   *  which skills are more important for a position is subjective, the most
+   *  important thing is to have a good balance between postions score so every
+   *  position have equal opportunities to be picked by a team when compared
+   *  TODO: some statistical analysis
+   *
+   *  @param at take in cosideration out of position malus
+   *  @param growth if false the growthState modifier isn't applied
+   *  @Returns a value between MIN_SKILL and MAX_SKILL
+   */
   static getScore(p: Player, at = p.position, growth = true): number {
     let score = 0;
 
@@ -398,7 +399,7 @@ class Player {
         : 1;
     const wage = 2 ** ((Player.getScore(p) - 55) / 5) * MIN_WAGE * posFactor;
 
-    return within(wage, MIN_WAGE, MAX_WAGE);
+    return Math.round(within(wage, MIN_WAGE, MAX_WAGE));
   }
 
   // returns true when the player is willing to sign for the team, depending on

@@ -108,6 +108,13 @@ class Team {
     GameState.deleteContract(gs, c);
   }
 
+  // moves the contracted player to the new team, the contract has the same conditions
+  static transferPlayer(gs: GameState, c: Contract, to: Team): void {
+    const p = gs.players[c.playerId];
+    Team.unsignPlayer(gs, c);
+    Team.signPlayer({ gs, p, t: to }, c.wage, c.duration);
+  }
+
   // returns players with contract duration of 0
   static getExipiringPlayers({ gs, t }: GsTm): Player[] {
     return GameState.getTeamPlayers(gs, t.name).filter(
@@ -150,10 +157,7 @@ class Team {
 
   // returns the wages sum of every not exipiring team player
   static getWagesAmount({ gs, t }: GsTm): number {
-    return Team.getNotExipiringPlayers({ gs, t }).reduce(
-      (a, p) => (GameState.getContract(gs, p)?.wage || 0) + a,
-      0
-    );
+    return sumWages(gs, Team.getNotExipiringPlayers({ gs, t }));
   }
 
   // returns the sum of all the monthly expenses wages and luxuryTax included
@@ -252,10 +256,12 @@ class Team {
     return 0.7 * Player.predictScore(p, gs.date, t) + 0.3 * Player.getScore(p);
   }
 
-  // a rating of how mutch a player is needed by a team
-  // returns a value between 0 and 5 of one point is depended on the position needs
-  // and 4 on the score of the player
-  static ratingPlayerByNeed(g: GsTmPl, r: RatingAreaByNeed) {
+  /**
+   * a rating of how mutch a player is needed by a team
+   * one point for position needs, 4 on the score of the player
+   * @returns a value between 0 and 5
+   */
+  static ratingPlayerByNeed(g: GsTmPl, r: RatingAreaByNeed): number {
     return 4 * (Team.evaluatePlayer(g) / MAX_SKILL) + r[getArea(g.p.position)];
   }
 
@@ -267,6 +273,15 @@ class Team {
     const h = (hash(p.id + t.name, 200) - 100) / 100;
     return (1 + 2 * t.scoutOffset * h) * p.growthRate;
   }
+}
+
+/**
+ *
+ * when a player does't have a contract his wage is 0
+ * @returns sum of the players wages
+ */
+function sumWages(gs: GameState, pls: Player[]): number {
+  return pls.reduce((a, p) => a + (GameState.getContract(gs, p)?.wage ?? 0), 0);
 }
 
 // a rating of how mutch the player area is needed by a team with the given
@@ -351,6 +366,8 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
 }
 
 export {
+  GsTm,
+  GsTmPl,
   MAX_SCOUTING_OFFSET,
   Contract,
   Team,
@@ -362,4 +379,5 @@ export {
   findBest,
   pickBest,
   initScoutOffset,
+  sumWages,
 };

@@ -179,7 +179,7 @@ describe("getOutOfPositionMalus()", () => {
 describe("Player.getSkill()", () => {
   test("when growth argument is false shouldn't apply the growthState", () => {
     const p = new _pl.Player("cf", new Date(), 18);
-    expect(p.skills.passing).toBe(
+    expect(p.skills.passing).toBeCloseTo(
       _pl.Player.getSkill(p, "passing", undefined, false)
     );
   });
@@ -197,7 +197,7 @@ describe("Player.getSkill()", () => {
     plr.growthState = 0.8;
 
     test(`growthState shouldn't be applied to noGrowthSkill skills`, () => {
-      expect(plr.skills[sk]).toBe(_pl.Player.getSkill(plr, sk));
+      expect(plr.skills[sk]).toBeCloseTo(_pl.Player.getSkill(plr, sk));
     });
   });
 
@@ -206,8 +206,8 @@ describe("Player.getSkill()", () => {
 
     if (!_pl.noGrowthSkill.has(sk)) {
       test(`should take in account the growthState`, () => {
-        const skl = Math.round(smpPlr.skills[sk] * smpPlr.growthState);
-        expect(skl).toBe(_pl.Player.getSkill(smpPlr, sk));
+        const skl = smpPlr.skills[sk] * smpPlr.growthState;
+        expect(skl).toBeCloseTo(_pl.Player.getSkill(smpPlr, sk));
       });
     }
 
