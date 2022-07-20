@@ -1,22 +1,7 @@
 import * as gen from "../../src/util/generator";
+import * as _m from "../../src/util/math";
 
 const rdmAge = () => Math.floor(90 * Math.random()) + 1;
-
-describe("mean()", () => {
-  const sample = Array.from({ length: 10 }, (_, i) => i * 2 + 2);
-
-  test(`should return 11 for ${sample}`, () => {
-    expect(gen.mean(sample)).toBe(11);
-  });
-});
-
-describe("variance()", () => {
-  const sample = Array.from({ length: 10 }, (_, i) => i * 2 + 2);
-
-  test(`should return 40 for ${sample}`, () => {
-    expect(gen.variance(sample)).toBeCloseTo(36.67);
-  });
-});
 
 describe("isMoreFrequent()", () => {
   const bits = [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0];
@@ -51,7 +36,7 @@ describe("randomGauss()", () => {
   });
 
   test("should have a standard deviation around 0.144 (max diff 0.01)", () => {
-    const stdDev = Math.sqrt(gen.variance(sample));
+    const stdDev = Math.sqrt(_m.variance(sample));
     expect(stdDev).toBeLessThan(0.144 + 0.1);
     expect(stdDev).toBeGreaterThan(0.144 - 0.1);
   });
@@ -76,7 +61,7 @@ describe("customGaussian()", () => {
   );
 
   test("customGaussian(50, 50) should have a standard deviation around 0.144 (max diff 1)", () => {
-    const stdDev = Math.sqrt(gen.variance(sample));
+    const stdDev = Math.sqrt(_m.variance(sample));
     expect(stdDev).toBeLessThan(14.4 + 1);
     expect(stdDev).toBeGreaterThan(14.4 - 1);
   });

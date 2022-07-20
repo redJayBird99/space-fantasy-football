@@ -2,7 +2,8 @@ import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
 import * as _u from "../../src/character/util";
-import { mean, swap } from "../../src/util/generator";
+import { swap } from "../../src/util/generator";
+import { mean } from "../../src/util/math";
 
 let st = new _gs.GameState(new Date());
 _gs.initTeams(st, ["a"]);

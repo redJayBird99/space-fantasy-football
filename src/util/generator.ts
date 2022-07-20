@@ -1,14 +1,14 @@
 import names from "../asset/names.json";
 
 // return true when more is more frequent in sample than less
-export function isMoreFrequent<T>(more: T, less: T, sample: T[]): boolean {
+function isMoreFrequent<T>(more: T, less: T, sample: T[]): boolean {
   const check = (to: T) => (v: T) => v === to;
   return sample.filter(check(more)).length > sample.filter(check(less)).length;
 }
 
 // returns a random number between 0 and 1 (non inclusive) seemingly taken from
 // a normal distribution with standard deviation loosely around 0.144
-export function randomGauss(): number {
+function randomGauss(): number {
   const samples = Array.from({ length: 4 }, () => Math.random());
   return samples.reduce((a, s) => a + s) / samples.length;
 }
@@ -16,18 +16,18 @@ export function randomGauss(): number {
 // return a random number between mean - maxOffeset and mean + maxOffeset
 // (non inclusive) seemingly taken from a normal distribution
 // the standard deviation is loosely around 14.4 when max maxOffeset is 50
-export function customGaussian(mean: number, maxOffeset: number): number {
+function customGaussian(mean: number, maxOffeset: number): number {
   return mean + (randomGauss() - 0.5) * 2 * maxOffeset;
 }
 
 // returns an randomly generated id (with a very low collision probability)
-export function createId(): string {
+function createId(): string {
   return Math.random().toString(36).slice(2);
 }
 
 // returns a randomly generated string with both name and surname
 // FIXME: should depend on nationality
-export function createName(): string {
+function createName(): string {
   const { names: nNams, surnames: sSurnames } = names.eng;
   const name = nNams[Math.floor(Math.random() * nNams.length)];
   const surname = sSurnames[Math.floor(Math.random() * sSurnames.length)];
@@ -35,7 +35,7 @@ export function createName(): string {
 }
 
 // returns a random birthday date for the given age
-export function createBirthdayDate(age: number, now: Date): Date {
+function createBirthdayDate(age: number, now: Date): Date {
   if (age < 0) {
     throw new Error("age argument can't be negatite");
   }
@@ -46,14 +46,14 @@ export function createBirthdayDate(age: number, now: Date): Date {
 }
 
 // returns a random birthday dateString (can construct a new Date) for the given age
-export function createBirthday(age: number, now: Date): string {
+function createBirthday(age: number, now: Date): string {
   const d = createBirthdayDate(age, now);
   return `${d.toDateString()}`;
 }
 
 // returns the age at now for the given birthday
 // code reference: https://stackoverflow.com/questions/4060004/calculate-age-given-the-birth-date-in-the-format-yyyymmdd
-export function getAgeAt(birthdayDateString: string, now: Date) {
+function getAgeAt(birthdayDateString: string, now: Date) {
   const birthDate = new Date(birthdayDateString);
   const mth = now.getMonth() - birthDate.getMonth();
   let age = now.getFullYear() - birthDate.getFullYear();
@@ -65,21 +65,7 @@ export function getAgeAt(birthdayDateString: string, now: Date) {
   return age;
 }
 
-export function mean(sample: number[]): number {
-  return sample.reduce((a, v) => a + v, 0) / sample.length;
-}
-
-// https://en.wikipedia.org/wiki/Variance
-export function variance(sample: number[], m = mean(sample)): number {
-  return sample.reduce((a, v) => a + (v - m) ** 2, 0) / (sample.length - 1);
-}
-
-// returns the given number with a random random sign
-export function randomSign(n: number): number {
-  return Math.random() > 0.5 ? -n : n;
-}
-
-export function swap<T>(arr: T[], i: number, j: number): void {
+function swap<T>(arr: T[], i: number, j: number): void {
   const t = arr[i];
   arr[i] = arr[j];
   arr[j] = t;
@@ -87,7 +73,7 @@ export function swap<T>(arr: T[], i: number, j: number): void {
 
 // Fisher-Yates (aka Knuth) Shuffle.
 // shuffle the array in place
-export function shuffle<T>(arr: T[]): T[] {
+function shuffle<T>(arr: T[]): T[] {
   for (let i = 0; i < arr.length; i++) {
     swap(arr, i, Math.floor(Math.random() * (i + 1)));
   }
@@ -96,7 +82,7 @@ export function shuffle<T>(arr: T[]): T[] {
 }
 
 // https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
-export function hash(s: string, mod: number): number {
+function hash(s: string, mod: number): number {
   let h = 0;
 
   for (let i = 0; i < s.length; i++) {
@@ -105,3 +91,17 @@ export function hash(s: string, mod: number): number {
 
   return h;
 }
+
+export {
+  hash,
+  shuffle,
+  swap,
+  getAgeAt,
+  createBirthday,
+  createBirthdayDate,
+  createId,
+  createName,
+  randomGauss,
+  isMoreFrequent,
+  customGaussian,
+};

@@ -1,10 +1,6 @@
 import * as _pl from "../../src/character/player";
-import {
-  isMoreFrequent,
-  getAgeAt,
-  mean,
-  variance,
-} from "../../src/util/generator";
+import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
+import { mean, variance } from "../../src/util/math";
 import { Team } from "../../src/character/team";
 
 const poss: _pl.Position[] = [
@@ -352,7 +348,9 @@ describe("predictScore()", () => {
     const peakScore = _pl.Player.getScore(p, undefined, false);
     expect(
       Math.abs(peakScore - _pl.Player.predictScore(p, after3Years, team))
-    ).toBeLessThan(Math.abs(peakScore - _pl.Player.predictScore(p, dt, team)));
+    ).toBeLessThanOrEqual(
+      Math.abs(peakScore - _pl.Player.predictScore(p, dt, team))
+    );
   });
 
   test("two different teams should get two different score", () => {

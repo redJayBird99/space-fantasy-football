@@ -1,11 +1,15 @@
-import { GameStateHandle, GameState, createPlayers } from "./game-state";
+import {
+  GameStateHandle,
+  GameState,
+  createPlayers,
+} from "../game-state/game-state";
+import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
-import { LeagueTable } from "./league-table";
 import { Player, MIN_AGE } from "../character/player";
 import { Team, MAX_SCOUTING_OFFSET } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
-import { getPopStats } from "./population-stats";
+import { getPopStats } from "../game-state/population-stats";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september

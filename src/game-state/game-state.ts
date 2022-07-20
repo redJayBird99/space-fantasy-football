@@ -1,13 +1,13 @@
 import { Player, PositionArea } from "../character/player";
 import { Team, Contract, pickBest } from "../character/team";
-import { Schedule, Match } from "./tournament-scheduler";
+import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
   enqueueSimRoundEvent,
   enqueueSkillUpdateEvent,
   enqueueSeasonEndEvent,
   newSeasonSchedule,
-} from "./game-simulation";
+} from "../game-sim/game-simulation";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
 

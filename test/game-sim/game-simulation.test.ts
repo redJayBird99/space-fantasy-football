@@ -1,4 +1,4 @@
-import * as _sm from "../../src/game-state/game-simulation";
+import * as _sm from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 import { LeagueTable } from "../../src/game-state/league-table";
 import * as _pl from "../../src/character/player";

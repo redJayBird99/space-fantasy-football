@@ -1,4 +1,4 @@
-import { Match } from "./tournament-scheduler";
+import { Match } from "../game-sim/tournament-scheduler";
 
 class Entry {
   teamName: string;

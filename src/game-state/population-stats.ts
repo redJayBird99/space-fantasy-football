@@ -1,5 +1,5 @@
 import { Player } from "../character/player";
-import { mean, variance } from "../util/generator";
+import { mean, variance } from "../util/math";
 
 // player population statistics
 interface PopStats {

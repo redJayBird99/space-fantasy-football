@@ -1,8 +1,8 @@
 import * as _gs from "../../src/game-state/game-state";
-import * as _sm from "../../src/game-state/game-simulation";
+import * as _sm from "../../src/game-sim/game-simulation";
 import * as _pl from "../../src/character/player";
 import * as _tm from "../../src/character/team";
-import { Schedule } from "../../src/game-state/tournament-scheduler";
+import { Schedule } from "../../src/game-sim/tournament-scheduler";
 import teamsJson from "../../src/asset/team-names.json";
 
 let st: _gs.GameState = new _gs.GameState(new Date());

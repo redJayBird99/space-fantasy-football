@@ -3,7 +3,7 @@ import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
 import * as _trde from "../../src/game-sim/trade";
 import * as _u from "../../src/character/util";
-import { mean } from "../../src/util/generator";
+import { mean } from "../../src/util/math";
 
 // guarantee findoffer
 const getSampleOffer = (gs: _gs.GameState, by: _t.Team, to: _t.Team) => {
