@@ -1,5 +1,6 @@
 import { Player, SALARY_CAP } from "../character/player";
 import { GsTm, sumWages, Team } from "../character/team";
+import { GameState } from "../game-state/game-state";
 import { shuffle } from "../util/generator";
 import { dist } from "../util/math";
 
@@ -175,20 +176,49 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
  */
 function seachTrade({ gs, t }: GsTm, other: Team): Trade | void {
   // TOFIX it is a temp solution
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const get = shuffle(Team.getNotExipiringPlayers({ gs, t: other })).slice(
-      0,
-      Math.floor(MAX_EXCHANGE_SIZE * Math.random()) + 1
-    );
-    const give = findOffer({ gs, t }, get);
+  const get = shuffle(Team.getNotExipiringPlayers({ gs, t: other })).slice(
+    0,
+    Math.floor(MAX_EXCHANGE_SIZE * Math.random()) + 1
+  );
+  const give = findOffer({ gs, t }, get);
 
-    if (acceptable({ gs, t: other }, give, get)) {
-      return {
-        side1: { by: t, content: give },
-        side2: { by: other, content: get },
-      };
+  if (acceptable({ gs, t: other }, give, get)) {
+    return {
+      side1: { by: t, content: give },
+      side2: { by: other, content: get },
+    };
+  }
+}
+
+/**
+ * move the current players contracts to the given team
+ */
+function transferPlayers(gs: GameState, pls: Player[], to: Team): void {
+  pls.forEach((p) => {
+    const c = GameState.getContract(gs, p);
+    c && Team.transferPlayer(gs, c, to);
+  });
+}
+
+/**
+ * try to make some trade between teams
+ * @returns the trades made
+ */
+function makeTrades(gs: GameState): Trade[] {
+  const rst: Trade[] = [];
+  const teams = shuffle(Object.values(gs.teams));
+
+  for (let i = 1; i <= teams.length / 2; i += 2) {
+    const trade = seachTrade({ gs, t: teams[i] }, teams[i - 1]);
+
+    if (trade) {
+      transferPlayers(gs, trade.side1.content, trade.side2.by);
+      transferPlayers(gs, trade.side2.content, trade.side1.by);
+      rst.push(trade);
     }
   }
+
+  return rst;
 }
 
 export {
@@ -201,9 +231,11 @@ export {
   areClose,
   scoreAppeal,
   skewMean,
+  transferPlayers,
   offerAppeal,
   affordable,
   acceptable,
   findOffer,
   seachTrade,
+  makeTrades,
 };

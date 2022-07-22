@@ -28,6 +28,7 @@ class GameState {
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
   popStats: PopStats = getPopStats([]);
+  flags = { openTradeWindow: false };
 
   constructor(date: Date) {
     this.date = new Date(date.getTime());

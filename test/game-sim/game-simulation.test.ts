@@ -435,6 +435,13 @@ describe("handleSeasonEnd()", () => {
     const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
     expect(st.schedules[seasonYears]).toEqual(shd);
   });
+
+  test("should should enqueue a openTradeWindow GameEvent", () => {
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "openTradeWindow" })
+    );
+  });
 });
 
 describe("handleSeasonStart()", () => {
@@ -460,6 +467,10 @@ describe("handleSeasonStart()", () => {
     const date = st.schedules.now[0].date;
     const evt = { date, type: "simRound", detail: { round: 0 } };
     expect(st.eventQueue).toContainEqual(evt);
+  });
+
+  test("should set the game state flag openTradeWindow to false", () => {
+    expect(st.flags.openTradeWindow).toBe(false);
   });
 });
 
@@ -553,6 +564,66 @@ describe("handleSignings()", () => {
   });
 });
 
+describe("handleOpenTradeWindow", () => {
+  test("should set the gameState flag openTradeWindow to true", () => {
+    _sm.handleOpenTradeWindow(st);
+    expect(st.flags.openTradeWindow).toBe(true);
+  });
+
+  test("should enqueue a trade event", () => {
+    expect(st.eventQueue).not.toContainEqual(
+      expect.objectContaining({ type: "trade" })
+    );
+    _sm.handleOpenTradeWindow(st);
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "trade" })
+    );
+  });
+});
+
+describe("handleTrade", () => {
+  describe("when the flag openTradeWindow is false", () => {
+    test("should not enqueue any new trade event", () => {
+      st.flags.openTradeWindow = false;
+      _sm.handleTrade(st);
+      expect(st.eventQueue).not.toContainEqual(
+        expect.objectContaining({ type: "trade" })
+      );
+    });
+
+    test("should not trade players", () => {
+      const st = _gs.GameState.init("abcdefghijklmnopqrst".split(""));
+      st.flags.openTradeWindow = false;
+      const old = Object.values(st.teams).map((t) => t.playerIds);
+      _sm.handleTrade(st);
+      expect(Object.values(st.teams).map((t) => t.playerIds)).toEqual(old);
+    });
+  });
+
+  describe("when the flag openTradeWindow is true", () => {
+    test("should enqueue a new trade event", () => {
+      st.flags.openTradeWindow = true;
+      _sm.handleTrade(st);
+      expect(st.eventQueue).toContainEqual(
+        expect.objectContaining({ type: "trade" })
+      );
+    });
+
+    test("should be able to trade players", () => {
+      const st = _gs.GameState.init("abcdefghijklmnopqrst".split(""));
+      st.flags.openTradeWindow = true;
+      const old = Object.values(st.teams).map((t) => t.playerIds);
+
+      for (let i = 0; i < 10; i++) {
+        // to be sure that some trade was made
+        _sm.handleTrade(st);
+      }
+
+      expect(Object.values(st.teams).map((t) => t.playerIds)).not.toEqual(old);
+    });
+  });
+});
+
 describe("handleGameEvent()", () => {
   describe("handle simRound GameEvent", () => {
     test("should return false", () => {
@@ -602,6 +673,20 @@ describe("handleGameEvent()", () => {
       expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
     });
   });
+
+  describe("handle openTradeWindow GameEvent", () => {
+    test("should return false", () => {
+      const e = { date: endD, type: "openTradeWindow" };
+      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+    });
+  });
+
+  describe("handle trade GameEvent", () => {
+    test("should return false", () => {
+      const e = { date: endD, type: "trade" };
+      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+    });
+  });
 });
 
 describe("process()", () => {
@@ -625,7 +710,7 @@ describe("process()", () => {
     expect(st.eventQueue).toEqual([evts[1]]);
   });
 
-  // TODO: speed up
+  // TODO: speed up this one will take a while...
   describe("simulate 10 seasons", () => {
     const st = _gs.GameState.init();
 

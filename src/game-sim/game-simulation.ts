@@ -10,12 +10,14 @@ import { Team, MAX_SCOUTING_OFFSET } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
+import { makeTrades } from "./trade";
 
 const NEXT_HOURS = 12;
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;
 const SEASON_END_MONTH = 5; // june, the distance is enough for 38 games every week from the start of the season
 const SEASON_END_DATE = 1;
+
 type GameEventTypes =
   | "simRound"
   | "skillUpdate"
@@ -25,7 +27,9 @@ type GameEventTypes =
   | "updateFinances"
   | "signings"
   | "draft"
-  | "retiring";
+  | "retiring"
+  | "trade"
+  | "openTradeWindow";
 type SimRound = { round: number };
 type Signings = { days: number }; // how many consecutive days should dispatch signings events
 
@@ -98,6 +102,10 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleRetiring(gs);
   } else if (evt.type === "draft") {
     return handleDraft(gs);
+  } else if (evt.type === "trade") {
+    return handleTrade(gs);
+  } else if (evt.type === "openTradeWindow") {
+    return handleOpenTradeWindow(gs);
   }
 
   return false;
@@ -124,11 +132,13 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   enqueueNextDayEvent(gs, e.date, "retiring");
   enqueueNextDayEvent(gs, e.date, "draft");
   enqueueNextDayEvent(gs, e.date, "updateContract");
+  enqueueNextDayEvent(gs, e.date, "openTradeWindow");
   return true;
 }
 
 function handleSeasonStart(gs: GameState): boolean {
   newSeasonSchedule(gs, Object.keys(gs.teams));
+  gs.flags.openTradeWindow = false;
   enqueueSimRoundEvent(gs, 0);
   enqueueSeasonEndEvent(gs);
   return true;
@@ -178,6 +188,27 @@ function handleDraft(gs: GameState): boolean {
   });
 
   return true;
+}
+
+/**
+ * when the trade window is open try to do some trade between teams
+ */
+function handleTrade(gs: GameState): boolean {
+  if (gs.flags.openTradeWindow) {
+    makeTrades(gs);
+    enqueueNextDayEvent(gs, gs.date, "trade");
+  }
+
+  return false;
+}
+
+/**
+ * open the trade window and enqueue a trade event
+ */
+function handleOpenTradeWindow(gs: GameState): boolean {
+  gs.flags.openTradeWindow = true;
+  enqueueNextDayEvent(gs, gs.date, "trade");
+  return false;
 }
 
 // add 52 new teens Players in every position area to the game and return them
@@ -309,7 +340,10 @@ function enqueueSeasonStartEvent(gs: GameState): void {
   GameState.enqueueGameEvent(gs, { date, type: "seasonStart" });
 }
 
-// enqueues given type GameEvent on gs.eventQueue for the next day of the given date
+/**
+ * enqueues given type GameEvent on gs.eventQueue for the next day
+ * @param d enqueues one day after this date
+ */
 function enqueueNextDayEvent(gs: GameState, d: Date, t: GameEventTypes): void {
   const date = new Date(d);
   date.setDate(date.getDate() + 1);
@@ -383,6 +417,8 @@ export {
   handleSignings,
   handleRetiring,
   handleDraft,
+  handleTrade,
+  handleOpenTradeWindow,
   createDraftPlayers,
   simulateRound,
   updateSkills,

@@ -141,6 +141,26 @@ describe("skewMean", () => {
   });
 });
 
+describe("transferPlayers", () => {
+  const st = _gs.GameState.init(["someName", "other"]);
+  const team = st.teams.someName;
+  const team2 = st.teams.other;
+  const mvPls = _t.Team.getNotExipiringPlayers({ gs: st, t: team }).slice(0, 3);
+  _trde.transferPlayers(st, mvPls, team2);
+
+  test("should move the players to the new team", () => {
+    expect(_t.Team.getNotExipiringPlayers({ gs: st, t: team2 })).toEqual(
+      expect.arrayContaining(mvPls)
+    );
+  });
+
+  test("should remove the players from the old team", () => {
+    expect(_t.Team.getNotExipiringPlayers({ gs: st, t: team })).not.toEqual(
+      expect.arrayContaining(mvPls)
+    );
+  });
+});
+
 describe("affordable()", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
@@ -295,6 +315,30 @@ describe("searchTrade", () => {
       expect(
         _trde.acceptable({ gs, t: side2.by }, side1.content, side2.content)
       ).toBe(true);
+    });
+  });
+});
+
+describe("makeTrades", () => {
+  describe("when some trade was made", () => {
+    let gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
+    let trades = _trde.makeTrades(gs);
+
+    while (trades.length !== 0) {
+      gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
+      trades = _trde.makeTrades(gs);
+    }
+
+    test("the traded players should switch team", () => {
+      trades.forEach((trade) => {
+        const { side1, side2 } = trade;
+        expect(_t.Team.getNotExipiringPlayers({ gs, t: side2.by })).toEqual(
+          expect.arrayContaining(side1.content)
+        );
+        expect(_t.Team.getNotExipiringPlayers({ gs, t: side1.by })).toEqual(
+          expect.arrayContaining(side2.content)
+        );
+      });
     });
   });
 });
