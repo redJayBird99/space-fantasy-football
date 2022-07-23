@@ -165,10 +165,16 @@ function handleUpdateFinances(gs: GameState): boolean {
   return false;
 }
 
+/**
+ * if the free signing window is open try to sign some players for each team and
+ * enqueue the next signings event weekly if the season already started otherwise daily
+ */
 function handleSignings(gs: GameState): boolean {
   if (gs.flags.openFreeSigningWindow) {
     teamsSignFreeAgents(gs);
-    enqueueEventFor(gs, gs.date, "signings", { days: 1 });
+    // if the season didn't already try new signings every day
+    const days = gs.eventQueue.some((e) => e.type === "seasonStart") ? 1 : 7;
+    enqueueEventFor(gs, gs.date, "signings", { days });
   }
 
   return false;

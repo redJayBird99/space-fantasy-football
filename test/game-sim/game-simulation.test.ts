@@ -583,23 +583,51 @@ describe("handleUpdateFinances()", () => {
 });
 
 describe("handleSignings()", () => {
-  test("should enqueue the next signings GameEvent when the free signing window is open", () => {
-    st.flags.openFreeSigningWindow = true;
-    expect(st.eventQueue).not.toContainEqual(
-      expect.objectContaining({ type: "signings" })
-    );
-    _sm.handleSignings(st);
-    expect(st.eventQueue).toContainEqual(
-      expect.objectContaining({ type: "signings" })
-    );
-  });
+  describe("enqueuing signings GameEvent", () => {
+    const dayAfter = new Date(endD);
+    dayAfter.setDate(dayAfter.getDate() + 1);
 
-  test("should not enqueue a signings GameEvent when the free signing window is close", () => {
-    st.flags.openFreeSigningWindow = false;
-    _sm.handleSignings(st);
-    expect(st.eventQueue).not.toContainEqual(
-      expect.objectContaining({ type: "signings" })
-    );
+    test("when the free signing window is open should enqueue", () => {
+      const st = new _gs.GameState(endD);
+      st.flags.openFreeSigningWindow = true;
+      expect(st.eventQueue).not.toContainEqual(
+        expect.objectContaining({ type: "signings" })
+      );
+      _sm.handleSignings(st);
+      expect(st.eventQueue).toContainEqual(
+        expect.objectContaining({ type: "signings" })
+      );
+    });
+
+    test("when the free signing window is close should not enqueue", () => {
+      const st = new _gs.GameState(endD);
+      st.flags.openFreeSigningWindow = false;
+      _sm.handleSignings(st);
+      expect(st.eventQueue).not.toContainEqual(
+        expect.objectContaining({ type: "signings" })
+      );
+    });
+
+    test("when the season start is imminent it should enqueue daily", () => {
+      const st = new _gs.GameState(endD);
+      st.flags.openFreeSigningWindow = true;
+      const start = new Date(endD);
+      start.setMonth(start.getMonth() + 1);
+      _gs.GameState.enqueueGameEvent(st, { date: start, type: "seasonStart" });
+      _sm.handleSignings(st);
+      expect(
+        st.eventQueue.find((e) => e.type === "signings")?.date.getTime()
+      ).toBeLessThanOrEqual(dayAfter.getTime());
+    });
+
+    test("when the season start isn't imminent it should not enqueue daily", () => {
+      const st = new _gs.GameState(endD);
+      st.flags.openFreeSigningWindow = true;
+      _sm.handleSignings(st);
+      expect(
+        st.eventQueue.find((e) => e.type === "signings")?.date.getTime()
+      ).toBeGreaterThan(dayAfter.getTime());
+    });
   });
 
   test("should sign one new players per team when players are needed and the free signing window is open", () => {
