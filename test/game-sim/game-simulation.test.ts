@@ -320,30 +320,6 @@ describe("enqueueSeasonStartEvent()", () => {
   });
 });
 
-describe("enqueueCloseFreeSigningWindow", () => {
-  test("should enqueue a closeFreeSigningWindow one month before the season end date", () => {
-    const st = new _gs.GameState(startD);
-    _sm.enqueueCloseFreeSigningWindow(st);
-    const y = st.date.getFullYear() + 1;
-    const date = new Date(y, _sm.SEASON_END_MONTH - 1, _sm.SEASON_END_DATE);
-    expect(st.eventQueue).toContainEqual({
-      date,
-      type: "closeFreeSigningWindow",
-    });
-  });
-});
-
-describe("enqueueNextDayEvent()", () => {
-  const st = new _gs.GameState(endD);
-
-  test("should enqueue a gameEvent on the gameState for next day", () => {
-    _sm.enqueueNextDayEvent(st, endD, "updateContract");
-    const date = new Date(endD);
-    date.setDate(date.getDate() + 1);
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
-  });
-});
-
 describe("enqueueEventFor()", () => {
   test("should enqueue a gameEvent on the gameState for next day", () => {
     const st = new _gs.GameState(startD);
@@ -448,38 +424,9 @@ describe("handleSeasonEnd()", () => {
   const date = new Date(endD);
   date.setDate(endD.getDate() + 1);
 
-  test("should enqueue a updateContract GameEvent", () => {
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
-  });
-
-  test("should enqueue a retiring GameEvent", () => {
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
-  });
-
-  test("should enqueue a draft GameEvent", () => {
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual({ date, type: "draft" });
-  });
-
   test("should save the ended schedule on the st.schedules", () => {
     const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
     expect(st.schedules[seasonYears]).toEqual(shd);
-  });
-
-  test("should should enqueue a openTradeWindow GameEvent", () => {
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual(
-      expect.objectContaining({ type: "openTradeWindow" })
-    );
-  });
-
-  test("should should enqueue a openFreeSigningWindow GameEvent", () => {
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
-    expect(st.eventQueue).toContainEqual(
-      expect.objectContaining({ type: "openFreeSigningWindow" })
-    );
   });
 });
 
@@ -508,15 +455,57 @@ describe("handleSeasonStart()", () => {
     expect(st.eventQueue).toContainEqual(evt);
   });
 
-  test("should enqueue a closeFreeSigingWindow gameEvent", () => {
-    const evtType = { type: "closeFreeSigningWindow" };
-    expect(st.eventQueue).not.toContainEqual(expect.objectContaining(evtType));
+  test("should enqueue a closeFreeSigingWindow gameEvent one month before the season end date", () => {
+    const st = new _gs.GameState(startD);
     _sm.handleSeasonStart(st);
-    expect(st.eventQueue).toContainEqual(expect.objectContaining(evtType));
+    const y = st.date.getFullYear() + 1;
+    const date = new Date(y, _sm.SEASON_END_MONTH - 1, _sm.SEASON_END_DATE);
+    expect(st.eventQueue).toContainEqual({
+      date,
+      type: "closeFreeSigningWindow",
+    });
   });
 
   test("should set the game state flag openTradeWindow to false", () => {
     expect(st.flags.openTradeWindow).toBe(false);
+  });
+
+  test("should enqueue a retiring GameEvent one day after the end of the season", () => {
+    _sm.handleSeasonStart(st);
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 1);
+    expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
+  });
+
+  test("should enqueue a updateContract GameEvent two day after the end of the season", () => {
+    _sm.handleSeasonStart(st);
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 2);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+  });
+
+  test("should enqueue a draft GameEvent three day after the end of the season", () => {
+    _sm.handleSeasonStart(st);
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 3);
+    expect(st.eventQueue).toContainEqual({ date, type: "draft" });
+  });
+
+  test("should enqueue a openTradeWindow GameEvent four day after the end of the season", () => {
+    _sm.handleSeasonStart(st);
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 4);
+    expect(st.eventQueue).toContainEqual({ date, type: "openTradeWindow" });
+  });
+
+  test("should enqueue a openFreeSigningWindow GameEvent four day after the end of the season", () => {
+    _sm.handleSeasonStart(st);
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 4);
+    expect(st.eventQueue).toContainEqual({
+      date,
+      type: "openFreeSigningWindow",
+    });
   });
 });
 

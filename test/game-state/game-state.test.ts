@@ -209,18 +209,18 @@ describe("GameState.saveSchedule()", () => {
 });
 
 describe("initGameEvents", () => {
-  test("should enqueue 2 GameEvents on gameState.eventQueue", () => {
+  test("should enqueue 9 GameEvents on gameState.eventQueue", () => {
     st.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
     _gs.initGameEvents(st);
-    expect(st.eventQueue.length).toBe(5);
+    expect(st.eventQueue.length).toBe(9);
   });
 
   test("should enqueue a GameEvent for the first season round", () => {
-    st.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
+    _gs.initTeams(st, "abcd".split(""));
     _gs.initGameEvents(st);
-    const findFirstRound = (e: _sm.GameEvent) =>
-      e.type === "simRound" && (e.detail as _sm.SimRound)?.round === 0;
-    expect(st.eventQueue.some(findFirstRound)).toBe(true);
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "simRound", detail: { round: 0 } })
+    );
   });
 
   test("should enqueue a skillUpdate GameEvent", () => {

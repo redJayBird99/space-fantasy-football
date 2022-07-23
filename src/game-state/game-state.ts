@@ -3,11 +3,8 @@ import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
-  enqueueSimRoundEvent,
   enqueueSkillUpdateEvent,
-  enqueueSeasonEndEvent,
-  newSeasonSchedule,
-  enqueueCloseFreeSigningWindow,
+  handleSeasonStart,
 } from "../game-sim/game-simulation";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
@@ -40,7 +37,6 @@ class GameState {
     const s = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
-    newSeasonSchedule(s, teamNames);
     initTeams(s, teamNames);
     initGameEvents(s);
     initTeamsAppeal(s);
@@ -202,10 +198,8 @@ function initTeams(gs: GameState, names: string[]): Team[] {
 // save the starting events for the game in te gameState.eventQueue as
 // skillUpdate and simRound for the first round (when the current season schedule exists)
 function initGameEvents(gs: GameState): void {
-  enqueueSimRoundEvent(gs, 0);
+  handleSeasonStart(gs);
   enqueueSkillUpdateEvent(gs);
-  enqueueSeasonEndEvent(gs);
-  enqueueCloseFreeSigningWindow(gs);
   GameState.enqueueGameEvent(gs, {
     date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),
     type: "updateFinances",
