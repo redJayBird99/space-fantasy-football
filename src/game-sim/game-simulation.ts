@@ -29,14 +29,16 @@ type GameEventTypes =
   | "draft"
   | "retiring"
   | "trade"
-  | "openTradeWindow";
+  | "openTradeWindow"
+  | "openFreeSigningWindow"
+  | "closeFreeSigningWindow";
 type SimRound = { round: number };
-type Signings = { days: number }; // how many consecutive days should dispatch signings events
+type DateOffset = { years?: number; months?: number; days?: number };
 
 interface GameEvent {
   date: Date;
   type: GameEventTypes;
-  detail?: SimRound | Signings;
+  detail?: SimRound;
 }
 
 // when the simulation is running no other piece of code should mutate the
@@ -97,7 +99,7 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
   } else if (evt.type === "updateFinances") {
     return handleUpdateFinances(gs);
   } else if (evt.type === "signings") {
-    return handleSignings(gs, evt);
+    return handleSignings(gs);
   } else if (evt.type === "retiring") {
     return handleRetiring(gs);
   } else if (evt.type === "draft") {
@@ -106,6 +108,10 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleTrade(gs);
   } else if (evt.type === "openTradeWindow") {
     return handleOpenTradeWindow(gs);
+  } else if (evt.type === "openFreeSigningWindow") {
+    return handleOpenFreeSigningWindow(gs);
+  } else if (evt.type === "closeFreeSigningWindow") {
+    return handleCloseFreeSigningWindow(gs);
   }
 
   return false;
@@ -133,6 +139,7 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   enqueueNextDayEvent(gs, e.date, "draft");
   enqueueNextDayEvent(gs, e.date, "updateContract");
   enqueueNextDayEvent(gs, e.date, "openTradeWindow");
+  enqueueNextDayEvent(gs, e.date, "openFreeSigningWindow");
   return true;
 }
 
@@ -141,6 +148,7 @@ function handleSeasonStart(gs: GameState): boolean {
   gs.flags.openTradeWindow = false;
   enqueueSimRoundEvent(gs, 0);
   enqueueSeasonEndEvent(gs);
+  enqueueCloseFreeSigningWindow(gs);
   return true;
 }
 
@@ -148,7 +156,6 @@ function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
   updateContracts(gs);
   renewExipiringContracts(gs);
   removeExpiredContracts(gs);
-  enqueueSigningsEvent(gs, e.date, 30);
   return false;
 }
 
@@ -158,9 +165,12 @@ function handleUpdateFinances(gs: GameState): boolean {
   return false;
 }
 
-function handleSignings(gs: GameState, e: GameEvent): boolean {
-  teamsSignFreeAgents(gs);
-  enqueueSigningsEvent(gs, e.date, (e.detail as Signings).days - 1);
+function handleSignings(gs: GameState): boolean {
+  if (gs.flags.openFreeSigningWindow) {
+    teamsSignFreeAgents(gs);
+    enqueueEventFor(gs, gs.date, "signings", { days: 1 });
+  }
+
   return false;
 }
 
@@ -208,6 +218,23 @@ function handleTrade(gs: GameState): boolean {
 function handleOpenTradeWindow(gs: GameState): boolean {
   gs.flags.openTradeWindow = true;
   enqueueNextDayEvent(gs, gs.date, "trade");
+  return false;
+}
+
+/**
+ * open the free signing window setting the gamestate flag to false and enqueue a sigings event
+ */
+function handleOpenFreeSigningWindow(gs: GameState): boolean {
+  gs.flags.openFreeSigningWindow = true;
+  enqueueEventFor(gs, gs.date, "signings", { days: 1 });
+  return false;
+}
+
+/**
+ * close the free signing window setting the gamestate flag to false
+ */
+function handleCloseFreeSigningWindow(gs: GameState): boolean {
+  gs.flags.openFreeSigningWindow = false;
   return false;
 }
 
@@ -341,25 +368,48 @@ function enqueueSeasonStartEvent(gs: GameState): void {
 }
 
 /**
- * enqueues given type GameEvent on gs.eventQueue for the next day
+ * enqueues a closeFreeSigningWindow type GameEvent on gs.eventQueue a month before the end of the season
+ */
+function enqueueCloseFreeSigningWindow(gs: GameState): void {
+  const year = gs.date.getFullYear() + 1;
+  const date = new Date(year, SEASON_END_MONTH - 1, SEASON_END_DATE);
+  GameState.enqueueGameEvent(gs, { date, type: "closeFreeSigningWindow" });
+}
+
+/**
+ * enqueues the given type GameEvent on gs.eventQueue for the next day
  * @param d enqueues one day after this date
  */
 function enqueueNextDayEvent(gs: GameState, d: Date, t: GameEventTypes): void {
-  const date = new Date(d);
-  date.setDate(date.getDate() + 1);
-  GameState.enqueueGameEvent(gs, { date, type: t });
+  enqueueEventFor(gs, d, t, { days: 1 });
 }
 
-// enqueues a signings type GameEvent on gs.eventQueue for the next day of the given date
-// if days is less than or equal 0 doesn't enqueue
-function enqueueSigningsEvent(gs: GameState, d: Date, days: number): void {
-  if (days <= 0) {
-    return;
+/**
+ * enqueues the given type GameEvent on gs.eventQueue after the given offset
+ * from the staring date, if the event date would be previous of
+ * the current game date it won't be scheduled
+ * @param d the starting date
+ * @param off amount of time after or before the given date
+ * @returns return true when was possible to schedule the event
+ */
+function enqueueEventFor(
+  gs: GameState,
+  d: Date,
+  t: GameEventTypes,
+  off?: DateOffset
+): boolean {
+  const date = new Date(
+    d.getFullYear() + (off?.years || 0),
+    d.getMonth() + (off?.months || 0),
+    d.getDate() + (off?.days || 0)
+  );
+
+  if (gs.date.getTime() > date.getTime()) {
+    return false;
   }
 
-  const date = new Date(d);
-  date.setDate(date.getDate() + 1);
-  GameState.enqueueGameEvent(gs, { date, type: "signings", detail: { days } });
+  GameState.enqueueGameEvent(gs, { date, type: t });
+  return true;
 }
 
 // enqueues a updateFinances type GameEvent on gs.eventQueue for the last day of the next month
@@ -419,6 +469,8 @@ export {
   handleDraft,
   handleTrade,
   handleOpenTradeWindow,
+  handleOpenFreeSigningWindow,
+  handleCloseFreeSigningWindow,
   createDraftPlayers,
   simulateRound,
   updateSkills,
@@ -433,8 +485,9 @@ export {
   enqueueSeasonEndEvent,
   enqueueSeasonStartEvent,
   enqueueUpdateFinancesEvent,
-  enqueueSigningsEvent,
+  enqueueCloseFreeSigningWindow,
   enqueueNextDayEvent,
+  enqueueEventFor,
   storeEndedSeasonSchedule,
   newSeasonSchedule,
 };

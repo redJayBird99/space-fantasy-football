@@ -320,6 +320,19 @@ describe("enqueueSeasonStartEvent()", () => {
   });
 });
 
+describe("enqueueCloseFreeSigningWindow", () => {
+  test("should enqueue a closeFreeSigningWindow one month before the season end date", () => {
+    const st = new _gs.GameState(startD);
+    _sm.enqueueCloseFreeSigningWindow(st);
+    const y = st.date.getFullYear() + 1;
+    const date = new Date(y, _sm.SEASON_END_MONTH - 1, _sm.SEASON_END_DATE);
+    expect(st.eventQueue).toContainEqual({
+      date,
+      type: "closeFreeSigningWindow",
+    });
+  });
+});
+
 describe("enqueueNextDayEvent()", () => {
   const st = new _gs.GameState(endD);
 
@@ -331,26 +344,45 @@ describe("enqueueNextDayEvent()", () => {
   });
 });
 
+describe("enqueueEventFor()", () => {
+  test("should enqueue a gameEvent on the gameState for next day", () => {
+    const st = new _gs.GameState(startD);
+    _sm.enqueueEventFor(st, endD, "updateContract", { days: 1 });
+    const date = new Date(endD);
+    date.setDate(date.getDate() + 1);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+  });
+
+  test("should enqueue a gameEvent on the gameState for next month", () => {
+    const st = new _gs.GameState(startD);
+    _sm.enqueueEventFor(st, endD, "updateContract", { months: 1 });
+    const date = new Date(endD);
+    date.setMonth(date.getMonth() + 1);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+  });
+
+  test("should enqueue an event on the gameState for the previous day", () => {
+    const st = new _gs.GameState(startD);
+    _sm.enqueueEventFor(st, endD, "updateContract", { days: -1 });
+    const date = new Date(endD);
+    date.setDate(date.getDate() - 1);
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+  });
+
+  test("should not enqueue an event for the previous day when the date is passed", () => {
+    const st = new _gs.GameState(startD);
+    _sm.enqueueEventFor(st, startD, "updateContract", { days: -1 });
+    const date = new Date(startD);
+    date.setDate(date.getDate() - 1);
+    expect(st.eventQueue).not.toContainEqual({ date, type: "updateContract" });
+  });
+});
+
 describe("enqueueUpdateFinancesEvent()", () => {
   test("should enqueue a updateFinances gameEvent on the gameState for last day of the month", () => {
     _sm.enqueueUpdateFinancesEvent(st);
     const date = new Date(st.date.getFullYear(), st.date.getMonth() + 2, 0);
     expect(st.eventQueue).toContainEqual({ date, type: "updateFinances" });
-  });
-});
-
-describe("enqueueSigningsEvent()", () => {
-  test("shouldn't enqueue a signings gameEvent when days is less than 1", () => {
-    _sm.enqueueSigningsEvent(st, startD, 0);
-    expect(st.eventQueue.some((e) => e.type === "signings")).toBe(false);
-  });
-
-  test("should enqueue a signings gameEvent on the gameState for next day", () => {
-    _sm.enqueueSigningsEvent(st, startD, 1);
-    const date = new Date(startD);
-    date.setDate(startD.getDate() + 1);
-    const e = { date, type: "signings", detail: { days: 1 } };
-    expect(st.eventQueue).toContainEqual(e);
   });
 });
 
@@ -442,6 +474,13 @@ describe("handleSeasonEnd()", () => {
       expect.objectContaining({ type: "openTradeWindow" })
     );
   });
+
+  test("should should enqueue a openFreeSigningWindow GameEvent", () => {
+    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "openFreeSigningWindow" })
+    );
+  });
 });
 
 describe("handleSeasonStart()", () => {
@@ -467,6 +506,13 @@ describe("handleSeasonStart()", () => {
     const date = st.schedules.now[0].date;
     const evt = { date, type: "simRound", detail: { round: 0 } };
     expect(st.eventQueue).toContainEqual(evt);
+  });
+
+  test("should enqueue a closeFreeSigingWindow gameEvent", () => {
+    const evtType = { type: "closeFreeSigningWindow" };
+    expect(st.eventQueue).not.toContainEqual(expect.objectContaining(evtType));
+    _sm.handleSeasonStart(st);
+    expect(st.eventQueue).toContainEqual(expect.objectContaining(evtType));
   });
 
   test("should set the game state flag openTradeWindow to false", () => {
@@ -517,14 +563,6 @@ describe("handleUpdateContracts()", () => {
   test("should remove some contracts", () => {
     expect(expiring.length).toBeGreaterThan(renewed.length);
   });
-
-  test("should enqueue a 30 days signings GameEvent for next day", () => {
-    _sm.handleUpdateContracts(st, { date: endD, type: "updateContract" });
-    const date = new Date(endD);
-    date.setDate(date.getDate() + 1);
-    const e: _sm.GameEvent = { date, type: "signings", detail: { days: 30 } };
-    expect(st.eventQueue).toContainEqual(e);
-  });
 });
 
 describe("handleUpdateFinances()", () => {
@@ -545,22 +583,41 @@ describe("handleUpdateFinances()", () => {
 });
 
 describe("handleSignings()", () => {
-  const e = { date: endD, type: "signings", detail: { days: 20 } };
-
-  test("should enqueue a the next signings GameEvent with a day less", () => {
-    const date = new Date(endD);
-    date.setDate(date.getDate() + 1);
-    const nextE = { date, type: "signings", detail: { days: 19 } };
-    _sm.handleSignings(st, e as _sm.GameEvent);
-    expect(st.eventQueue).toContainEqual(nextE as _sm.GameEvent);
+  test("should enqueue the next signings GameEvent when the free signing window is open", () => {
+    st.flags.openFreeSigningWindow = true;
+    expect(st.eventQueue).not.toContainEqual(
+      expect.objectContaining({ type: "signings" })
+    );
+    _sm.handleSignings(st);
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "signings" })
+    );
   });
 
-  test("should sign one new players per team when players are needed", () => {
+  test("should not enqueue a signings GameEvent when the free signing window is close", () => {
+    st.flags.openFreeSigningWindow = false;
+    _sm.handleSignings(st);
+    expect(st.eventQueue).not.toContainEqual(
+      expect.objectContaining({ type: "signings" })
+    );
+  });
+
+  test("should sign one new players per team when players are needed and the free signing window is open", () => {
+    st.flags.openFreeSigningWindow = true;
     _gs.initTeams(st, ["a", "b"]);
     Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
-    _sm.handleSignings(st, e as _sm.GameEvent);
+    _sm.handleSignings(st);
     expect(st.teams.a.playerIds.length).toBe(1);
     expect(st.teams.b.playerIds.length).toBe(1);
+  });
+
+  test("should not sign any players when the free signing window is closed", () => {
+    st.flags.openFreeSigningWindow = false;
+    _gs.initTeams(st, ["a", "b"]);
+    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    _sm.handleSignings(st);
+    expect(st.teams.a.playerIds.length).toBe(0);
+    expect(st.teams.b.playerIds.length).toBe(0);
   });
 });
 
@@ -578,6 +635,27 @@ describe("handleOpenTradeWindow", () => {
     expect(st.eventQueue).toContainEqual(
       expect.objectContaining({ type: "trade" })
     );
+  });
+});
+
+describe("handleOpenFreeSigningWindow", () => {
+  test("should set the gameState flag openFreeSigningWindow to true", () => {
+    _sm.handleOpenFreeSigningWindow(st);
+    expect(st.flags.openFreeSigningWindow).toBe(true);
+  });
+
+  test("should enqueue a signings game event", () => {
+    _sm.handleOpenFreeSigningWindow(st);
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "signings" })
+    );
+  });
+});
+
+describe("handleCloseFreeSigningWindow", () => {
+  test("should set the gameState flag openFreeSigningWindow to false", () => {
+    _sm.handleCloseFreeSigningWindow(st);
+    expect(st.flags.openFreeSigningWindow).toBe(false);
   });
 });
 
@@ -669,22 +747,36 @@ describe("handleGameEvent()", () => {
 
   describe("handle signings GameEvent", () => {
     test("should return false", () => {
-      const e = { date: startD, type: "signings", detail: { days: 1 } };
-      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+      const e: _sm.GameEvent = { date: startD, type: "signings" };
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle openTradeWindow GameEvent", () => {
     test("should return false", () => {
-      const e = { date: endD, type: "openTradeWindow" };
-      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+      const e: _sm.GameEvent = { date: endD, type: "openTradeWindow" };
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle trade GameEvent", () => {
     test("should return false", () => {
-      const e = { date: endD, type: "trade" };
-      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+      const e: _sm.GameEvent = { date: endD, type: "trade" };
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
+    });
+  });
+
+  describe("handle openFreeSigningWindow GameEvent", () => {
+    test("should return false", () => {
+      const e: _sm.GameEvent = { date: endD, type: "openFreeSigningWindow" };
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
+    });
+  });
+
+  describe("handle closeFreeSigningWindow GameEvent", () => {
+    test("should return false", () => {
+      const e: _sm.GameEvent = { date: endD, type: "closeFreeSigningWindow" };
+      expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 });

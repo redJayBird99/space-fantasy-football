@@ -7,6 +7,7 @@ import {
   enqueueSkillUpdateEvent,
   enqueueSeasonEndEvent,
   newSeasonSchedule,
+  enqueueCloseFreeSigningWindow,
 } from "../game-sim/game-simulation";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
@@ -28,7 +29,7 @@ class GameState {
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
   popStats: PopStats = getPopStats([]);
-  flags = { openTradeWindow: false };
+  flags = { openTradeWindow: false, openFreeSigningWindow: true };
 
   constructor(date: Date) {
     this.date = new Date(date.getTime());
@@ -204,6 +205,7 @@ function initGameEvents(gs: GameState): void {
   enqueueSimRoundEvent(gs, 0);
   enqueueSkillUpdateEvent(gs);
   enqueueSeasonEndEvent(gs);
+  enqueueCloseFreeSigningWindow(gs);
   GameState.enqueueGameEvent(gs, {
     date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),
     type: "updateFinances",

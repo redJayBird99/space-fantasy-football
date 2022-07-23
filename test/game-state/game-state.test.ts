@@ -212,7 +212,7 @@ describe("initGameEvents", () => {
   test("should enqueue 2 GameEvents on gameState.eventQueue", () => {
     st.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
     _gs.initGameEvents(st);
-    expect(st.eventQueue.length).toBe(4);
+    expect(st.eventQueue.length).toBe(5);
   });
 
   test("should enqueue a GameEvent for the first season round", () => {
@@ -231,6 +231,13 @@ describe("initGameEvents", () => {
   test("should enqueue a seasonEnd GameEvent", () => {
     _gs.initGameEvents(st);
     expect(st.eventQueue.some((e) => e.type === "seasonEnd")).toBe(true);
+  });
+
+  test("should enqueue a closeFreeSigningEvent GameEvent", () => {
+    _gs.initGameEvents(st);
+    expect(st.eventQueue).toContainEqual(
+      expect.objectContaining({ type: "closeFreeSigningWindow" })
+    );
   });
 
   test("should enqueue a updateFinances GameEvent", () => {
