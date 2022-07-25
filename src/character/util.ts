@@ -2,8 +2,8 @@ import * as _p from "./player";
 import * as _gs from "../game-state/game-state";
 import * as _t from "./team";
 
-const GOOD_STAT = 70;
-const BAD_STAT = 40;
+const GOOD_STAT = 75;
+const BAD_STAT = 35;
 const areas = Object.keys(_p.positionArea) as _p.PositionArea[];
 
 function createPlayers(a: _p.PositionArea, n: number): _p.Player[] {

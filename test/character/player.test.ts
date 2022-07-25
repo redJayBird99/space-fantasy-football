@@ -1,7 +1,9 @@
 import * as _pl from "../../src/character/player";
+import * as _gs from "../../src/game-state/game-state";
 import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
 import { mean, variance } from "../../src/util/math";
 import { Team } from "../../src/character/team";
+import { GOOD_STAT } from "../../src/character/util";
 
 const poss: _pl.Position[] = [
   "gk",
@@ -402,28 +404,30 @@ describe("Player.getHeightInCm()", () => {
 });
 
 describe("Player.wantedWage()", () => {
+  const gs = _gs.GameState.init("ab".split(""));
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
   test("a very good player should ask for MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 90));
-    expect(_pl.Player.wantedWage(plr)).toBe(_pl.MAX_WAGE);
+    expect(_pl.Player.wantedWage(gs, plr)).toBe(_pl.MAX_WAGE);
   });
 
   test("a bad player should ask for MIN_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 20));
-    expect(_pl.Player.wantedWage(plr)).toBe(_pl.MIN_WAGE);
+    expect(_pl.Player.wantedWage(gs, plr)).toBe(_pl.MIN_WAGE);
   });
 
   test("a mid player should ask for between MIN_WAGE and MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
-    expect(_pl.Player.wantedWage(plr)).toBeGreaterThan(_pl.MIN_WAGE);
-    expect(_pl.Player.wantedWage(plr)).toBeLessThan(_pl.MAX_WAGE);
+    expect(_pl.Player.wantedWage(gs, plr)).toBeGreaterThan(_pl.MIN_WAGE);
+    expect(_pl.Player.wantedWage(gs, plr)).toBeLessThan(_pl.MAX_WAGE);
   });
 });
 
-describe("Player.applicable()", () => {
-  const team = new Team("spam");
+describe("Player.approachable()", () => {
+  const gs = _gs.GameState.init("abcd".split(""));
+  const team = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
@@ -433,18 +437,18 @@ describe("Player.applicable()", () => {
 
     test("should return true when the appeal is 2.5", () => {
       team.appeal = 2.5;
-      expect(_pl.Player.approachable(pr, team)).toBe(true);
+      expect(_pl.Player.approachable({ p: pr, gs, t: team })).toBe(true);
     });
 
     test("should return true when the appeal is greater 2.5", () => {
       team.appeal = 3;
-      expect(_pl.Player.approachable(pr, team)).toBe(true);
+      expect(_pl.Player.approachable({ p: pr, gs, t: team })).toBe(true);
     });
 
     describe("for low appeal", () => {
       team.appeal = 1;
       const sample = Array.from({ length: 30 }, () =>
-        _pl.Player.approachable(pr, team)
+        _pl.Player.approachable({ p: pr, gs, t: team })
       );
 
       test("should return true sometimes", () => {
@@ -462,61 +466,68 @@ describe("Player.applicable()", () => {
   test("should return true when the appeal is less 2.5 for a mediocre player", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
     team.appeal = 1;
-    expect(_pl.Player.approachable(plr, team)).toBe(true);
+    expect(_pl.Player.approachable({ p: plr, gs, t: team })).toBe(true);
   });
 });
 
 describe("Player.wageRequest()", () => {
-  const tm = new Team("spam");
+  const gs = _gs.GameState.init("ab".split(""));
+  const t = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
   describe("for a good player", () => {
     const pr: _pl.Player = JSON.parse(JSON.stringify(plr));
-    Object.keys(pr.skills).forEach((s) => (pr.skills[s as _pl.Skill] = 75));
+    Object.keys(pr.skills).forEach(
+      (s) => (pr.skills[s as _pl.Skill] = GOOD_STAT - 5)
+    );
 
     test("shouldn't overpay when the team appeal is 2.5 or higher", () => {
-      tm.appeal = 2.5;
-      expect(_pl.Player.wageRequest(pr, tm)).toBe(_pl.Player.wantedWage(pr));
+      t.appeal = 2.5;
+      expect(_pl.Player.wageRequest({ gs, p: pr, t })).toBe(
+        _pl.Player.wantedWage(gs, pr)
+      );
     });
 
     test("should overpay when the team appeal is less than 2.5", () => {
-      tm.appeal = 2;
-      expect(_pl.Player.wageRequest(pr, tm)).toBeGreaterThan(
-        _pl.Player.wantedWage(pr)
+      t.appeal = 2;
+      expect(_pl.Player.wageRequest({ gs, p: pr, t })).toBeGreaterThan(
+        _pl.Player.wantedWage(gs, pr)
       );
     });
 
     test("a team with appeal 0 should pay more than one with 1.25", () => {
-      const team2 = new Team("smap2");
-      tm.appeal = 1.25;
-      team2.appeal = 0;
-      expect(_pl.Player.wageRequest(pr, team2)).toBeGreaterThan(
-        _pl.Player.wageRequest(pr, tm)
+      const t2 = gs.teams.b;
+      t.appeal = 1.25;
+      t2.appeal = 0;
+      expect(_pl.Player.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
+        _pl.Player.wageRequest({ p: pr, t, gs })
       );
     });
 
     test("a team with appeal 0 should pay more than one with 1.25", () => {
-      const team2 = new Team("spam2");
-      tm.appeal = 1.25;
-      team2.appeal = 0;
-      expect(_pl.Player.wageRequest(pr, team2)).toBeGreaterThan(
-        _pl.Player.wageRequest(pr, tm)
+      const t2 = gs.teams.b;
+      t.appeal = 1.25;
+      t2.appeal = 0;
+      expect(_pl.Player.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
+        _pl.Player.wageRequest({ p: pr, t, gs })
       );
     });
 
     test("the wage shouldn't exceed the MAX_WAGE", () => {
       Object.keys(pr.skills).forEach((s) => (pr.skills[s as _pl.Skill] = 90));
-      tm.appeal = 0;
-      expect(_pl.Player.wageRequest(pr, tm)).toBe(_pl.MAX_WAGE);
+      t.appeal = 0;
+      expect(_pl.Player.wageRequest({ p: pr, t, gs })).toBe(_pl.MAX_WAGE);
     });
   });
 
   describe("for a mediocre player", () => {
     test("shouldn't be overPaid when the team has a low appeal", () => {
       Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
-      tm.appeal = 1;
-      expect(_pl.Player.wageRequest(plr, tm)).toBe(_pl.Player.wantedWage(plr));
+      t.appeal = 1;
+      expect(_pl.Player.wageRequest({ p: plr, t, gs })).toBe(
+        _pl.Player.wantedWage(gs, plr)
+      );
     });
   });
 });

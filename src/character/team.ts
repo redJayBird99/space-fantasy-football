@@ -143,11 +143,11 @@ class Team {
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
       if (
-        Player.approachable(p, t) &&
-        affordable(Player.wageRequest(p, t)) &&
+        Player.approachable({ gs, t, p }) &&
+        affordable(Player.wageRequest({ gs, p, t })) &&
         Team.shouldRenew({ gs, t, p }, rtgs, notExpiring.length)
       ) {
-        Team.signPlayer({ gs, t, p }, Player.wageRequest(p, t));
+        Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, p, t }));
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
         affordable = Team.canAfford({ gs, t });
@@ -214,12 +214,17 @@ class Team {
     const rts = new RatingAreaByNeed(Team.getNotExipiringPlayers({ gs, t }));
     const affordable = Team.canAfford({ gs, t });
     const signables = free.filter(
-      (p) => Player.approachable(p, t) && affordable(Player.wageRequest(p, t))
+      (p) =>
+        Player.approachable({ gs, t, p }) &&
+        affordable(Player.wageRequest({ gs, p, t }))
     );
     const target = findBest(signables, { t, gs }, rts);
 
     if (target) {
-      Team.signPlayer({ gs, t, p: target }, Player.wageRequest(target, t));
+      Team.signPlayer(
+        { gs, t, p: target },
+        Player.wageRequest({ gs, p: target, t })
+      );
       return target;
     }
   }
@@ -229,7 +234,7 @@ class Team {
   static pickDraftPlayer({ gs, t }: GsTm, players: Player[]): Player {
     const rts = new RatingAreaByNeed(Team.getNotExipiringPlayers({ gs, t }));
     const target = findBest(players, { t, gs }, rts);
-    Team.signPlayer({ gs, t, p: target }, Player.wantedWage(target), 4);
+    Team.signPlayer({ gs, t, p: target }, Player.wantedWage(gs, target), 4);
     return target;
   }
 
@@ -311,11 +316,14 @@ class RatingAreaByNeed {
 // for players with score 72 to max return always 1 when the area is needed
 // for players with score 54 to 0 return always 0
 function renewalProbability(g: GsTmPl, need: RatingAreaByNeed): number {
-  if (Team.evaluatePlayer(g) <= 54) {
+  const { meanScore: mean, standardDev: stdDev } = g.gs.popStats;
+
+  if (Team.evaluatePlayer(g) <= mean - 1.5 * stdDev) {
     return 0;
   }
 
-  const scoreFct = within((Team.evaluatePlayer(g) - 48) / 24, 0, 1);
+  let scoreFct = (Team.evaluatePlayer(g) - (mean - 2 * stdDev)) / (4 * stdDev);
+  scoreFct = within(scoreFct, 0, 1);
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(g.p.position)];
   const probability = scoreFct + areaFct;
   return need[getArea(g.p.position)] === 0 ? probability / 2 : probability;

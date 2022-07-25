@@ -5,13 +5,11 @@ import * as _u from "../../src/character/util";
 import { swap } from "../../src/util/generator";
 import { mean } from "../../src/util/math";
 
-let st = new _gs.GameState(new Date());
-_gs.initTeams(st, ["a"]);
+let st = _gs.GameState.init("abcd".split(""));
 let team = st.teams.a;
 
 beforeEach(() => {
-  st = new _gs.GameState(new Date());
-  _gs.initTeams(st, ["a"]);
+  st = _gs.GameState.init("abcd".split(""));
   team = st.teams.a;
   team.appeal = 5; // init it
 });
@@ -191,6 +189,9 @@ describe("RatingAreaByNeed", () => {
 });
 
 describe("renewalProbability()", () => {
+  const st = _gs.GameState.init("abcd".split(""));
+  st.popStats.meanScore = 62;
+  st.popStats.standardDev = 5.5;
   const pl = new _p.Player("am", new Date(), 28);
   let rtgs = { goolkeeper: 0.1, defender: 0.1, midfielder: 0.1, forward: 0.1 };
 
@@ -209,15 +210,15 @@ describe("renewalProbability()", () => {
       ).toBeLessThanOrEqual(1);
     });
 
-    test("a player with score 72 should return 1", () => {
-      _u.setSkillsTo(pl, 72);
+    test("a player with score 74 should return 1", () => {
+      _u.setSkillsTo(pl, 74);
       expect(
         _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
       ).toBeCloseTo(1);
     });
 
-    test("a player with score 60 should return 0.5", () => {
-      _u.setSkillsTo(pl, 60);
+    test("a player with score 62 should return around 0.52", () => {
+      _u.setSkillsTo(pl, 62);
       expect(
         _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
       ).toBeCloseTo(0.52);
@@ -225,34 +226,34 @@ describe("renewalProbability()", () => {
   });
 
   describe("when the area rating is 0", () => {
-    test("a player with score 72 should return 0.5", () => {
+    test("a player with score 74 should return 0.5", () => {
       rtgs = { goolkeeper: 0, defender: 0, midfielder: 0, forward: 0 };
-      _u.setSkillsTo(pl, 72);
+      _u.setSkillsTo(pl, 74);
       expect(
         _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
       ).toBeCloseTo(0.5);
     });
 
-    test("a player with score 54 should return 0", () => {
-      _u.setSkillsTo(pl, 54);
+    test("a player with score 52 should return 0", () => {
+      _u.setSkillsTo(pl, 52);
       expect(_t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)).toBe(0);
     });
   });
 
   describe("when the area rating is 1", () => {
-    test("a player with score 54 should return 0", () => {
+    test("a player with score 53 should return 0", () => {
       rtgs = { goolkeeper: 1, defender: 1, midfielder: 1, forward: 1 };
-      _u.setSkillsTo(pl, 54);
+      _u.setSkillsTo(pl, 53);
       expect(
         _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
       ).toBeCloseTo(0);
     });
 
-    test("a player with score 60 should return 0.7", () => {
+    test("a player with score 60 should return around 0.6", () => {
       _u.setSkillsTo(pl, 60);
       expect(
         _t.renewalProbability({ gs: st, t: team, p: pl }, rtgs)
-      ).toBeCloseTo(0.7);
+      ).toBeCloseTo(0.6, 1);
     });
   });
 });
@@ -602,9 +603,8 @@ describe("Team.needPlayer()", () => {
 });
 
 describe("Team.signFreeAgent()", () => {
-  const d = new Date();
-  const st = new _gs.GameState(d);
-  const team = new _t.Team("insert name");
+  const st = _gs.GameState.init("abcd".split(""));
+  const team = st.teams.a;
   const plrs = _u
     .rdmPlayers(30)
     .sort(
@@ -612,6 +612,7 @@ describe("Team.signFreeAgent()", () => {
         _t.Team.evaluatePlayer({ t: team, p: b, gs: st }) -
         _t.Team.evaluatePlayer({ t: team, p: a, gs: st })
     );
+  plrs.forEach((p) => _gs.GameState.savePlayer(st, p));
 
   test("should sign a player when can afford it and return it", () => {
     team.finances.revenue = 10 * _p.SALARY_CAP;

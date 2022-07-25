@@ -25,8 +25,17 @@ class GameState {
   contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
-  popStats: PopStats = getPopStats([]);
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
+  popStats: PopStats = {
+    // it uses default stats (manual testing) until they don't get inited
+    // when the skills get modified this default should change too
+    sampleSize: 0,
+    meanScore: 62,
+    medianScore: 62,
+    lowestScore: 45,
+    highestScore: 75,
+    standardDev: 5.6,
+  };
 
   constructor(date: Date) {
     this.date = new Date(date.getTime());
@@ -183,7 +192,7 @@ function initTeams(gs: GameState, names: string[]): Team[] {
     GameState.saveTeam(gs, team);
     const signPlayers = (plrs: Player[]) =>
       plrs.forEach((p) =>
-        Team.signPlayer({ gs, t: team, p }, Player.wantedWage(p))
+        Team.signPlayer({ gs, t: team, p }, Player.wantedWage(gs, p))
       );
 
     const arg = { gs, t: team };

@@ -12,6 +12,19 @@ beforeEach(() => {
   st = new _gs.GameState(new Date());
 });
 
+describe("new GameState()", () => {
+  test("should have the default popStats", () => {
+    expect(new _gs.GameState(new Date()).popStats).toEqual({
+      sampleSize: 0,
+      meanScore: 62,
+      medianScore: 62,
+      lowestScore: 45,
+      highestScore: 75,
+      standardDev: 5.6,
+    });
+  });
+});
+
 describe("GameState handle contracts", () => {
   const team = new _tm.Team("just");
   const plr = new _pl.Player("cf", new Date());
