@@ -1,8 +1,17 @@
-import { GameState, GameStateHandle } from "./game-state/game-state";
+import { GameStateHandle } from "./game-state/game-state";
 import { html, render } from "lit-html";
 
-const gs = new GameStateHandle(GameState.init());
+declare global {
+  // eslint-disable-next-line no-unused-vars
+  interface Window {
+    $GAME: GameStateHandle;
+  }
+}
 
-render(html`<pre>${JSON.stringify(gs.state, null, 4)}</pre>`, document.body);
+window.$GAME = new GameStateHandle();
+window.$GAME.newGame();
 
-window.$_game = gs;
+render(
+  html`<pre>${JSON.stringify(window.$GAME.state, null, 4)}</pre>`,
+  document.body
+);

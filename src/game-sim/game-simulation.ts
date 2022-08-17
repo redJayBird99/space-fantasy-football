@@ -54,8 +54,13 @@ class GameSimulation {
   // start the game simulation, it can be stopped by the stopped flag or by
   // the occurrence of some particular event
   run(): void {
-    this.stopped = false;
     const gState = this.gsh.state;
+
+    if (!gState) {
+      return;
+    }
+
+    this.stopped = false;
     const runSim = () => {
       this.stopped = process(gState);
       this.stopped ? (this.gsh.state = gState) : requestAnimationFrame(runSim);

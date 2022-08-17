@@ -323,6 +323,11 @@ describe("GameState.init()", () => {
     expect(game.schedules.now).toBeDefined();
   });
 
+  test("should not set userTeam when the team doesn't exist", () => {
+    const game = _gs.GameState.init(["fox", "cats"], "hawks");
+    expect(game.userTeam).toBeUndefined();
+  });
+
   describe(".popStats", () => {
     test(".sampleSize should equal to the amount of players", () => {
       expect(game.popStats.sampleSize).toBe(Object.keys(game.players).length);

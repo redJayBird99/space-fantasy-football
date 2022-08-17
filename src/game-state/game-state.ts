@@ -25,6 +25,7 @@ class GameState {
   contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
+  userTeam?: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {
     // it uses default stats (manual testing) until they don't get inited
@@ -42,14 +43,18 @@ class GameState {
   }
 
   // init a new game state filling it with players, team and all the necessary for a new game
-  static init(teamNames = Object.keys(teamsJson)): GameState {
+  static init(teams = Object.keys(teamsJson), userTeam?: string): GameState {
     const s = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
     );
-    initTeams(s, teamNames);
+    initTeams(s, teams);
     initGameEvents(s);
     initTeamsAppeal(s);
     s.popStats = getPopStats(Object.values(s.players));
+
+    if (userTeam && teams.find((t) => t === userTeam)) {
+      s.userTeam = userTeam;
+    }
 
     return s;
   }
@@ -127,19 +132,17 @@ interface GameStateObserver {
 
 class GameStateHandle {
   private observers: Set<GameStateObserver> = new Set();
-  private _state: GameState;
-
-  constructor(state: GameState) {
-    this._state = structuredClone(state);
-  }
+  private _state?: GameState;
 
   // the gameState returned is a deep copy
-  get state(): GameState {
-    return structuredClone(this._state);
+  get state(): GameState | undefined {
+    if (this._state) {
+      return structuredClone(this._state);
+    }
   }
 
   // the saved gameState is a copy of updated
-  set state(updated: GameState) {
+  set state(updated: GameState | undefined) {
     this._state = structuredClone(updated);
     this.notifyObservers();
   }
@@ -163,6 +166,21 @@ class GameStateHandle {
     return URL.createObjectURL(
       new Blob([JSON.stringify(this._state)], { type: "application/json" })
     );
+  }
+
+  hasState(): boolean {
+    return Boolean(this._state);
+  }
+
+  /** init a new gameSate */
+  newGame(userTeam?: string): void {
+    this._state = GameState.init(undefined, userTeam);
+  }
+
+  /** load the given json as the gameState  */
+  loadGameFromJSON(json: string): void {
+    // TODO check if state is a valid GameState
+    this._state = GameState.parse(json);
   }
 }
 
