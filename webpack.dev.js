@@ -5,6 +5,10 @@ module.exports = {
   mode: "development",
   entry: "./src/index.ts",
   devtool: "eval-source-map",
+  devServer: {
+    static: './dev',
+    open: ["/github/"],
+  },
   plugins: [new HtmlWebpackPlugin()],
   module: {
     rules: [
@@ -21,6 +25,7 @@ module.exports = {
   output: {
     filename: "main.js",
     path: path.resolve(__dirname, "dist"),
+    publicPath: '/github/',
     clean: true,
   },
 };
