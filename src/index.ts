@@ -1,5 +1,6 @@
 import { GameStateHandle } from "./game-state/game-state";
 import { html, render } from "lit-html";
+import "./pages/home";
 
 declare global {
   // eslint-disable-next-line no-unused-vars
@@ -11,7 +12,4 @@ declare global {
 window.$GAME = new GameStateHandle();
 window.$GAME.newGame();
 
-render(
-  html`<pre>${JSON.stringify(window.$GAME.state, null, 4)}</pre>`,
-  document.body
-);
+render(html`<sff-home></sff-home>`, document.body);

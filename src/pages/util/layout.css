@@ -1,0 +1,67 @@
+:host {
+  display: grid;
+  grid-template-areas:
+    "head head head"
+    "navB main side"
+    ".... main side"
+    "foot foot foot";
+  grid-template-columns: auto 1fr auto;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 700px) {
+  :host {
+    grid-template-areas:
+      "head head"
+      "navB main"
+      ".... main"
+      ".... side"
+      "foot foot";
+    grid-template-columns: auto 1fr;
+  }
+}
+
+nav {
+  grid-area: navB;
+  position: sticky;
+  top: 50vh;
+  transform: translateY(-50%);
+}
+
+@media screen and (max-width: 500px) {
+  :host {
+    grid-template-areas:
+      "head"
+      "main"
+      "side"
+      "foot";
+    grid-template-columns: 1fr;
+  }
+
+  nav {
+    position: fixed;
+    bottom: 0;
+    top: initial;
+    left: 50vw;
+    transform: translate(-50%, 0%);
+  }
+}
+
+header {
+  grid-area: head;
+}
+
+main {
+  grid-area: main;
+}
+
+aside {
+  grid-area: side;
+}
+
+footer {
+  grid-area: foot;
+}
