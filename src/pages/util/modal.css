@@ -1,0 +1,41 @@
+:host {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  background-color: var(--modal-bg-color, #4d4d4db3);
+  padding: 1rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  padding: 1.3rem;
+  /* nesting vars can cause performance issues*/
+  background-color: var(--modal-container-bg-color, #363636);
+  box-shadow: 0px 0px 4px 0px var(--dark-shadow-color);
+  position: relative;
+  border-radius: 5px;
+  max-height: 100%;
+  overflow: auto;
+  flex: var(--modal-container-flex, initial);
+}
+
+.close-btn {
+  cursor: pointer;
+  background-color: var(--modal-close-btn-bg-color, #ca190c);
+  box-shadow: 0px 0px 4px 1px var(--dark-shadow-color);
+  color: var(--modal-close-btn-color, white);
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: none;
+  font-weight: bold;
+}
