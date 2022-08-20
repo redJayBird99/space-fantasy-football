@@ -1,15 +1,27 @@
 import { GameStateHandle } from "./game-state/game-state";
-import { html, render } from "lit-html";
-import "./pages/home";
+import { Router } from "./pages/util/router";
+import "./pages/home/home.ts";
+import style from "./index.css";
 
 declare global {
   // eslint-disable-next-line no-unused-vars
   interface Window {
     $GAME: GameStateHandle;
+    $PUBLIC_PATH: string;
   }
 }
 
 window.$GAME = new GameStateHandle();
-window.$GAME.newGame();
+window.$PUBLIC_PATH = "/github/";
 
-render(html`<sff-home></sff-home>`, document.body);
+document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
+
+new Router(document.body, "<div>404 page no found</div>")
+  .addRoutes([
+    { path: `${window.$PUBLIC_PATH}`, page: "<sff-home></sff-home>" },
+    {
+      path: `${window.$PUBLIC_PATH}dashboard`,
+      page: "<sff-dashboard></sff-dashboard>",
+    },
+  ])
+  .renderPage();

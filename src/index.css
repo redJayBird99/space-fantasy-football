@@ -1,0 +1,27 @@
+:root {
+  --dark-shadow-color: hsl(0deg 0% 10%);
+  --dark-bg-color: hsl(0deg 0% 15%);
+  --dark-shade1-color: hsl(0deg 0% 20%);
+  --dark-shade2-color: hsl(0deg 0% 25%);
+  --dark-shade3-color: hsl(0deg 0% 30%);
+  --dark-shade4-color: hsl(0deg 0% 35%);
+  --dark-shade5-color: hsl(0deg 0% 40%);
+  --light-shade1-color: hsl(0deg 0% 60%);
+  --light-shade2-color: hsl(0deg 0% 70%);
+  --light-shade3-color: hsl(0deg 0% 80%);
+  --font-color: #f2f3f4;
+  --accent-color: #ff6b6b;
+  --accent-cmp-color: #56cc56;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--dark-bg-color);
+  color: var(--font-color);
+  margin: 0;
+}

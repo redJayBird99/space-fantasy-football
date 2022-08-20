@@ -1,0 +1,34 @@
+:host,
+home-main {
+  display: block;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+[slot="in-nav"],
+[slot="in-aside"] {
+  writing-mode: vertical-lr;
+}
+
+button {
+  background-color: var(--light-shade3-color);
+  text-align: center;
+  border: none;
+  box-shadow: 3px 3px 4px 0px var(--dark-shadow-color);
+  padding: 1rem 0.5rem;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: var(--accent-color);
+}
+
+home-team-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 5px;
+}
