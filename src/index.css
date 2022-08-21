@@ -1,27 +1,42 @@
 :root {
-  --dark-shadow-color: hsl(0deg 0% 10%);
-  --dark-bg-color: hsl(0deg 0% 15%);
-  --dark-shade1-color: hsl(0deg 0% 20%);
-  --dark-shade2-color: hsl(0deg 0% 25%);
-  --dark-shade3-color: hsl(0deg 0% 30%);
-  --dark-shade4-color: hsl(0deg 0% 35%);
-  --dark-shade5-color: hsl(0deg 0% 40%);
-  --light-shade1-color: hsl(0deg 0% 60%);
-  --light-shade2-color: hsl(0deg 0% 70%);
-  --light-shade3-color: hsl(0deg 0% 80%);
-  --font-color: #f2f3f4;
-  --accent-color: #ff6b6b;
-  --accent-cmp-color: #56cc56;
+  --bg-color: hsl(275deg, 4%, 100%);
+  --bg-v2-color: hsl(275deg, 4%, 95%);
+  --bg-v3-color: hsl(275deg, 4%, 90%);
+  --bg-v4-color: hsl(275deg, 4%, 85%);
+  --font-color: #1f1f1f;
+  --accent-color: #ddaffc;
+  --accent-dk-color: #ac77c9;
+  --accent-lt-color: #ffd9ff;
+  --accent-cmp-color: #a8d085;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: hsl(275deg, 4%, 16%);
+    --bg-v2-color: hsl(275deg, 4%, 24%);
+    --bg-v3-color: hsl(275deg, 4%, 32%);
+    --bg-v4-color: hsl(275deg, 4%, 40%);
+    --font-color: #d2d3d4;
+  }
+}
+
+/* default mode */
+:root.dark {
+  --bg-color: hsl(275deg, 4%, 16%);
+  --bg-v2-color: hsl(275deg, 4%, 24%);
+  --bg-v3-color: hsl(275deg, 4%, 32%);
+  --bg-v4-color: hsl(275deg, 4%, 40%);
+  --font-color: #d2d3d4;
 }
 
 *,
-*:before,
-*:after {
+*::after,
+*::before {
   box-sizing: border-box;
 }
 
 body {
-  background-color: var(--dark-bg-color);
+  background-color: var(--bg-color);
   color: var(--font-color);
   margin: 0;
 }

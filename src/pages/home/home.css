@@ -4,8 +4,8 @@ home-main {
 }
 
 *,
-*:before,
-*:after {
+*::after,
+*::before {
   box-sizing: border-box;
 }
 
@@ -15,16 +15,16 @@ home-main {
 }
 
 button {
-  background-color: var(--light-shade3-color);
+  background-color: var(--accent-color);
   text-align: center;
   border: none;
-  box-shadow: 3px 3px 4px 0px var(--dark-shadow-color);
+  box-shadow: 0 0 3px 0px var(--accent-dk-color);
   padding: 1rem 0.5rem;
   font-weight: bold;
 }
 
 button:hover {
-  background-color: var(--accent-color);
+  background-color: var(--accent-cmp-color);
 }
 
 home-team-picker {

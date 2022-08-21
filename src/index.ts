@@ -1,6 +1,7 @@
 import { GameStateHandle } from "./game-state/game-state";
 import { Router } from "./pages/util/router";
 import "./pages/home/home.ts";
+import "./pages/dashboard/dashboard.ts";
 import style from "./index.css";
 
 declare global {
@@ -14,6 +15,7 @@ declare global {
 window.$GAME = new GameStateHandle();
 window.$PUBLIC_PATH = "/github/";
 
+document.documentElement.classList.add("dark");
 document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
 
 new Router(document.body, "<div>404 page no found</div>")
