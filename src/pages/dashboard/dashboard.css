@@ -1,0 +1,53 @@
+:host,
+dashboard-main,
+dashboard-next-match {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+dashboard-next-match {
+  text-align: center;
+  box-shadow: 0px 2px 6px 0px hsl(0deg 0% 6% / 20%);
+  background-color: var(--bg-v2-color);
+}
+
+.team {
+  display: inline-block;
+  padding: 20px 10px;
+}
+
+.team-logo {
+  width: 150px;
+  height: 150px;
+  background-color: var(--bg-v4-color);
+}
+
+.history-boxes {
+  display: flex;
+  gap: 2px;
+}
+
+.history-box {
+  flex: 1 1 1.5rem;
+  padding: 0.2rem 0;
+  background-color: var(--accent-lt-color);
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 5%);
+  color: #2a2a2a;
+}
+
+.history-box.won {
+  background-color: var(--positive-color);
+}
+
+.history-box.lost {
+  background-color: var(--error-color);
+}
+
+.history-box.draws {
+  background-color: var(--neutral-color);
+}

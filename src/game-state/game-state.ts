@@ -117,12 +117,36 @@ class GameState {
     });
   }
 
-  static getSeasonMatches(s: GameState, key: string): Match[] {
-    return (
-      s.schedules[key]
-        ?.map((round) => round.matchIds.map((id) => s.matches[id]))
-        .flat() ?? []
+  /**
+   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+   * @returns all the round of the given season
+   */
+  static getSeasonRounds(s: GameState, season: string): Match[][] | void {
+    return s.schedules[season]?.map((rnd) =>
+      rnd.matchIds.map((id) => s.matches[id])
     );
+  }
+
+  /** get the next round (0 included) of the current season */
+  static getNextRound(s: GameState): number | void {
+    return s.eventQueue.find((e: GameEvent) => e.type === "simRound")?.detail
+      ?.round;
+  }
+
+  /**
+   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+   * @returns the n round of the the current season
+   */
+  static getRound(s: GameState, n: number, season: string): Match[] | void {
+    return s.schedules?.[season]?.[n].matchIds.map((id) => s.matches[id]);
+  }
+
+  /**
+   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+   * @returns all the matches of the given season (in order) or an empty array otherwise
+   */
+  static getSeasonMatches(s: GameState, season: string): Match[] {
+    return GameState.getSeasonRounds(s, season)?.flat() ?? [];
   }
 }
 

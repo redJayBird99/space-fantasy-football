@@ -28,13 +28,14 @@ describe("processResult()", () => {
 });
 
 describe("LeagueTable", () => {
+  const date = new Date();
   const notPlayed = [
-    { id: "...", home: "a", away: "b" },
-    { id: "...", home: "c", away: "d" },
+    { date, id: "...", home: "a", away: "b" },
+    { date, id: "...", home: "c", away: "d" },
   ];
   const played = [
-    { id: "...", home: "a", away: "b", result: { home: 3, away: 1 } },
-    { id: "...", home: "c", away: "d", result: { home: 1, away: 1 } },
+    { date, id: "...", home: "a", away: "b", result: { home: 3, away: 1 } },
+    { date, id: "...", home: "c", away: "d", result: { home: 1, away: 1 } },
   ];
 
   test("should create a empty table when no match is given", () => {

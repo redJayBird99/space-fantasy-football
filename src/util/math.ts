@@ -38,4 +38,10 @@ function dist(a: number, b: number): number {
   return Math.abs(a - b);
 }
 
-export { mean, variance, randomSign, mod, within, dist };
+/** get how many days of distance between the two days */
+function daysBetween(a: Date, b: Date): number {
+  const day = 24 * 60 * 60 * 1000;
+  return Math.round(Math.abs((a.getTime() - b.getTime()) / day));
+}
+
+export { mean, variance, randomSign, mod, within, dist, daysBetween };

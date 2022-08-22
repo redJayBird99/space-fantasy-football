@@ -4,14 +4,10 @@ type MatchPair = [string, string];
 
 export class Match {
   id: string;
-  home: string;
-  away: string;
   result?: { home: number; away: number };
 
-  constructor(date: Date, home: string, away: string) {
+  constructor(public date: Date, public home: string, public away: string) {
     this.id = `${home}${away}${date.getTime()}`;
-    this.home = home;
-    this.away = away;
   }
 }
 
@@ -93,4 +89,9 @@ export function rotate(teams: string[]): string[] {
   }
 
   return rotated;
+}
+
+/** check if the given team is part of the match */
+export function playing(m: Match, team?: string): boolean {
+  return m.home === team || m.away === team;
 }

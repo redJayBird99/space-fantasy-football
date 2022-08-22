@@ -6,7 +6,7 @@ import { Schedule } from "../../src/game-sim/tournament-scheduler";
 import teamsJson from "../../src/asset/team-names.json";
 
 let st: _gs.GameState = new _gs.GameState(new Date());
-const teamNames = ["Albinos", "rockets", "sharks", "hawks", "bears"];
+const teamNames = ["Albinos", "rockets", "sharks", "hawks"];
 
 beforeEach(() => {
   st = new _gs.GameState(new Date());
@@ -340,6 +340,48 @@ describe("GameState.init()", () => {
       expect(game.popStats.highestScore).toBeGreaterThan(0);
       expect(game.popStats.standardDev).toBeGreaterThan(0);
     });
+  });
+});
+
+describe("GameState.getSeasonRounds", () => {
+  test("should return all rounds of the season when it was scheduled", () => {
+    const schd = new Schedule(teamNames, st.date);
+    _gs.GameState.saveSchedule(st, schd, "now");
+    expect(_gs.GameState.getSeasonRounds(st, "now")).toHaveLength(6);
+  });
+
+  test("should return nothing when there is no season schedule", () => {
+    expect(_gs.GameState.getSeasonRounds(st, "now")).toBeUndefined();
+  });
+});
+
+describe("GameState.getNextRound", () => {
+  test("should return the closest next nth round in schedule", () => {
+    const days7 = new Date(st.date);
+    days7.setDate(days7.getDate() + 7);
+    const rd1 = { type: "simRound", date: st.date, detail: { round: 3 } };
+    const rd2 = { type: "simRound", date: days7, detail: { round: 4 } };
+    _gs.GameState.enqueueGameEvent(st, rd1 as _sm.GameEvent);
+    _gs.GameState.enqueueGameEvent(st, rd2 as _sm.GameEvent);
+    expect(_gs.GameState.getNextRound(st)).toBe(rd1.detail.round);
+  });
+
+  test("should return nothing when there is no round in schedule", () => {
+    expect(_gs.GameState.getNextRound(st)).toBeUndefined();
+  });
+});
+
+describe("GameState.getRound", () => {
+  test("should return the nth round when exists", () => {
+    const schd = new Schedule(teamNames, st.date);
+    _gs.GameState.saveSchedule(st, schd, "now");
+    expect(_gs.GameState.getRound(st, 1, "now")).toEqual(
+      schd.rounds[1].matches
+    );
+  });
+
+  test("should return nothing when the round doesn't exist", () => {
+    expect(_gs.GameState.getRound(st, 1, "now")).toBeUndefined();
   });
 });
 

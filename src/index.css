@@ -8,6 +8,9 @@
   --accent-dk-color: #ac77c9;
   --accent-lt-color: #ffd9ff;
   --accent-cmp-color: #a8d085;
+  --positive-color: #76db8c;
+  --error-color: #eb5d5d;
+  --neutral-color: #e1c457;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,7 +19,7 @@
     --bg-v2-color: hsl(275deg, 4%, 24%);
     --bg-v3-color: hsl(275deg, 4%, 32%);
     --bg-v4-color: hsl(275deg, 4%, 40%);
-    --font-color: #d2d3d4;
+    --font-color: #e1e1e4;
   }
 }
 
@@ -26,7 +29,7 @@
   --bg-v2-color: hsl(275deg, 4%, 24%);
   --bg-v3-color: hsl(275deg, 4%, 32%);
   --bg-v4-color: hsl(275deg, 4%, 40%);
-  --font-color: #d2d3d4;
+  --font-color: #e1e1e4;
 }
 
 *,

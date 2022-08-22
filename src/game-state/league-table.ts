@@ -20,6 +20,10 @@ interface EntryResult {
   points: number;
 }
 
+const WIN: EntryResult = { state: "won", points: 3 };
+const DRAW: EntryResult = { state: "draws", points: 1 };
+const LOSE: EntryResult = { state: "lost", points: 0 };
+
 interface EntryResults {
   home: EntryResult;
   away: EntryResult;
@@ -75,17 +79,13 @@ class LeagueTable {
 
 // returns the resulting team infos from the given Match result
 function processResult(r: { home: number; away: number }): EntryResults {
-  const win: EntryResult = { state: "won", points: 3 };
-  const draw: EntryResult = { state: "draws", points: 1 };
-  const lose: EntryResult = { state: "lost", points: 0 };
-
   if (r.home > r.away) {
-    return { home: win, away: lose };
+    return { home: WIN, away: LOSE };
   } else if (r.home < r.away) {
-    return { home: lose, away: win };
+    return { home: LOSE, away: WIN };
   }
 
-  return { home: draw, away: draw };
+  return { home: DRAW, away: DRAW };
 }
 
 export { LeagueTable, Entry, processResult };

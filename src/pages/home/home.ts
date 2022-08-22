@@ -3,6 +3,7 @@ import { goTo } from "../util/router";
 import "../util/layout.ts";
 import "../util/modal.ts";
 import style from "./home.css";
+import btnStyle from "../util/button.css";
 import teams from "../../asset/teams.json";
 
 class Home extends HTMLElement {
@@ -21,7 +22,7 @@ class Home extends HTMLElement {
     render(
       html`
         <style>
-          ${style}
+          ${style + btnStyle}
         </style>
         <sff-layout>
           <div slot="in-header"><h1>TODO: header</h1></div>
@@ -97,8 +98,12 @@ class Main extends HTMLElement {
     render(
       html`
         <div>
-          <button @click=${this.handleOpenTeamPiacker}>new game</button>
-          <button @click=${this.handleOpenFile}>load game file</button>
+          <button class="btn" @click=${this.handleOpenTeamPiacker}>
+            new game
+          </button>
+          <button class="btn" @click=${this.handleOpenFile}>
+            load game file
+          </button>
         </div>
         ${this.openTeamPiacker ? this.renderTeamPicker() : ""}
         ${this.openLoadFile ? this.renderFilePicker() : ""}
@@ -126,7 +131,12 @@ class TeamPicker extends HTMLElement {
   teams(): TemplateResult[] {
     return Object.keys(teams).map(
       (n) => html`
-        <button aria-label=${`pick team ${n}`} @click=${this.handleClick}>
+        <button
+          class="btn"
+          aria-label=${`pick team ${n}`}
+          @click=${this.handleClick}
+          .value=${n}
+        >
           ${n}
         </button>
       `
