@@ -1,6 +1,11 @@
 :host,
-home-main {
+home-main,
+home-team-picker {
   display: block;
+}
+
+home-team-picker {
+  text-align: center;
 }
 
 *,
@@ -14,8 +19,8 @@ home-main {
   writing-mode: vertical-lr;
 }
 
-home-team-picker {
+.teams {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
 }

@@ -1,0 +1,10 @@
+input[type="text"] {
+  padding: 0.4rem;
+}
+
+input:invalid:focus,
+input:out-of-range:focus {
+  background-color: var(--error-color);
+  color: var(--font-color);
+  outline-color: var(--error-color);
+}

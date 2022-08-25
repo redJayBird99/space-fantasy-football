@@ -387,8 +387,9 @@ describe("GameState.getRound", () => {
 
 // TODO: jest has some problem with structuredClone...
 xdescribe("GameStateHandle", () => {
-  // const gameSH = new _gs.GameStateHandle(gameState);
-  xtest(".state should return a copy of the GameState", () => {
-    // expect(gameSH.state).not.toBe(gameSH.state);
+  test(".state should return a copy of the GameState", () => {
+    const gh = new _gs.GameStateHandle();
+    gh.state = st;
+    expect(gh.state).not.toBe(st);
   });
 });

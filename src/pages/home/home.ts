@@ -1,10 +1,14 @@
 import { html, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
+import { getSavesNames } from "../../game-state/game-db";
 import "../util/layout.ts";
 import "../util/modal.ts";
 import style from "./home.css";
 import btnStyle from "../util/button.css";
+import formStyle from "../util/form.css";
 import teams from "../../asset/teams.json";
+
+const savesPrefix = "sff-"; // add this prefix on every new game save
 
 class Home extends HTMLElement {
   constructor() {
@@ -22,7 +26,7 @@ class Home extends HTMLElement {
     render(
       html`
         <style>
-          ${style + btnStyle}
+          ${style + btnStyle + formStyle}
         </style>
         <sff-layout>
           <div slot="in-header"><h1>TODO: header</h1></div>
@@ -38,109 +42,145 @@ class Home extends HTMLElement {
 }
 
 class Main extends HTMLElement {
-  private openTeamPiacker = false;
+  private openNewGame = false;
   private openLoadFile = false;
+  private openLoadGame = false;
 
   connectedCallback() {
     if (this.isConnected) {
       this.render();
       this.addEventListener("closeModal", this.handleCloseModal);
-      this.addEventListener("teamPicked", this.goToDashboard);
-      this.addEventListener("filePicked", this.goToDashboard);
     }
   }
 
   disconnectedCallback() {
     this.removeEventListener("closeModal", this.handleCloseModal);
-    this.removeEventListener("teamPicked", this.goToDashboard);
-    this.removeEventListener("filePicked", this.goToDashboard);
   }
 
   closeAll(): void {
-    this.openTeamPiacker = false;
+    this.openNewGame = false;
     this.openLoadFile = false;
+    this.openLoadGame = false;
   }
 
-  handleCloseModal = () => {
+  private handleCloseModal = () => {
     this.closeAll();
     this.render();
   };
 
-  goToDashboard = (): void => {
-    goTo(`${window.$PUBLIC_PATH}dashboard`);
-  };
-
-  handleOpenTeamPiacker = (): void => {
+  private handleOpenNewGame = (): void => {
     this.closeAll();
-    this.openTeamPiacker = true;
+    this.openNewGame = true;
     this.render();
   };
 
-  handleOpenFile = (): void => {
+  private handleOpenFile = (): void => {
     this.closeAll();
     this.openLoadFile = true;
     this.render();
   };
 
-  renderTeamPicker(): TemplateResult {
+  private handleLoadGame = (): void => {
+    this.closeAll();
+    this.openLoadGame = true;
+    this.render();
+  };
+
+  private renderNewGame(): TemplateResult {
     return html`
       <sff-modal style="--modal-container-flex: 1">
-        <home-team-picker></home-team-picker>
+        <home-new-game></home-new-game>
       </sff-modal>
     `;
   }
 
-  renderFilePicker(): TemplateResult {
+  private renderFilePicker(): TemplateResult {
     return html`<sff-modal><home-file-picker></home-file-picker></sff-modal>`;
+  }
+
+  private renderLoadGame(): TemplateResult {
+    return html`<sff-modal><home-load-game></home-load-game></sff-modal>`;
   }
 
   render(): void {
     render(
       html`
         <div>
-          <button class="btn" @click=${this.handleOpenTeamPiacker}>
-            new game
-          </button>
-          <button class="btn" @click=${this.handleOpenFile}>
-            load game file
-          </button>
+          <button class="btn" @click=${this.handleOpenNewGame}>new game</button>
+          <button class="btn" @click=${this.handleOpenFile}>load file</button>
+          <button class="btn" @click=${this.handleLoadGame}>load game</button>
         </div>
-        ${this.openTeamPiacker ? this.renderTeamPicker() : ""}
+        ${this.openNewGame ? this.renderNewGame() : ""}
         ${this.openLoadFile ? this.renderFilePicker() : ""}
+        ${this.openLoadGame ? this.renderLoadGame() : ""}
       `,
       this
     );
   }
 }
 
-/** it dispatch a teamPicked Event when a team was picked and a new game loaded */
-class TeamPicker extends HTMLElement {
+/** it dispatch a newGame Event when a team was picked and a new game loaded */
+class NewGame extends HTMLElement {
+  private pickedTeam?: string;
+
   connectedCallback() {
     if (this.isConnected) {
-      render(html`${this.teams()}`, this);
+      this.render();
     }
   }
 
-  handleClick = (e: Event) => {
-    window.$GAME.newGame((e.target as HTMLButtonElement).value);
-    this.dispatchEvent(
-      new CustomEvent("teamPicked", { bubbles: true, composed: true })
-    );
+  private handleTeamClick = (e: Event): void => {
+    this.pickedTeam = (e.target as HTMLButtonElement).value;
+    this.render();
   };
 
-  teams(): TemplateResult[] {
-    return Object.keys(teams).map(
+  /** when the name is valid a new game will be created and it will redirect to the dashboard */
+  private handleGameNameClick = (): void => {
+    const input = this.querySelector("#game-name") as HTMLInputElement;
+
+    if (input.value && /^\w{4,14}$/.test(input.value)) {
+      window.$GAME.newGame(this.pickedTeam, `${savesPrefix}${input.value}`);
+      goTo(`${window.$PUBLIC_PATH}dashboard`);
+    } else {
+      alert(`${input.value} is not a valid name`);
+    }
+  };
+
+  private teams(): TemplateResult {
+    const bts = Object.keys(teams).map(
       (n) => html`
         <button
           class="btn"
           aria-label=${`pick team ${n}`}
-          @click=${this.handleClick}
+          @click=${this.handleTeamClick}
           .value=${n}
         >
           ${n}
         </button>
       `
     );
+
+    return html`<div class="teams">${bts}</div>`;
+  }
+
+  private gameName(): TemplateResult {
+    return html`
+      <label for="game-name">
+        name of the new game (between 4 to 14 alphanumeric characters):
+      </label>
+      <input
+        type="text"
+        id="game-name"
+        pattern="^\\w{4,14}$"
+        size="14"
+        required
+      />
+      <button @click=${this.handleGameNameClick} class="btn">apply</button>
+    `;
+  }
+
+  private render(): void {
+    render(html`${this.pickedTeam ? this.gameName() : this.teams()}`, this);
   }
 }
 
@@ -152,6 +192,7 @@ class FilePicker extends HTMLElement {
     }
   }
 
+  /** try to open the given json as a GameState if it is valid redirect to the dashboard */
   onFileLoad = (e: Event): void => {
     const file = (e?.target as HTMLInputElement).files?.[0];
 
@@ -159,11 +200,8 @@ class FilePicker extends HTMLElement {
       file
         .text()
         .then((str) => window.$GAME.loadGameFromJSON(str))
+        .then(() => goTo(`${window.$PUBLIC_PATH}dashboard`))
         .catch(() => console.error("TODO: handle json error"));
-
-      this.dispatchEvent(
-        new CustomEvent("filePicked", { bubbles: true, composed: true })
-      );
     } else {
       alert("the picked file is invalid, pick another one");
     }
@@ -185,9 +223,49 @@ class FilePicker extends HTMLElement {
   }
 }
 
+/** load the game from the local machine database */
+class LoadGame extends HTMLElement {
+  connectedCallback() {
+    if (this.isConnected) {
+      this.render();
+    }
+  }
+
+  /** try to load the clicked game from the db, when successful redirect to the dashboard */
+  private handleLoadSave = (e: Event): void => {
+    const v = (e.target as HTMLButtonElement).value;
+    window.$GAME.loadGameFromDB(
+      v,
+      () => goTo(`${window.$PUBLIC_PATH}dashboard`),
+      () => alert(`something went wrong, the ${v} game wasn't loaded`)
+    );
+  };
+
+  private saves(): TemplateResult[] {
+    return getSavesNames().map((s) => {
+      const name = s.substring(savesPrefix.length);
+      return html`
+        <button
+          class="btn"
+          aria-label="load game"
+          value=${s}
+          @click=${this.handleLoadSave}
+        >
+          ${name}
+        </button>
+      `;
+    });
+  }
+
+  private render(): void {
+    render(html`${this.saves()}`, this);
+  }
+}
+
 if (!customElements.get("sff-home")) {
   customElements.define("sff-home", Home);
   customElements.define("home-main", Main);
-  customElements.define("home-team-picker", TeamPicker);
+  customElements.define("home-new-game", NewGame);
   customElements.define("home-file-picker", FilePicker);
+  customElements.define("home-load-game", LoadGame);
 }

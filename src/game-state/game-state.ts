@@ -8,6 +8,7 @@ import {
 } from "../game-sim/game-simulation";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
+import * as db from "./game-db";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -17,6 +18,7 @@ type ScheduleRound = { date: Date; matchIds: string[] };
 // instances of this inferface are saved as JSON on the user machine, this is
 // the game save
 class GameState {
+  name: string;
   date: Date;
   // sorted by dates, use enqueueGameEvents when adding events to preserve the order
   eventQueue: GameEvent[] = [];
@@ -25,7 +27,7 @@ class GameState {
   contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
-  userTeam?: string;
+  userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {
     // it uses default stats (manual testing) until they don't get inited
@@ -38,23 +40,30 @@ class GameState {
     standardDev: 5.6,
   };
 
-  constructor(date: Date) {
+  constructor(date: Date, userTeam = "", name = "") {
+    this.userTeam = userTeam;
+    this.name = name;
     this.date = new Date(date.getTime());
   }
 
   // init a new game state filling it with players, team and all the necessary for a new game
-  static init(teams = Object.keys(teamsJson), userTeam?: string): GameState {
+
+  /**
+   * @param teams part of the game
+   * @param team user team
+   * @param name of the game
+   * @returns a new game state with the given teams, user team and name
+   */
+  static init(teams = Object.keys(teamsJson), team = "", name = ""): GameState {
     const s = new GameState(
-      new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR)
+      new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR),
+      teams.find((t) => t === team) ? team : "",
+      name
     );
     initTeams(s, teams);
     initGameEvents(s);
     initTeamsAppeal(s);
     s.popStats = getPopStats(Object.values(s.players));
-
-    if (userTeam && teams.find((t) => t === userTeam)) {
-      s.userTeam = userTeam;
-    }
 
     return s;
   }
@@ -196,15 +205,48 @@ class GameStateHandle {
     return Boolean(this._state);
   }
 
-  /** init a new gameSate */
-  newGame(userTeam?: string): void {
-    this._state = GameState.init(undefined, userTeam);
+  /** init a new gameSate and try to save it on the db */
+  newGame(userTeam?: string, gameName?: string): void {
+    this.state = GameState.init(undefined, userTeam, gameName);
+    this.saveNewGSOnDB();
   }
 
-  /** load the given json as the gameState  */
+  /** load the given json as the gameState, any similar named game on the db will be overridden */
   loadGameFromJSON(json: string): void {
     // TODO check if state is a valid GameState
     this._state = GameState.parse(json);
+    this.saveNewGSOnDB();
+  }
+
+  /** try to save the current gamestate as a new entry on the db, if a game name is provided */
+  private saveNewGSOnDB(): void {
+    if (this._state?.name) {
+      db.openNewGame(this._state);
+    }
+  }
+
+  /** try to save the current gamestate on the current db, if a game name is provided */
+  private saveGsOnDB(): void {
+    if (this._state?.name) {
+      db.saveGame(this._state);
+    }
+  }
+
+  /**
+   * try to load a saved game from the local machine database
+   * @param name of the saved game
+   * @param onLoad called after the save was successfully loaded
+   * @param onErr called after an unsuccessful attempt
+   */
+  loadGameFromDB(name: string, onLoad: () => unknown, onErr: () => unknown) {
+    db.openGame(
+      name,
+      (s: GameState) => {
+        this.state = s;
+        onLoad();
+      },
+      onErr
+    );
   }
 }
 
