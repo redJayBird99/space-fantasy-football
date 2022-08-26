@@ -248,6 +248,19 @@ class GameStateHandle {
       onErr
     );
   }
+
+  deleteGame(name: string, onDel: () => unknown): void {
+    if (this._state?.name === name) {
+      delete this._state;
+    }
+
+    if (db.getSavesNames().includes(name)) {
+      db.deleteGame(name, onDel);
+    } else {
+      // in case the user is not using the db
+      onDel();
+    }
+  }
 }
 
 /**

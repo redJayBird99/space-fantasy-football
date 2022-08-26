@@ -223,7 +223,7 @@ class FilePicker extends HTMLElement {
   }
 }
 
-/** load the game from the local machine database */
+/** load the game from the local machine database, or delete a game */
 class LoadGame extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
@@ -241,24 +241,42 @@ class LoadGame extends HTMLElement {
     );
   };
 
+  /** ask for confirmation defore deliting the clicked game from from the saved ones */
+  private handleDeleteGame = (e: Event): void => {
+    const v = (e.target as HTMLButtonElement).value;
+    const name = v.substring(savesPrefix.length);
+
+    if (confirm(`are you sure you want to delete ${name}`)) {
+      window.$GAME.deleteGame(v, () => this.render());
+    }
+  };
+
   private saves(): TemplateResult[] {
     return getSavesNames().map((s) => {
       const name = s.substring(savesPrefix.length);
       return html`
-        <button
-          class="btn"
-          aria-label="load game"
-          value=${s}
-          @click=${this.handleLoadSave}
-        >
-          ${name}
-        </button>
+        <li>
+          <em>${name}</em>
+          <button class="btn-acc" value=${s} @click=${this.handleLoadSave}>
+            open
+          </button>
+          <button class="btn-err" value=${s} @click=${this.handleDeleteGame}>
+            delete
+          </button>
+        </li>
       `;
     });
   }
 
   private render(): void {
-    render(html`${this.saves()}`, this);
+    render(
+      html`
+        <ul class="saves">
+          ${this.saves()}
+        </ul>
+      `,
+      this
+    );
   }
 }
 

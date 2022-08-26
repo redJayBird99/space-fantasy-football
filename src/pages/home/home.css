@@ -24,3 +24,36 @@ home-team-picker {
   gap: 5px;
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
 }
+
+.saves {
+  margin: 0;
+  padding: 0;
+  width: clamp(20rem, 50vw, 40rem);
+}
+
+.saves > li {
+  align-items: baseline;
+  background-color: var(--bg-v3-color);
+  border-radius: 2px;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
+  display: flex;
+  gap: 3px;
+  list-style-type: none;
+  margin: 4px;
+  padding: 0.2rem;
+}
+
+.saves > li > em {
+  display: inline-block;
+  flex-grow: 1;
+  font-weight: bold;
+  overflow: hidden;
+  padding-left: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saves > li > button {
+  display: inline-block;
+  width: clamp(4.2rem, 15%, 6rem);
+}
