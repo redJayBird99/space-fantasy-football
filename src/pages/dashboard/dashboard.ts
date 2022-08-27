@@ -1,10 +1,12 @@
 import { html, render, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
+import { on } from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
 import "../util/layout.ts";
 import style from "./dashboard.css";
+import ledStyle from "../util/led.css";
 
 class Dashboard extends HTMLElement {
   private gs: GameState;
@@ -33,7 +35,7 @@ class Dashboard extends HTMLElement {
       html`
         <sff-layout>
           <style>
-            ${style}
+            ${style + ledStyle}
           </style>
           <div slot="in-header"><h1>TODO: header</h1></div>
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
@@ -59,12 +61,28 @@ class Main extends HTMLElement {
   render(): void {
     render(
       html`
+        <div class="menu-bar" role="menu">${autosaveLed()}</div>
         <dashboard-next-match role="article" .gs=${this.gs!}>
         </dashboard-next-match>
       `,
       this
     );
   }
+}
+
+/** led to signal the game autosave state to the user */
+function autosaveLed(): TemplateResult {
+  const state = on() ? "on" : "off";
+  const color = on() ? "led--on" : "led--off";
+  const save = `autosave ${state}`;
+  return html`
+    <div
+      class="led ${color}"
+      aria-label="${save}"
+      role="img"
+      title="${save}"
+    ></div>
+  `;
 }
 
 /** displays the user team next match and the last 5 results of both teams */
@@ -88,7 +106,7 @@ class NextMatch extends HTMLElement {
   }
 
   /** get a box with a symbol result of the given match */
-  historyBox(team: string, m?: Match): TemplateResult {
+  private historyBox(team: string, m?: Match): TemplateResult {
     // TODO: add tooltip
     const symbol = this.resultSymbol(team, m);
     return html`
@@ -99,7 +117,7 @@ class NextMatch extends HTMLElement {
   }
 
   /** get a team box with always the last 5 matches played of the given team */
-  teamBox(team: string, history: Match[]): TemplateResult {
+  private teamBox(team: string, history: Match[]): TemplateResult {
     return html`
       <div class="team">
         <div>
@@ -119,7 +137,7 @@ class NextMatch extends HTMLElement {
    * return the entire structure of the next match, when the match doesn't
    * exist the informational content is empty
    */
-  renderNextMarch(next?: Match): TemplateResult {
+  private renderNextMarch(next?: Match): TemplateResult {
     const home = next?.home ?? "";
     const away = next?.away ?? "";
     const matches = GameState.getSeasonMatches(this.gs!, "now").filter(
@@ -143,7 +161,7 @@ class NextMatch extends HTMLElement {
     `;
   }
 
-  renderUserNextMatch(): TemplateResult {
+  private renderUserNextMatch(): TemplateResult {
     const rnd = GameState.getNextRound(this.gs!);
 
     if (rnd !== undefined) {
@@ -157,7 +175,7 @@ class NextMatch extends HTMLElement {
     return this.renderNextMarch();
   }
 
-  render(): void {
+  private render(): void {
     render(html`${this.renderUserNextMatch()}`, this);
   }
 }

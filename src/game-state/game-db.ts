@@ -15,7 +15,7 @@ const gameStateKey = "state"; // for the gameState stored in the ObjectStore
 
 /** check if the db is available */
 export function on(): boolean {
-  return !db; // when we have a reference it means the db is open;
+  return !!db; // when we have a reference it means the db is open;
 }
 
 /** get all the saved games names on the local machine */
