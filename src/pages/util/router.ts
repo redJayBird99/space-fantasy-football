@@ -1,5 +1,5 @@
 /** go directly to the given link href */
-function goTo(href: URL | string): void {
+export function goTo(href: URL | string): void {
   history.pushState({}, "", href);
   history.pushState({}, "", href);
   history.back();
@@ -9,7 +9,7 @@ function goTo(href: URL | string): void {
  * add the url as a href attribute,
  * for accessibility add an <a> element as child (with the same href)
  */
-class Go extends HTMLElement {
+export class Go extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
       this.addEventListener("click", this.handleClick);
@@ -33,9 +33,9 @@ if (!customElements.get("sff-go")) {
   customElements.define("sff-go", Go);
 }
 
-type Route = { path: string; page: string };
+export type Route = { path: string; page: string };
 
-class Router {
+export class Router {
   private routes = new Map<string, string>();
 
   /**
@@ -63,4 +63,10 @@ class Router {
   };
 }
 
-export { goTo, Router, Route };
+/**
+ * check if the current page is already on the given url
+ * @param url relative or absolute
+ */
+export function atUrl(url: string): boolean {
+  return location.href === new URL(url, location.origin).href;
+}

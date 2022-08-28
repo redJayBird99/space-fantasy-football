@@ -1,8 +1,8 @@
 .led {
   border: 2px solid var(--bg-v4-color);
   border-radius: 50%;
-  height: 1rem;
-  width: 1rem;
+  height: 0.9rem;
+  width: 0.9rem;
   box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 20%);
 }
 

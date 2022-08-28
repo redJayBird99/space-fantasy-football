@@ -1,6 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
-import { on } from "../../game-state/game-db";
+import { on, savesPrefix } from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
@@ -14,19 +14,22 @@ class Dashboard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    window.$GAME.addObserver(this);
     this.gs = window.$GAME.state!;
   }
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
   }
 
+  disconnectedCallback(): void {
+    window.$GAME.removeObserver(this);
+  }
+
   gameStateUpdated(): void {
-    // to be in this page the game is initialized
-    this.gs = window.$GAME.state!;
+    this.gs = window.$GAME.state!; // to be in this page a game exists
     this.render();
   }
 
@@ -39,7 +42,7 @@ class Dashboard extends HTMLElement {
           </style>
           <div slot="in-header"><h1>TODO: header</h1></div>
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
-          <dashboard-main slot="in-main" .gs=${this.gs}> </dashboard-main>
+          <dashboard-main slot="in-main" .gs=${this.gs}></dashboard-main>
           <div slot="in-aside"><h2>TODO: aside</h2></div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
         </sff-layout>
@@ -54,16 +57,32 @@ class Main extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
   }
 
+  disconnectedCallback(): void {
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.render(); // the gs is been updated
+  }
+
   render(): void {
+    const name = this.gs?.name.substring(savesPrefix.length) ?? "save";
+
     render(
       html`
-        <div class="menu-bar" role="menu">${autosaveLed()}</div>
-        <dashboard-next-match role="article" .gs=${this.gs!}>
-        </dashboard-next-match>
+        <div class="menu-bar" role="menu">
+          ${autosaveLed()}
+          <dashboard-save-file data-name=${name}></dashboard-save-file>
+        </div>
+        <dashboard-next-match
+          role="article"
+          .gs=${this.gs!}
+        ></dashboard-next-match>
       `,
       this
     );
@@ -72,6 +91,7 @@ class Main extends HTMLElement {
 
 /** led to signal the game autosave state to the user */
 function autosaveLed(): TemplateResult {
+  // TODO check periodicaly
   const state = on() ? "on" : "off";
   const color = on() ? "led--on" : "led--off";
   const save = `autosave ${state}`;
@@ -85,14 +105,56 @@ function autosaveLed(): TemplateResult {
   `;
 }
 
+class SaveGameJson extends HTMLElement {
+  json?: string;
+
+  connectedCallback() {
+    if (this.isConnected) {
+      window.$GAME.addObserver(this);
+      this.json = window.$GAME.getStateAsJsonUrl();
+      this.render();
+    }
+  }
+
+  disconnectedCallback() {
+    URL.revokeObjectURL(this.json ?? "");
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    // when the gamestate update we need a new json referece for the new state
+    URL.revokeObjectURL(this.json ?? "");
+    this.json = window.$GAME.getStateAsJsonUrl();
+    this.render();
+  }
+
+  render(): void {
+    render(
+      html`<a download="${this.dataset.name}.json" href=${this.json!}
+        >save file</a
+      >`,
+      this
+    );
+  }
+}
+
 /** displays the user team next match and the last 5 results of both teams */
 class NextMatch extends HTMLElement {
   private gs?: GameState;
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.render();
   }
 
   /** get the symbol of the given team result, returns "-" when no result was found */
@@ -184,4 +246,5 @@ if (!customElements.get("sff-dashboard")) {
   customElements.define("sff-dashboard", Dashboard);
   customElements.define("dashboard-main", Main);
   customElements.define("dashboard-next-match", NextMatch);
+  customElements.define("dashboard-save-file", SaveGameJson);
 }

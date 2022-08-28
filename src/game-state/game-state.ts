@@ -194,7 +194,7 @@ class GameStateHandle {
     this.observers.forEach((ob) => ob.gameStateUpdated());
   }
 
-  // get the gamseState as a json url
+  /** get the gamseState as a json url, the resource must be revoked when not used */
   getStateAsJsonUrl(): string {
     return URL.createObjectURL(
       new Blob([JSON.stringify(this._state)], { type: "application/json" })
@@ -211,10 +211,9 @@ class GameStateHandle {
     this.saveNewGSOnDB();
   }
 
-  /** load the given json as the gameState, any similar named game on the db will be overridden */
-  loadGameFromJSON(json: string): void {
-    // TODO check if state is a valid GameState
-    this._state = GameState.parse(json);
+  /** load the given the gameState, any similar named game on the db will be overridden */
+  loadGameFrom(gs: GameState): void {
+    this._state = gs;
     this.saveNewGSOnDB();
   }
 
@@ -249,6 +248,10 @@ class GameStateHandle {
     );
   }
 
+  /**
+   * delete the game with the given name (from the db too)
+   * @param onDel called after the deletion
+   */
   deleteGame(name: string, onDel: () => unknown): void {
     if (this._state?.name === name) {
       delete this._state;

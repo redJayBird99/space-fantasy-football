@@ -1,14 +1,13 @@
 import { html, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { getSavesNames } from "../../game-state/game-db";
+import { getSavesNames, savesPrefix } from "../../game-state/game-db";
+import { GameState } from "../../game-state/game-state";
 import "../util/layout.ts";
 import "../util/modal.ts";
 import style from "./home.css";
 import btnStyle from "../util/button.css";
 import formStyle from "../util/form.css";
 import teams from "../../asset/teams.json";
-
-const savesPrefix = "sff-"; // add this prefix on every new game save
 
 class Home extends HTMLElement {
   constructor() {
@@ -63,27 +62,26 @@ class Main extends HTMLElement {
     this.openLoadGame = false;
   }
 
-  private handleCloseModal = () => {
+  private updateState = (update?: () => unknown): void => {
     this.closeAll();
+    update?.();
     this.render();
+  };
+
+  private handleCloseModal = () => {
+    this.updateState();
   };
 
   private handleOpenNewGame = (): void => {
-    this.closeAll();
-    this.openNewGame = true;
-    this.render();
+    this.updateState(() => (this.openNewGame = true));
   };
 
   private handleOpenFile = (): void => {
-    this.closeAll();
-    this.openLoadFile = true;
-    this.render();
+    this.updateState(() => (this.openLoadFile = true));
   };
 
   private handleLoadGame = (): void => {
-    this.closeAll();
-    this.openLoadGame = true;
-    this.render();
+    this.updateState(() => (this.openLoadGame = true));
   };
 
   private renderNewGame(): TemplateResult {
@@ -192,16 +190,27 @@ class FilePicker extends HTMLElement {
     }
   }
 
+  private openSave = (json: string): void => {
+    // TODO check if state is a valid GameState
+    const gs = GameState.parse(json);
+    const name = gs.name.substring(savesPrefix.length);
+    const warning = `are you sure do you want to open this file, any other autosave with the name ${name} will be overridden`;
+
+    if (confirm(warning)) {
+      window.$GAME.loadGameFrom(gs);
+      goTo(`${window.$PUBLIC_PATH}dashboard`);
+    }
+  };
+
   /** try to open the given json as a GameState if it is valid redirect to the dashboard */
-  onFileLoad = (e: Event): void => {
+  private onFileLoad = (e: Event): void => {
     const file = (e?.target as HTMLInputElement).files?.[0];
 
     if (file && file.type === "application/json") {
       file
         .text()
-        .then((str) => window.$GAME.loadGameFromJSON(str))
-        .then(() => goTo(`${window.$PUBLIC_PATH}dashboard`))
-        .catch(() => console.error("TODO: handle json error"));
+        .then((str) => this.openSave(str))
+        .catch(() => alert("the file isn't a valid save"));
     } else {
       alert("the picked file is invalid, pick another one");
     }

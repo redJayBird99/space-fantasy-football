@@ -1,4 +1,4 @@
-import { goTo } from "../pages/util/router";
+import { goTo, atUrl } from "../pages/util/router";
 import { GameState } from "./game-state";
 
 // TODO: testing
@@ -12,6 +12,9 @@ let db: IDBDatabase | undefined;
 const savesKey = "sff-saves"; // for the localStorage where the saves names are stored
 const storeKey = "game"; // for the ObjectStore where the gameState is stored
 const gameStateKey = "state"; // for the gameState stored in the ObjectStore
+
+/** add this prefix to every new game save, it prevents conflicts with any other db in the current origin */
+export const savesPrefix = "sff-";
 
 /** check if the db is available */
 export function on(): boolean {
@@ -56,7 +59,7 @@ function onsuccess(req: IDBOpenDBRequest, onOpen?: () => unknown) {
     req.result.onversionchange = () => {
       req.result.close();
       db = undefined;
-      goTo(window.$PUBLIC_PATH);
+      !atUrl(window.$PUBLIC_PATH) && goTo(window.$PUBLIC_PATH);
     };
 
     // it is not fired if the database connection is closed normally
