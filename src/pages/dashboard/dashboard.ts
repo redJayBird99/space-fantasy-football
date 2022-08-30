@@ -1,6 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
-import { on, savesPrefix } from "../../game-state/game-db";
+import * as db from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
@@ -71,12 +71,12 @@ class Main extends HTMLElement {
   }
 
   render(): void {
-    const name = this.gs?.name.substring(savesPrefix.length) ?? "save";
+    const name = this.gs?.name.substring(db.savesPrefix.length) ?? "save";
 
     render(
       html`
         <div class="menu-bar" role="menu">
-          ${autosaveLed()}
+          <autosave-led></autosave-led>
           <dashboard-save-file data-name=${name}></dashboard-save-file>
         </div>
         <dashboard-next-match
@@ -90,19 +90,29 @@ class Main extends HTMLElement {
 }
 
 /** led to signal the game autosave state to the user */
-function autosaveLed(): TemplateResult {
-  // TODO check periodicaly
-  const state = on() ? "on" : "off";
-  const color = on() ? "led--on" : "led--off";
-  const save = `autosave ${state}`;
-  return html`
-    <div
-      class="led ${color}"
-      aria-label="${save}"
-      role="img"
-      title="${save}"
-    ></div>
-  `;
+class AutosaveLed extends HTMLElement {
+  connectedCallback() {
+    if (this.isConnected) {
+      db.addDBStateObserver(this);
+      this.render();
+    }
+  }
+
+  updateDBState(): void {
+    this.render();
+  }
+
+  disconnectedCallback() {
+    db.removeDBStateObserver(this);
+  }
+
+  render(): void {
+    const save = `autosave ${db.on() ? "on" : "off"}`;
+    this.className = `led ${db.on() ? "led--on" : "led--off"}`;
+    this.ariaLabel = save;
+    this.title = save;
+    this.setAttribute("role", "img");
+  }
 }
 
 class SaveGameJson extends HTMLElement {
@@ -247,4 +257,5 @@ if (!customElements.get("sff-dashboard")) {
   customElements.define("dashboard-main", Main);
   customElements.define("dashboard-next-match", NextMatch);
   customElements.define("dashboard-save-file", SaveGameJson);
+  customElements.define("autosave-led", AutosaveLed);
 }

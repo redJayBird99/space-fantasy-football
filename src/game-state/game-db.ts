@@ -13,6 +13,27 @@ const savesKey = "sff-saves"; // for the localStorage where the saves names are 
 const storeKey = "game"; // for the ObjectStore where the gameState is stored
 const gameStateKey = "state"; // for the gameState stored in the ObjectStore
 
+interface DBStateObserver {
+  updateDBState: (on: boolean) => void;
+}
+
+let stateListeners: DBStateObserver[] = [];
+
+/** the observer get notify every time the state of the db change */
+export function addDBStateObserver(o: DBStateObserver) {
+  stateListeners.push(o);
+}
+
+export function removeDBStateObserver(o: DBStateObserver) {
+  stateListeners = stateListeners.filter((obs) => o !== obs);
+}
+
+/** use this method to set the db so the listeners can be notify */
+function setDB(to: IDBDatabase | undefined): void {
+  db = to;
+  stateListeners.forEach((o) => o.updateDBState(on()));
+}
+
 /** add this prefix to every new game save, it prevents conflicts with any other db in the current origin */
 export const savesPrefix = "sff-";
 
@@ -54,17 +75,17 @@ function onupgradeneeded(req: IDBOpenDBRequest) {
  */
 function onsuccess(req: IDBOpenDBRequest, onOpen?: () => unknown) {
   req.onsuccess = () => {
-    db = req.result;
+    setDB(req.result);
     // if another version is opened we just close this game
     req.result.onversionchange = () => {
       req.result.close();
-      db = undefined;
+      setDB(undefined);
       !atUrl(window.$PUBLIC_PATH) && goTo(window.$PUBLIC_PATH);
     };
 
     // it is not fired if the database connection is closed normally
     req.result.onclose = () => {
-      db = undefined;
+      setDB(undefined);
     };
     onOpen && onOpen();
   };
@@ -131,7 +152,7 @@ export function deleteGame(name: string, onDel: () => unknown): void {
   const r = indexedDB.deleteDatabase(name);
   r.onsuccess = () => {
     deleteGameName(name);
-    db = undefined;
+    setDB(undefined);
     onDel();
   };
   r.onerror = () => {}; // TODO
