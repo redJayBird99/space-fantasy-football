@@ -14,6 +14,7 @@
   --error-color-tsp-500: hsla(0, 78%, 64%, 0.5);
   --neutral-color: #e1c457;
   --neutral-color-tsp-500: hsla(47, 70%, 61%, 0.5);
+  font-family: Georgia, "Times New Roman", Times, serif;
 }
 
 @media (prefers-color-scheme: dark) {

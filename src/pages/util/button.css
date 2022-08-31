@@ -1,3 +1,8 @@
+button {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
 .btn,
 .btn-err,
 .btn-acc {
@@ -21,4 +26,18 @@
 .btn:hover,
 .btn-acc:hover {
   background-color: var(--accent-cmp-color);
+}
+
+.btn-link {
+  background-color: transparent;
+  border: none;
+  color: var(--font-color);
+  cursor: pointer;
+  padding: 0;
+  text-decoration-line: underline;
+}
+
+.btn-link:disabled {
+  cursor: default;
+  filter: brightness(0.5);
 }

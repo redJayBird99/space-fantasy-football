@@ -1,3 +1,6 @@
+@import "../util/led.css";
+@import "../util/button.css";
+
 :host,
 dashboard-main,
 dashboard-next-match {
@@ -30,7 +33,7 @@ dashboard-next-match {
 
 .team {
   display: inline-block;
-  padding: 20px 10px;
+  margin: 20px 10px;
 }
 
 .team-logo {

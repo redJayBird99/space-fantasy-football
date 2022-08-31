@@ -225,9 +225,11 @@ class GameStateHandle {
   }
 
   /** try to save the current gamestate on the current db, if a game name is provided */
-  private saveGsOnDB(): void {
+  saveGsOnDB(onSaved?: () => unknown): void {
     if (this._state?.name) {
-      db.saveGame(this._state);
+      db.saveGame(this._state, onSaved);
+    } else {
+      onSaved?.();
     }
   }
 

@@ -5,8 +5,6 @@ import { GameState } from "../../game-state/game-state";
 import "../util/layout.ts";
 import "../util/modal.ts";
 import style from "./home.css";
-import btnStyle from "../util/button.css";
-import formStyle from "../util/form.css";
 import teams from "../../asset/teams.json";
 
 class Home extends HTMLElement {
@@ -25,7 +23,7 @@ class Home extends HTMLElement {
     render(
       html`
         <style>
-          ${style + btnStyle + formStyle}
+          ${style}
         </style>
         <sff-layout>
           <div slot="in-header"><h1>TODO: header</h1></div>
@@ -194,7 +192,7 @@ class FilePicker extends HTMLElement {
     // TODO check if state is a valid GameState
     const gs = GameState.parse(json);
     const name = gs.name.substring(savesPrefix.length);
-    const warning = `are you sure do you want to open this file, any other autosave with the name ${name} will be overridden`;
+    const warning = `are you sure do you want to open this file?, any other autosave with the name ${name} will be overridden`;
 
     if (confirm(warning)) {
       window.$GAME.loadGameFrom(gs);

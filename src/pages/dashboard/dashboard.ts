@@ -6,7 +6,7 @@ import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
 import "../util/layout.ts";
 import style from "./dashboard.css";
-import ledStyle from "../util/led.css";
+import * as _ps from "../util/props-state";
 
 class Dashboard extends HTMLElement {
   private gs: GameState;
@@ -38,7 +38,7 @@ class Dashboard extends HTMLElement {
       html`
         <sff-layout>
           <style>
-            ${style + ledStyle}
+            ${style}
           </style>
           <div slot="in-header"><h1>TODO: header</h1></div>
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
@@ -77,6 +77,7 @@ class Main extends HTMLElement {
       html`
         <div class="menu-bar" role="menu">
           <autosave-led></autosave-led>
+          <save-on-db></save-on-db>
           <dashboard-save-file data-name=${name}></dashboard-save-file>
         </div>
         <dashboard-next-match
@@ -143,6 +144,47 @@ class SaveGameJson extends HTMLElement {
       html`<a download="${this.dataset.name}.json" href=${this.json!}
         >save file</a
       >`,
+      this
+    );
+  }
+}
+
+/** a button to manually save, it is disabled if the db isn't open */
+class SaveOnDB extends HTMLElement {
+  private state = _ps.newState({ disabled: !db.on() }, () => this.render());
+
+  connectedCallback() {
+    if (this.isConnected) {
+      db.addDBStateObserver(this);
+      this.render();
+    }
+  }
+
+  updateDBState(): void {
+    _ps.setState(() => Object.assign(this.state, { disabled: !db.on() }));
+  }
+
+  disconnectedCallback() {
+    db.removeDBStateObserver(this);
+  }
+
+  handleClick = (): void => {
+    // TODO handle error
+    _ps.setState(() => Object.assign(this.state, { disabled: true }));
+    window.$GAME.saveGsOnDB(() =>
+      _ps.setState(() => Object.assign(this.state, { disabled: !db.on() }))
+    );
+  };
+
+  render(): void {
+    render(
+      html`<button
+        ?disabled=${this.state.disabled}
+        class="btn-link"
+        @click=${this.handleClick}
+      >
+        save
+      </button>`,
       this
     );
   }
@@ -258,4 +300,5 @@ if (!customElements.get("sff-dashboard")) {
   customElements.define("dashboard-next-match", NextMatch);
   customElements.define("dashboard-save-file", SaveGameJson);
   customElements.define("autosave-led", AutosaveLed);
+  customElements.define("save-on-db", SaveOnDB);
 }
