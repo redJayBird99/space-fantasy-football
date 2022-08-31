@@ -1,7 +1,6 @@
 export const MODF = Symbol("count_modifications");
 const RENDERER = Symbol("renderer");
 const RENDERING = Symbol("rendering");
-type literal = { [key: string | number]: unknown };
 
 /**
  * The custom element attributeChangedCallback() is not called when a property
@@ -21,14 +20,13 @@ type literal = { [key: string | number]: unknown };
  *  }
  * ```
  */
-export interface Props extends literal {
+export interface Props {
   [MODF]: number;
 }
 
 /** @returns the same given object mutated to Props */
-export function newProps(obj: literal): Props {
-  (obj as Props)[MODF] = 0;
-  return obj as Props;
+export function newProps<T extends Object>(obj: T): Props & T {
+  return Object.assign(obj, { [MODF]: 0 });
 }
 
 /**
@@ -42,7 +40,7 @@ export function setProps(update: () => Props): void {
 }
 
 /** the custom element State */
-export interface State extends literal {
+export interface State {
   [RENDERER]: () => unknown;
   [RENDERING]: boolean;
 }
@@ -51,10 +49,11 @@ export interface State extends literal {
  * @param renderer (should be an element render method) is called when setState() is called,
  * @returns the same given object mutated to state
  */
-export function newState(obj: literal, renderer: () => unknown): State {
-  (obj as State)[RENDERER] = renderer;
-  (obj as State)[RENDERING] = false;
-  return obj as State;
+export function newState<T extends Object>(
+  obj: T,
+  renderer: () => unknown
+): State & T {
+  return Object.assign(obj, { [RENDERER]: renderer, [RENDERING]: false });
 }
 
 /**
