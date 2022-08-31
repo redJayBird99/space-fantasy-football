@@ -12,9 +12,10 @@ let db: IDBDatabase | undefined;
 const savesKey = "sff-saves"; // for the localStorage where the saves names are stored
 const storeKey = "game"; // for the ObjectStore where the gameState is stored
 const gameStateKey = "state"; // for the gameState stored in the ObjectStore
+export type DBState = "on" | "off" | "saved";
 
 interface DBStateObserver {
-  updateDBState: (on: boolean) => void;
+  updateDBState: (state: DBState) => void;
 }
 
 let stateListeners: DBStateObserver[] = [];
@@ -28,10 +29,10 @@ export function removeDBStateObserver(o: DBStateObserver) {
   stateListeners = stateListeners.filter((obs) => o !== obs);
 }
 
-/** use this method to set the db so the listeners can be notify */
+/** use this method to set the db so the listeners can be notified */
 function setDB(to: IDBDatabase | undefined): void {
   db = to;
-  stateListeners.forEach((o) => o.updateDBState(on()));
+  stateListeners.forEach((o) => o.updateDBState(on() ? "on" : "off"));
 }
 
 /** add this prefix to every new game save, it prevents conflicts with any other db in the current origin */
@@ -110,7 +111,10 @@ export function saveGame(gs: GameState, onSaved?: () => unknown) {
   const ts = db?.transaction(storeKey, "readwrite");
   ts?.objectStore(storeKey).put(gs, gameStateKey);
   ts?.addEventListener("error", () => {}); // TODO: handle
-  ts?.addEventListener("complete", () => onSaved?.());
+  ts?.addEventListener("complete", () => {
+    onSaved?.();
+    stateListeners.forEach((o) => o.updateDBState("saved"));
+  });
 }
 
 /**

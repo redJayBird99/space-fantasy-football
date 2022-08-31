@@ -1,0 +1,31 @@
+@import "../util/led.css";
+@import "../util/button.css";
+
+:host {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+menu-save-file > a {
+  color: var(--font-color);
+}
+
+saved-signal {
+  background-image: radial-gradient(
+    50% 50%,
+    var(--positive-color),
+    var(--positive-color-tsp-300)
+  );
+  border-radius: 24% / 100%;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 30%);
+  color: var(--bg-color);
+  font-weight: bold;
+  padding: 0 0.5rem;
+}

@@ -1,6 +1,3 @@
-@import "../util/led.css";
-@import "../util/button.css";
-
 :host,
 dashboard-main,
 dashboard-next-match {
@@ -11,16 +8,6 @@ dashboard-next-match {
 *::after,
 *::before {
   box-sizing: border-box;
-}
-
-.menu-bar {
-  align-items: center;
-  display: flex;
-  gap: 0.5rem;
-}
-
-dashboard-save-file > a {
-  color: var(--font-color);
 }
 
 dashboard-next-match {
