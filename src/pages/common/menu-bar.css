@@ -14,18 +14,18 @@
 }
 
 menu-save-file > a {
-  color: var(--font-color);
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }
 
 saved-signal {
   background-image: radial-gradient(
     50% 50%,
-    var(--positive-color),
-    var(--positive-color-tsp-300)
+    var(--dk-positive-color, var(--lt-positive-color)),
+    var(--lt-positive-color-tsp-300, var(--lt-positive-color-tsp-300))
   );
   border-radius: 24% / 100%;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 30%);
-  color: var(--bg-color);
+  color: var(--dk-on-positive-color, var(--lt-on-positive-color));
   font-weight: bold;
   padding: 0 0.5rem;
 }

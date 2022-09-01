@@ -1,40 +1,62 @@
 :root {
-  --bg-color: hsl(275deg, 4%, 100%);
-  --bg-v2-color: hsl(275deg, 4%, 95%);
-  --bg-v3-color: hsl(275deg, 4%, 90%);
-  --bg-v4-color: hsl(275deg, 4%, 85%);
-  --font-color: #1f1f1f;
-  --accent-color: #ddaffc;
-  --accent-dk-color: #ac77c9;
-  --accent-lt-color: #ffd9ff;
-  --accent-cmp-color: #a8d085;
-  --positive-color: #76db8c;
-  --positive-color-tsp-300: hsla(133, 58%, 66%, 0.7);
-  --positive-color-tsp-500: hsla(133, 58%, 66%, 0.5);
-  --error-color: #eb5d5d;
-  --error-color-tsp-500: hsla(0, 78%, 64%, 0.5);
-  --neutral-color: #e1c457;
-  --neutral-color-tsp-500: hsla(47, 70%, 61%, 0.5);
+  --lt-bg-color: hsl(275deg, 4%, 100%);
+  --lt-bg-color-100: hsl(275deg, 4%, 95%);
+  --lt-bg-color-200: hsl(275deg, 4%, 90%);
+  --lt-bg-color-300: hsl(275deg, 4%, 85%);
+  --lt-on-bg-color: #1f1f1f;
+
+  /* TODO: pick a color for every one below */
+  --lt-primary-color: hsl(276, 93%, 84%);
+  --lt-primary-color-700: hsl(279, 43%, 63%);
+  --lt-primary-color-300: hsl(300, 100%, 93%);
+  --lt-secondary-color: #a8d085;
+  --lt-positive-color: #76db8c;
+  --lt-positive-color-tsp-300: hsla(133, 58%, 66%, 0.7);
+  --lt-error-color: #eb5d5d;
+  --lt-neutral-color: #e1c457;
+
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-color: hsl(275deg, 4%, 16%);
-    --bg-v2-color: hsl(275deg, 4%, 24%);
-    --bg-v3-color: hsl(275deg, 4%, 32%);
-    --bg-v4-color: hsl(275deg, 4%, 40%);
-    --font-color: #e1e1e4;
+    --dk-bg-color: hsl(275deg, 4%, 16%);
+    --dk-bg-color-700: hsl(275deg, 4%, 24%);
+    --dk-bg-color-600: hsl(275deg, 4%, 32%);
+    --dk-bg-color-500: hsl(275deg, 4%, 40%);
+    --dk-on-bg-color: white;
+
+    /* TODO: pick a color for every one below */
+    --dk-primary-color: var(--lt-primary-color);
+    --dk-primary-color-700: var(--lt-primary-color-700);
+    --dk-primary-color-300: var(--lt-primary-color-300);
+    --dk-on-positive-color: var(--lt-on-bg-color);
+    --dk-secondary-color: var(--lt-secondary-color);
+    --dk-positive-color: var(--lt-positive-color);
+    --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
+    --dk-error-color: var(--lt-error-color);
+    --dk-neutral-color: var(--lt-neutral-color);
   }
 }
 
 /* default mode */
 :root.dark {
-  --bg-color: hsl(275deg, 4%, 16%);
-  --bg-v2-color: hsl(275deg, 4%, 24%);
-  --bg-v3-color: hsl(275deg, 4%, 32%);
-  --bg-v4-color: hsl(275deg, 4%, 40%);
-  --font-color: #e1e1e4;
+  --dk-bg-color: hsl(275deg, 4%, 16%);
+  --dk-bg-color-700: hsl(275deg, 4%, 24%);
+  --dk-bg-color-600: hsl(275deg, 4%, 32%);
+  --dk-bg-color-500: hsl(275deg, 4%, 40%);
+  --dk-on-bg-color: white;
+
+  /* TODO: pick a color for every one below */
+  --dk-primary-color: var(--lt-primary-color);
+  --dk-primary-color-700: var(--lt-primary-color-700);
+  --dk-primary-color-300: var(--lt-primary-color-300);
+  --dk-on-positive-color: var(--lt-on-bg-color);
+  --dk-secondary-color: var(--lt-secondary-color);
+  --dk-positive-color: var(--lt-positive-color);
+  --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
+  --dk-error-color: var(--lt-error-color);
+  --dk-neutral-color: var(--lt-neutral-color);
 }
 
 *,
@@ -44,7 +66,7 @@
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--font-color);
+  background-color: var(--dk-bg-color, var(--lt-bg-color));
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   margin: 0;
 }

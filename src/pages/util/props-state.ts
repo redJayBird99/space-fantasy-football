@@ -25,7 +25,7 @@ export interface Props {
 }
 
 /** @returns the same given object mutated to Props */
-export function newProps<T extends Object>(obj: T): Props & T {
+export function newProps<T extends object>(obj: T): Props & T {
   return Object.assign(obj, { [MODF]: 0 });
 }
 
@@ -49,7 +49,7 @@ export interface State {
  * @param renderer (should be an element render method) is called when setState() is called,
  * @returns the same given object mutated to state
  */
-export function newState<T extends Object>(
+export function newState<T extends object>(
   obj: T,
   renderer: () => unknown
 ): State & T {

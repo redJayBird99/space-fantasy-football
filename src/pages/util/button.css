@@ -6,7 +6,7 @@ button {
 .btn,
 .btn-err,
 .btn-acc {
-  background-color: var(--accent-color);
+  background-color: var(--dk-primary-color, var(--lt-primary-color));
   border: none;
   border-radius: 2px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 20%);
@@ -16,22 +16,22 @@ button {
 }
 
 .btn-err {
-  background-color: var(--error-color);
+  background-color: var(--dk-error-color, var(--lt-error-color));
 }
 
 .btn-acc {
-  background-color: var(--positive-color);
+  background-color: var(--dk-positive-color, var(--lt-positive-color));
 }
 
 .btn:hover,
 .btn-acc:hover {
-  background-color: var(--accent-cmp-color);
+  background-color: var(--dk-secondary-color, var(--lt-secondary-color));
 }
 
 .btn-link {
   background-color: transparent;
   border: none;
-  color: var(--font-color);
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   cursor: pointer;
   padding: 0;
   text-decoration-line: underline;

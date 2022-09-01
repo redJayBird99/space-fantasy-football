@@ -1,31 +1,29 @@
 .led {
-  border: 2px solid var(--bg-v4-color);
   border-radius: 50%;
-  height: 13px;
-  width: 13px;
-  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 20%);
+  height: 11px;
+  width: 11px;
 }
 
 .led--on {
   background-image: radial-gradient(
     50% 50%,
-    var(--positive-color),
-    var(--positive-color-tsp-500)
+    var(--dk-positive-color, var(--lt-positive-color)),
+    transparent
   );
 }
 
 .led--off {
   background-image: radial-gradient(
     50% 50%,
-    var(--error-color),
-    var(--error-color-tsp-500)
+    var(--dk-error-color, var(--lt-error-color)),
+    transparent
   );
 }
 
 .led--mid {
   background-image: radial-gradient(
     50% 50%,
-    var(--neutral-color),
-    var(--neutral-color-tsp-500)
+    var(--dk-neutral-color, var(--lt-neutral-color)),
+    transparent
   );
 }
