@@ -6,6 +6,7 @@ import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
 import "../util/layout.ts";
 import "../common/menu-bar.ts";
+import "../tables/league-table.ts";
 import style from "./dashboard.css";
 
 class Dashboard extends HTMLElement {
@@ -80,6 +81,7 @@ class Main extends HTMLElement {
           role="article"
           .gs=${this.gs!}
         ></dashboard-next-match>
+        <league-table data-mode="compact" .gs=${this.gs!}></league-table>
       `,
       this
     );
@@ -106,7 +108,7 @@ class NextMatch extends HTMLElement {
   }
 
   /** get the symbol of the given team result, returns "-" when no result was found */
-  resultSymbol(team: string, m?: Match): "won" | "lost" | "draws" | "-" {
+  resultSymbol(team: string, m?: Match): "won" | "lost" | "drawn" | "-" {
     if (m && m.result) {
       const r = processResult(m.result);
       return m.home === team ? r.home.state : r.away.state;

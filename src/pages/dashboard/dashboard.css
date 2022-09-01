@@ -50,6 +50,6 @@ dashboard-next-match {
   background-color: var(--dk-error-color, var(--lt-error-color));
 }
 
-.history-box.draws {
+.history-box.drawn {
   background-color: var(--dk-neutral-color, var(--lt-neutral-color));
 }

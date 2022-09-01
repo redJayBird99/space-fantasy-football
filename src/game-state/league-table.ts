@@ -4,7 +4,7 @@ class Entry {
   teamName: string;
   played = 0;
   won = 0;
-  draws = 0;
+  drawn = 0;
   lost = 0;
   points = 0;
   goalsFor = 0;
@@ -16,12 +16,12 @@ class Entry {
 }
 
 interface EntryResult {
-  state: "won" | "draws" | "lost";
+  state: "won" | "drawn" | "lost";
   points: number;
 }
 
 const WIN: EntryResult = { state: "won", points: 3 };
-const DRAW: EntryResult = { state: "draws", points: 1 };
+const DRAW: EntryResult = { state: "drawn", points: 1 };
 const LOSE: EntryResult = { state: "lost", points: 0 };
 
 interface EntryResults {

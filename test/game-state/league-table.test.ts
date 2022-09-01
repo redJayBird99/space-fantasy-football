@@ -21,8 +21,8 @@ describe("processResult()", () => {
 
   test("when both teams have the same amount of goals get a draw", () => {
     expect(processResult({ home: 0, away: 0 })).toEqual({
-      home: { state: "draws", points: 1 },
-      away: { state: "draws", points: 1 },
+      home: { state: "drawn", points: 1 },
+      away: { state: "drawn", points: 1 },
     });
   });
 });
@@ -56,7 +56,7 @@ describe("LeagueTable", () => {
       teamName: "a",
       played: 1,
       won: 1,
-      draws: 0,
+      drawn: 0,
       lost: 0,
       points: 3,
       goalsFor: 3,
@@ -66,7 +66,7 @@ describe("LeagueTable", () => {
       teamName: "b",
       played: 1,
       won: 0,
-      draws: 0,
+      drawn: 0,
       lost: 1,
       points: 0,
       goalsFor: 1,
@@ -76,7 +76,7 @@ describe("LeagueTable", () => {
       teamName: "c",
       played: 1,
       won: 0,
-      draws: 1,
+      drawn: 1,
       lost: 0,
       points: 1,
       goalsFor: 1,
@@ -86,7 +86,7 @@ describe("LeagueTable", () => {
       teamName: "d",
       played: 1,
       won: 0,
-      draws: 1,
+      drawn: 1,
       lost: 0,
       points: 1,
       goalsFor: 1,
