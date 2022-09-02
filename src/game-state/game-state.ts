@@ -331,6 +331,8 @@ function initTeamsAppeal(gs: GameState): void {
 }
 
 export {
+  INIT_MONTH,
+  INIT_DATE,
   GameState,
   GameStateObserver,
   GameStateHandle,

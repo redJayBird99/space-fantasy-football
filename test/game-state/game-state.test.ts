@@ -5,16 +5,18 @@ import * as _tm from "../../src/character/team";
 import { Schedule } from "../../src/game-sim/tournament-scheduler";
 import teamsJson from "../../src/asset/team-names.json";
 
-let st: _gs.GameState = new _gs.GameState(new Date());
+const rdmYear = 1990 + Math.floor(Math.random() * 35);
+const startD = new Date(rdmYear, _gs.INIT_MONTH, _gs.INIT_DATE);
+let st: _gs.GameState = new _gs.GameState(startD);
 const teamNames = ["Albinos", "rockets", "sharks", "hawks"];
 
 beforeEach(() => {
-  st = new _gs.GameState(new Date());
+  st = new _gs.GameState(startD);
 });
 
 describe("new GameState()", () => {
   test("should have the default popStats", () => {
-    expect(new _gs.GameState(new Date()).popStats).toEqual({
+    expect(new _gs.GameState(startD).popStats).toEqual({
       sampleSize: 0,
       meanScore: 62,
       medianScore: 62,
@@ -27,7 +29,7 @@ describe("new GameState()", () => {
 
 describe("GameState handle contracts", () => {
   const team = new _tm.Team("just");
-  const plr = new _pl.Player("cf", new Date());
+  const plr = new _pl.Player("cf", startD);
   const c = { teamName: team.name, playerId: plr.id, duration: 12, wage: 5000 };
 
   describe("GameState.saveContract()", () => {
@@ -58,7 +60,7 @@ describe("GameState handle contracts", () => {
 });
 
 describe("GameState.savePlayer()", () => {
-  const plr = new _pl.Player("cf", new Date());
+  const plr = new _pl.Player("cf", startD);
 
   test("should save the player on the gamestate", () => {
     _gs.GameState.savePlayer(st, plr);
@@ -223,7 +225,7 @@ describe("GameState.saveSchedule()", () => {
 
 describe("initGameEvents", () => {
   test("should enqueue 9 GameEvents on gameState.eventQueue", () => {
-    st.schedules.now = [{ date: new Date(), matchIds: ["..."] }];
+    st.schedules.now = [{ date: startD, matchIds: ["..."] }];
     _gs.initGameEvents(st);
     expect(st.eventQueue.length).toBe(9);
   });
@@ -279,7 +281,7 @@ describe("GameState.getTeamPlayers()", () => {
 
 describe("GameState.enqueueGameEvent()", () => {
   test("should able to add a event to the queue when empty", () => {
-    const evt: _sm.GameEvent = { date: new Date(), type: "simRound" };
+    const evt: _sm.GameEvent = { date: startD, type: "simRound" };
     _gs.GameState.enqueueGameEvent(st, evt);
     expect(st.eventQueue[0]).toEqual(evt);
   });
@@ -325,7 +327,7 @@ describe("GameState.init()", () => {
 
   test("should not set userTeam when the team doesn't exist", () => {
     const game = _gs.GameState.init(["fox", "cats"], "hawks");
-    expect(game.userTeam).toBeUndefined();
+    expect(game.userTeam).toBe("");
   });
 
   describe(".popStats", () => {
