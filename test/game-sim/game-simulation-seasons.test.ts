@@ -1,5 +1,5 @@
 import * as _pl from "../../src/character/player";
-import * as _sm from "../../src/game-sim/game-simulation";
+import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 
 // TODO: speed up this one will take a while...

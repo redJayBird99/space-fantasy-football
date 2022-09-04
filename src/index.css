@@ -15,6 +15,7 @@
   --lt-on-positive-color: var(--lt-on-bg-color);
   --lt-positive-color-tsp-300: hsla(133, 58%, 66%, 0.7);
   --lt-error-color: #eb5d5d;
+  --lt-on-error-color: white;
   --lt-neutral-color: #e1c457;
 
   font-family: Georgia, "Times New Roman", Times, serif;
@@ -38,6 +39,7 @@
     --dk-on-positive-color: var(--lt-on-bg-color);
     --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
     --dk-error-color: var(--lt-error-color);
+    --dk-on-error-color: white;
     --dk-neutral-color: var(--lt-neutral-color);
   }
 }
@@ -60,6 +62,7 @@
   --dk-on-positive-color: var(--lt-on-bg-color);
   --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
   --dk-error-color: var(--lt-error-color);
+  --dk-on-error-color: white;
   --dk-neutral-color: var(--lt-neutral-color);
 }
 

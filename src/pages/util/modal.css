@@ -17,8 +17,10 @@
 }
 
 .container {
-  /* nesting vars can cause performance issues*/
-  background-color: var(--modal-container-bg-color, var(--bg-v2-color));
+  background-color: var(
+    --modal-container-bg-color,
+    var(--dk-bg-color, var(--lt-bg-color))
+  );
   border-radius: 5px;
   box-shadow: 0px 2px 4px 0px hsl(0deg 0% 8% / 30%);
   flex: var(--modal-container-flex, initial);
@@ -36,11 +38,17 @@
 }
 
 .close-btn {
-  background-color: var(--modal-close-btn-bg-color, var(--error-color));
+  background-color: var(
+    --modal-close-btn-bg-color,
+    var(--dk-error-color, var(--lt-error-color))
+  );
   border: none;
-  box-shadow: 0px 0px 4px 1px var(--dark-shadow-color);
+  box-shadow: 0px 1px 3px 0px hsla(0deg 0% 8% / 10%);
   cursor: pointer;
-  color: var(--modal-close-btn-color, white);
+  color: var(
+    --modal-close-btn-color,
+    var(--dk-on-error-color, var(--lt-on-error-color))
+  );
   font-weight: bold;
   padding: 0 5px;
   position: absolute;

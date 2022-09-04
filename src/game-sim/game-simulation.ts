@@ -1,5 +1,5 @@
 import {
-  GameStateHandle,
+  // GameStateHandle,
   GameState,
   createPlayers,
 } from "../game-state/game-state";
@@ -12,7 +12,10 @@ import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
 import { makeTrades } from "./trade";
 
-const NEXT_HOURS = 12;
+const SIM_TIME_SLICE = 12; // in hours of game time
+const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
+export let tickInterval = 500; // TODO: the user should be able to customize it (default 2 ticks per second)
+
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;
 const SEASON_END_MONTH = 5; // june, the distance is enough for 38 games every week from the start of the season
@@ -32,58 +35,95 @@ type GameEventTypes =
   | "openTradeWindow"
   | "openFreeSigningWindow"
   | "closeFreeSigningWindow";
-type SimRound = { round: number };
+export type SimRound = { round: number };
 type DateOffset = { years?: number; months?: number; days?: number };
 
-interface GameEvent {
+export interface GameEvent {
   date: Date;
   type: GameEventTypes;
   detail?: SimRound;
 }
 
-// when the simulation is running no other piece of code should mutate the
-// gameState set up some modal page to prevent any interaction until it's stopped
-class GameSimulation {
-  gsh: GameStateHandle;
-  stopped = true;
+let simRunning = false; // a single simulation at the time
+let simController = { stop: false }; // when true stop the current simulation
 
-  constructor(gsh: GameStateHandle) {
-    this.gsh = gsh;
+export function setTickInterval(v: number) {
+  tickInterval = v;
+}
+
+/** check if the previous called simulate() function is still simulating */
+export function isSimulating(): boolean {
+  return simRunning;
+}
+
+/**
+ * @param start the starting time
+ * @param duration when not given the returned function returns always false
+ * @returns a function that when given the current time check if the duration was exceeded
+ */
+function timeout(start: number, duration?: number): (now: number) => boolean {
+  return (now: number) => Boolean(duration && start + duration <= now);
+}
+
+// make sure to prevent any external mutation to the gs ultil the simulation end
+/**
+ * it runs a single simulation asynchronously at time until some event happens,
+ * the duration is reached or is ended by calling the returned function.
+ * when a simulation is already running a new one is not created
+ * @param onTick get called when the simulation handled an event or every MAX_SIM_TIME_PER_TICK
+ * @param onEnd get called when the simulation end
+ * @param duration game time threshold in milliseconds, it could be exceeded a little (MAX_SIM_TIME_PER_TICK amount)
+ * @returns a function that when called end the ceated simulation,
+ * if the simulation was already ended or is a new one has no effect
+ */
+export function simulate(
+  gs: GameState,
+  onTick: (gs: GameState) => unknown,
+  onEnd: (gs: GameState) => unknown,
+  duration?: number
+): () => void {
+  const thisSimCtrl = simController; // bind a new reference to the lexical environment
+  const stop = () => (thisSimCtrl.stop = true);
+
+  if (simRunning) {
+    return stop;
   }
 
-  // start the game simulation, it can be stopped by the stopped flag or by
-  // the occurrence of some particular event
-  run(): void {
-    const gState = this.gsh.state;
+  const simTimeout = timeout(gs.date.getTime(), duration);
+  simRunning = true;
 
-    if (!gState) {
-      return;
+  setTimeout(function run() {
+    if (simController.stop || simTimeout(gs.date.getTime()) || process(gs)) {
+      simRunning = false;
+      simController = { stop: false }; // now thisSimCtrl can't stop the next sim
+      onEnd(gs);
+    } else {
+      onTick(gs);
+      setTimeout(run, tickInterval);
     }
+  });
 
-    this.stopped = false;
-    const runSim = () => {
-      this.stopped = process(gState);
-      this.stopped ? (this.gsh.state = gState) : requestAnimationFrame(runSim);
-    };
-
-    window.requestAnimationFrame(runSim);
-  }
+  return stop;
 }
 
 /**
  * it is the main function that drives the simulation moving the game clock ahead
- * handling gameEvent and enqueuing new ones, it runs until a signle event is
- * handleed or for a max cycle of 24 hours (game time)
+ * handling gameEvent and enqueuing new ones, it runs until a single event is
+ * handled or for a max cycle of MAX_SIM_TIME_PER_TICK (game time)
  * it doesn't run if there isn't any event on the event queue
  * @returns true when the simulation should momentarily stop
  */
 function process(gs: GameState): boolean {
-  for (let t = 0; t < 24 && gs.eventQueue.length !== 0; t += NEXT_HOURS) {
+  let t = 0;
+
+  while (t < MAX_SIM_TIME_PER_TICK && gs.eventQueue.length !== 0) {
     if (gs.date.getTime() >= gs.eventQueue[0]?.date.getTime()) {
       return handleGameEvent(gs, gs.eventQueue.shift()!);
     } else {
-      gs.date.setHours(gs.date.getHours() + NEXT_HOURS);
+      gs.date.setHours(gs.date.getHours() + SIM_TIME_SLICE);
     }
+
+    t += SIM_TIME_SLICE;
   }
 
   return gs.eventQueue.length === 0;
@@ -147,7 +187,7 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
  * start a new season schedule and enqueue close the trade window and
  * new seasons events like closeFreeSigningWindow, retiring, draft, updateContract etc
  */
-function handleSeasonStart(gs: GameState): boolean {
+export function handleSeasonStart(gs: GameState): boolean {
   newSeasonSchedule(gs, Object.keys(gs.teams));
   gs.flags.openTradeWindow = false;
   enqueueSimRoundEvent(gs, 0);
@@ -363,7 +403,7 @@ function teamsSignFreeAgents(gs: GameState): void {
 }
 
 // enqueues a skillUpdate type GameEvent on gs.eventQueue for the first day of next month
-function enqueueSkillUpdateEvent(gs: GameState): void {
+export function enqueueSkillUpdateEvent(gs: GameState): void {
   const d = gs.date;
   const date = new Date(d.getFullYear(), d.getMonth() + 1, 1);
   GameState.enqueueGameEvent(gs, { date, type: "skillUpdate" });
@@ -452,14 +492,16 @@ function storeEndedSeasonSchedule(gs: GameState): void {
   }
 }
 
-export {
+export const exportedForTesting = {
+  MAX_SIM_TIME_PER_TICK,
   SEASON_START_MONTH,
   SEASON_START_DATE,
   SEASON_END_MONTH,
   SEASON_END_DATE,
-  SimRound,
-  GameEvent,
-  GameSimulation,
+  timeout,
+  setTickInterval,
+  isSimulating,
+  simulate,
   process,
   handleGameEvent,
   handleSimRound,

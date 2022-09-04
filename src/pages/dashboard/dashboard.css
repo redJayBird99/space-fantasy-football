@@ -1,13 +1,27 @@
+@import "../util/button.css";
+
 :host,
 dashboard-main,
-dashboard-next-match {
+dashboard-next-match,
+visual-sim {
   display: block;
+}
+
+visual-sim {
+  min-width: 20rem;
 }
 
 *,
 *::after,
 *::before {
   box-sizing: border-box;
+}
+
+[slot="in-header"] {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
 }
 
 dashboard-next-match {

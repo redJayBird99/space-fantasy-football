@@ -3,8 +3,8 @@ import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
-  enqueueSkillUpdateEvent,
   handleSeasonStart,
+  enqueueSkillUpdateEvent,
 } from "../game-sim/game-simulation";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";

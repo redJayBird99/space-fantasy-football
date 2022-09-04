@@ -1,9 +1,11 @@
-import { html, render, TemplateResult } from "lit-html";
+import { html, render, TemplateResult, nothing } from "lit-html";
 import { GameState } from "../../game-state/game-state";
+import { simulate, isSimulating } from "../../game-sim/game-simulation";
 import * as db from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
+import { newProps, setProps, MODF, Props } from "../util/props-state";
 import "../util/layout.ts";
 import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
@@ -41,7 +43,7 @@ class Dashboard extends HTMLElement {
           <style>
             ${style}
           </style>
-          <div slot="in-header"><h1>TODO: header</h1></div>
+          ${header()}
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
           <dashboard-main slot="in-main" .gs=${this.gs}></dashboard-main>
           <div slot="in-aside"><h2>TODO: aside</h2></div>
@@ -51,6 +53,15 @@ class Dashboard extends HTMLElement {
       this.shadowRoot!
     );
   }
+}
+
+function header(): TemplateResult {
+  return html`
+    <div slot="in-header">
+      <h1>TODO: header</h1>
+      <play-sim></play-sim>
+    </div>
+  `;
 }
 
 class Main extends HTMLElement {
@@ -123,7 +134,9 @@ class NextMatch extends HTMLElement {
     const symbol = this.resultSymbol(team, m);
     return html`
       <div class="history-box ${symbol}">
-        <strong aria-label=${symbol}>${symbol[0]}</strong>
+        <abbr aria-label=${symbol} title=${symbol}>
+          <strong>${symbol[0]}</strong>
+        </abbr>
       </div>
     `;
   }
@@ -136,7 +149,7 @@ class NextMatch extends HTMLElement {
           <em>${team}</em>
           <div class="team-logo">TODO: LOGO</div>
         </div>
-        <div class="history-boxes" aria-label="old match results">
+        <div class="history-boxes" aria-label="previous games results">
           ${Array.from({ length: 5 }, (_, i) =>
             this.historyBox(team, history[i])
           )}
@@ -160,7 +173,7 @@ class NextMatch extends HTMLElement {
     const days = next ? `(${daysBetween(next.date, this.gs!.date)} days)` : "";
 
     return html`
-      <h2>next match</h2>
+      <h2>next game</h2>
       <p>
         <time>
           ${next?.date.toLocaleDateString("en-US", { dateStyle: "full" })}
@@ -192,8 +205,105 @@ class NextMatch extends HTMLElement {
   }
 }
 
+/** the play button to start the game simulation */
+class PlaySim extends HTMLElement {
+  private simCloser: ReturnType<typeof simulate> | undefined;
+  private childProps = newProps({} as { gs?: GameState });
+
+  connectedCallback() {
+    if (this.isConnected) {
+      this.addEventListener("closeModal", this.handleCloseModal);
+      this.render();
+    }
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener("closeModal", this.handleCloseModal);
+  }
+
+  handleCloseModal = () => {
+    this.simCloser?.();
+  };
+
+  handleSimEnd = (gs: GameState) => {
+    window.$GAME.state = gs;
+    window.$GAME.saveGsOnDB();
+    this.render();
+  };
+
+  handleSimTick = (gs: GameState) => {
+    setProps(() => Object.assign(this.childProps, { gs }));
+    this.render();
+  };
+
+  handleClick = () => {
+    if (isSimulating()) {
+      return;
+    }
+
+    this.simCloser = simulate(
+      window.$GAME.state!,
+      this.handleSimTick,
+      this.handleSimEnd
+    );
+
+    this.render();
+  };
+
+  renderSim(): TemplateResult {
+    return html`
+      <sff-modal>
+        <visual-sim
+          data-modf=${this.childProps[MODF]}
+          .props=${this.childProps}
+        ></visual-sim>
+      </sff-modal>
+    `;
+  }
+
+  render(): void {
+    render(
+      html`
+        <button @click=${this.handleClick} class="btn-acc">play</button>
+        ${isSimulating() ? this.renderSim() : nothing}
+      `,
+      this
+    );
+  }
+}
+
+/** show the current state of the simulation */
+class VisualSim extends HTMLElement {
+  private props?: Props & { gs?: GameState };
+
+  connectedCallback() {
+    if (this.isConnected) {
+      this.render();
+    }
+  }
+
+  static get observedAttributes() {
+    return ["data-modf"];
+  }
+
+  attributeChangedCallback(name: string) {
+    if (name === "data-modf") {
+      this.render();
+    }
+  }
+
+  render(): void {
+    this.textContent =
+      this.props?.gs?.date.toLocaleDateString("en-GB", {
+        dateStyle: "full",
+      }) ?? "";
+  }
+}
+
 if (!customElements.get("sff-dashboard")) {
   customElements.define("sff-dashboard", Dashboard);
   customElements.define("dashboard-main", Main);
   customElements.define("dashboard-next-match", NextMatch);
+  customElements.define("play-sim", PlaySim);
+  customElements.define("visual-sim", VisualSim);
 }

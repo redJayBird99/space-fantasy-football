@@ -1,4 +1,7 @@
-import * as _sm from "../../src/game-sim/game-simulation";
+import {
+  exportedForTesting as _sm,
+  GameEvent,
+} from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 import { LeagueTable } from "../../src/game-state/league-table";
 import * as _pl from "../../src/character/player";
@@ -723,76 +726,76 @@ describe("handleGameEvent()", () => {
   describe("handle simRound GameEvent", () => {
     test("should return false", () => {
       const e = { date: startD, type: "simRound", detail: { round: 0 } };
-      expect(_sm.handleGameEvent(st, e as _sm.GameEvent)).toBe(false);
+      expect(_sm.handleGameEvent(st, e as GameEvent)).toBe(false);
     });
   });
 
   describe("handle skillUpdate GameEvent", () => {
     test("should return true", () => {
-      const e: _sm.GameEvent = { date: startD, type: "skillUpdate" };
+      const e: GameEvent = { date: startD, type: "skillUpdate" };
       expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle seasonEnd GameEvent", () => {
     test("should return true for a seasonEnd type GameEvent", () => {
-      const e: _sm.GameEvent = { date: startD, type: "seasonEnd" };
+      const e: GameEvent = { date: startD, type: "seasonEnd" };
       expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle seasonStart GameEvent", () => {
     test("should return true", () => {
-      const e: _sm.GameEvent = { date: startD, type: "seasonStart" };
+      const e: GameEvent = { date: startD, type: "seasonStart" };
       expect(_sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle updateContract GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: startD, type: "updateContract" };
+      const e: GameEvent = { date: startD, type: "updateContract" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle updateFinances GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: startD, type: "updateFinances" };
+      const e: GameEvent = { date: startD, type: "updateFinances" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle signings GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: startD, type: "signings" };
+      const e: GameEvent = { date: startD, type: "signings" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle openTradeWindow GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: endD, type: "openTradeWindow" };
+      const e: GameEvent = { date: endD, type: "openTradeWindow" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle trade GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: endD, type: "trade" };
+      const e: GameEvent = { date: endD, type: "trade" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle openFreeSigningWindow GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: endD, type: "openFreeSigningWindow" };
+      const e: GameEvent = { date: endD, type: "openFreeSigningWindow" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle closeFreeSigningWindow GameEvent", () => {
     test("should return false", () => {
-      const e: _sm.GameEvent = { date: endD, type: "closeFreeSigningWindow" };
+      const e: GameEvent = { date: endD, type: "closeFreeSigningWindow" };
       expect(_sm.handleGameEvent(st, e)).toBe(false);
     });
   });
@@ -810,12 +813,122 @@ describe("process()", () => {
   });
 
   test("process one event at the time and pop it from the queue", () => {
-    const evts: _sm.GameEvent[] = [
+    const evts: GameEvent[] = [
       { date: startD, type: "simRound", detail: { round: 0 } },
       { date: startD, type: "simRound", detail: { round: 1 } },
     ];
     st.eventQueue.push(...evts);
     _sm.process(st);
     expect(st.eventQueue).toEqual([evts[1]]);
+  });
+});
+
+describe("timeout()()", () => {
+  test("should return false when the duration wasn't given", () => {
+    expect(_sm.timeout(10)(10)).toBe(false);
+  });
+
+  test("should return false when the duration wasn't exceeded", () => {
+    expect(_sm.timeout(10, 10)(15)).toBe(false);
+  });
+
+  test("should return true when the duration was exceeded", () => {
+    expect(_sm.timeout(10, 10)(21)).toBe(true);
+  });
+});
+
+describe("simulate()", () => {
+  const teams = ["a", "b", "c", "d"];
+  _sm.setTickInterval(10);
+
+  test("should run until an event stop it", () => {
+    const st = _gs.GameState.init(teams);
+    const start = st.date.getTime();
+    return new Promise<_gs.GameState>((resolve) => {
+      _sm.simulate(
+        st,
+        () => {},
+        (gs) => resolve(gs)
+      );
+    }).then((gs) => expect(gs.date.getTime()).toBeGreaterThan(start));
+  });
+
+  test("the onEnd callback should be called after the simulation was ended", () => {
+    const st = _gs.GameState.init(teams);
+    return new Promise<_gs.GameState>((resolve) => {
+      _sm.simulate(
+        st,
+        () => {},
+        (gs) => resolve(gs)
+      );
+      expect(_sm.isSimulating()).toBe(true);
+    }).then(() => expect(_sm.isSimulating()).toBe(false));
+  });
+
+  test("should not elapse more than the duration with a small margin", () => {
+    const st = _gs.GameState.init(teams);
+    const start = st.date.getTime();
+    const firstEvtTime = st.eventQueue[0].date.getTime();
+    const duration = (firstEvtTime - start) / 2;
+
+    return new Promise<_gs.GameState>((resolve) => {
+      _sm.simulate(
+        st,
+        () => {},
+        (gs) => resolve(gs),
+        duration
+      );
+    }).then((gs) => {
+      const margin = _sm.MAX_SIM_TIME_PER_TICK * 60 * 60 * 1000;
+      expect(gs.date.getTime()).toBeGreaterThan(start);
+      expect(gs.date.getTime()).toBeLessThan(start + duration + margin);
+    });
+  });
+
+  test("when the returned function is called should stop the simulation", () => {
+    const st = _gs.GameState.init(teams);
+    const start = st.date.getTime();
+
+    return new Promise<_gs.GameState>((resolve) => {
+      const stop = _sm.simulate(
+        st,
+        () => {},
+        (gs) => resolve(gs)
+      );
+      stop();
+    }).then((gs) => {
+      // the simulation was stopped right away
+      expect(gs.date.getTime()).toBe(start);
+    });
+  });
+
+  test("an ended simulation returned function should not be able to stop a new simulation", async () => {
+    const st = _gs.GameState.init(teams);
+    const duration = _sm.MAX_SIM_TIME_PER_TICK * 60 * 60 * 1000;
+    let stop: ReturnType<typeof _sm.simulate> | undefined;
+
+    let gs = await new Promise<_gs.GameState>((resolve) => {
+      stop = _sm.simulate(
+        st,
+        () => {},
+        (s) => resolve(s),
+        duration
+      );
+    });
+
+    const start = gs.date.getTime(); // after
+
+    gs = await new Promise<_gs.GameState>((resolve) => {
+      _sm.simulate(
+        gs,
+        () => {},
+        (s) => resolve(s),
+        duration
+      );
+      stop?.(); // try to stop it with an old controller
+    });
+
+    // the simulation wasn't stopped
+    expect(gs.date.getTime()).toBeGreaterThan(start);
   });
 });

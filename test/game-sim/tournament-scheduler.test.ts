@@ -1,6 +1,6 @@
 import * as _tr from "../../src/game-sim/tournament-scheduler";
 import tms from "../../src/asset/team-names.json";
-import * as _sm from "../../src/game-sim/game-simulation";
+import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 
 const teamsJson = tms.eng.names;
 const teams = ["a", "b", "c", "d", "e", "f", "g", "h"];
