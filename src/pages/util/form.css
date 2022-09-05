@@ -2,9 +2,21 @@ input[type="text"] {
   padding: 0.4rem;
 }
 
+input[type="text"],
+option,
+select {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
 input:invalid:focus,
 input:out-of-range:focus {
   background-color: var(--error-color);
   color: var(--font-color);
   outline-color: var(--error-color);
+}
+
+select {
+  border: none;
+  border-radius: 1px;
 }

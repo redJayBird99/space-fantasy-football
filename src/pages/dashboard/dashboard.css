@@ -1,14 +1,33 @@
 @import "../util/button.css";
+@import "../util/form.css";
 
 :host,
 dashboard-main,
 dashboard-next-match,
-visual-sim {
+visual-sim,
+sim-options {
   display: block;
 }
 
 visual-sim {
   min-width: 20rem;
+}
+
+play-sim {
+  position: relative;
+}
+
+sim-options {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px 0px hsla(0deg, 0%, 8%, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0.8rem;
+  position: absolute;
+  right: 0px;
+  top: calc(100% + 1px);
 }
 
 *,
@@ -66,4 +85,9 @@ dashboard-next-match {
 
 .history-box.drawn {
   background-color: var(--dk-neutral-color, var(--lt-neutral-color));
+}
+
+sim-options > label {
+  position: absolute;
+  top: -100%;
 }

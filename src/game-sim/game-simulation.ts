@@ -14,7 +14,8 @@ import { makeTrades } from "./trade";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
-export let tickInterval = 500; // TODO: the user should be able to customize it (default 2 ticks per second)
+export const DEFAULT_TICK_INTERVAL = 500; // two ticks per second
+export let tickInterval = DEFAULT_TICK_INTERVAL; // TODO: the user should be able to customize it
 
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;

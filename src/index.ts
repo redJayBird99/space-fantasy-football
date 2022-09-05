@@ -1,4 +1,5 @@
 import { GameStateHandle } from "./game-state/game-state";
+import { appState } from "./app-state/app-state";
 import { Router } from "./pages/util/router";
 import "./pages/home/home.ts";
 import "./pages/dashboard/dashboard.ts";
@@ -8,10 +9,12 @@ declare global {
   // eslint-disable-next-line no-unused-vars
   interface Window {
     $GAME: GameStateHandle;
+    $appState: typeof appState;
     $PUBLIC_PATH: string;
   }
 }
 
+window.$appState = appState;
 window.$GAME = new GameStateHandle();
 window.$PUBLIC_PATH = "/github/";
 
