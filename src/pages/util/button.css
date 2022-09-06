@@ -3,9 +3,7 @@ button {
   font-size: 1rem;
 }
 
-.btn,
-.btn-err,
-.btn-acc {
+.btn {
   background-color: var(--dk-primary-color, var(--lt-primary-color));
   border: none;
   border-radius: 2px;
@@ -15,16 +13,15 @@ button {
   text-align: center;
 }
 
-.btn-err {
+.btn--err {
   background-color: var(--dk-error-color, var(--lt-error-color));
 }
 
-.btn-acc {
+.btn--acc {
   background-color: var(--dk-positive-color, var(--lt-positive-color));
 }
 
-.btn:hover,
-.btn-acc:hover {
+.btn:hover {
   background-color: var(--dk-secondary-color, var(--lt-secondary-color));
 }
 

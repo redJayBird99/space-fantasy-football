@@ -264,10 +264,14 @@ class LoadGame extends HTMLElement {
       return html`
         <li>
           <em>${name}</em>
-          <button class="btn-acc" value=${s} @click=${this.handleLoadSave}>
+          <button class="btn btn--acc" value=${s} @click=${this.handleLoadSave}>
             open
           </button>
-          <button class="btn-err" value=${s} @click=${this.handleDeleteGame}>
+          <button
+            class="btn btn--err"
+            value=${s}
+            @click=${this.handleDeleteGame}
+          >
             delete
           </button>
         </li>
