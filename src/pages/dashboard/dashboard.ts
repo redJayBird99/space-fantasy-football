@@ -4,6 +4,7 @@ import * as db from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
+import "../util/router.ts";
 import "../util/layout.ts";
 import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
@@ -43,9 +44,16 @@ class Dashboard extends HTMLElement {
             ${style}
           </style>
           ${header(this.gs)}
-          <div slot="in-nav"><h2>TODO: nav bar</h2></div>
+          <div slot="in-nav">
+            <h2>TODO: nav bar</h2>
+            <sff-go href="${window.$PUBLIC_PATH}players">
+              <a href="${window.$PUBLIC_PATH}players">players</a>
+            </sff-go>
+          </div>
           <dashboard-main slot="in-main" .gs=${this.gs}></dashboard-main>
-          <div slot="in-aside"><h2>TODO: aside</h2></div>
+          <div slot="in-aside">
+            <h2>TODO: aside</h2>
+          </div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
         </sff-layout>
       `,

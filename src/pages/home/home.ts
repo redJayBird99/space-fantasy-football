@@ -171,7 +171,9 @@ class NewGame extends HTMLElement {
         size="14"
         required
       />
-      <button @click=${this.handleGameNameClick} class="btn">apply</button>
+      <button @click=${this.handleGameNameClick} class="btn btn-acc">
+        apply
+      </button>
     `;
   }
 
