@@ -10,12 +10,6 @@ dashboard-next-match {
   box-sizing: border-box;
 }
 
-[slot="in-header"] {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-
 dashboard-next-match {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
   box-shadow: 0px 2px 6px 0px hsl(0deg 0% 6% / 20%);

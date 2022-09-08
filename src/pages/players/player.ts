@@ -1,11 +1,13 @@
 import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
+import * as db from "../../game-state/game-db";
 import {
   Player,
   macroskills,
   Macroskill,
   MAX_SKILL,
 } from "../../character/player";
+import "../common/game-header.ts";
 import style from "./player.css";
 
 class PlayerPage extends HTMLElement {
@@ -18,8 +20,18 @@ class PlayerPage extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback(): void {
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.gs = window.$GAME.state!;
+    this.render();
   }
 
   render(): void {
@@ -29,11 +41,10 @@ class PlayerPage extends HTMLElement {
           ${style}
         </style>
         <sff-layout>
-          <div slot="in-header">
-            <h1>TODO: header</h1>
-          </div>
+          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
           <div slot="in-main">
+            <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
             <player-info .gs=${this.gs}></player-info>
           </div>
           <div slot="in-aside"><h2>TODO: aside</h2></div>
@@ -86,7 +97,10 @@ function playerBio(p: Player, gs: GameState): TemplateResult {
       <span>${p.name}</span>
       <span>${p.birthday} (${Player.age(p, gs.date)} years old)</span>
       <span>${Player.getHeightInCm(p)}cm</span>
-      <span><abbr title="position">pos</abbr> ${p.position.toUpperCase()}</span>
+      <span>
+        <abbr title="position">pos</abbr>
+        <span class="plr-pos">${p.position.toUpperCase()}</span>
+      </span>
     </div>
   `;
 }

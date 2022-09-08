@@ -1,8 +1,13 @@
 @import "../util/button.css";
 @import "../util/form.css";
 
-:host {
+:host,
+players-table {
   display: block;
+}
+
+players-table {
+  margin-top: 0.25rem;
 }
 
 *,

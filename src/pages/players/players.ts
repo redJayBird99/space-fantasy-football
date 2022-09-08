@@ -2,7 +2,9 @@ import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
 import { Player } from "../../character/player";
 import * as _ps from "../util/props-state";
+import * as db from "../../game-state/game-db";
 import "../util/router.ts";
+import "../common/game-header.ts";
 import style from "./players.css";
 
 class Players extends HTMLElement {
@@ -15,8 +17,18 @@ class Players extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback(): void {
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.gs = window.$GAME.state!;
+    this.render();
   }
 
   render(): void {
@@ -26,11 +38,10 @@ class Players extends HTMLElement {
           <style>
             ${style}
           </style>
-          <div slot="in-header">
-            <h1>TODO: header</h1>
-          </div>
+          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
           <div slot="in-nav"><h2>TODO: nav bar</h2></div>
           <div slot="in-main">
+            <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
             <players-table .gs=${this.gs}></players-table>
           </div>
           <div slot="in-aside"><h2>TODO: aside</h2></div>

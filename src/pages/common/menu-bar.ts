@@ -3,6 +3,10 @@ import * as _ps from "../util/props-state";
 import * as db from "../../game-state/game-db";
 import style from "./menu-bar.css";
 
+/**
+ * menu with utils like game saver
+ * @param data-game-name attribute the name of the current game
+ */
 class MenuBar extends HTMLElement {
   constructor() {
     super();

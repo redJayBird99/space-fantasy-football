@@ -8,8 +8,8 @@ import "../util/router.ts";
 import "../util/layout.ts";
 import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
+import "../common/game-header.ts";
 import style from "./dashboard.css";
-import "../common/sim-controls";
 
 class Dashboard extends HTMLElement {
   private gs: GameState;
@@ -43,7 +43,7 @@ class Dashboard extends HTMLElement {
           <style>
             ${style}
           </style>
-          ${header(this.gs)}
+          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
           <div slot="in-nav">
             <h2>TODO: nav bar</h2>
             <sff-go href="${window.$PUBLIC_PATH}players">
@@ -60,15 +60,6 @@ class Dashboard extends HTMLElement {
       this.shadowRoot!
     );
   }
-}
-
-function header(gs: GameState): TemplateResult {
-  return html`
-    <div slot="in-header">
-      <h1>TODO: header</h1>
-      <sim-controls .gs=${gs}></sim-controls>
-    </div>
-  `;
 }
 
 class Main extends HTMLElement {
@@ -90,11 +81,9 @@ class Main extends HTMLElement {
   }
 
   render(): void {
-    const name = this.gs?.name.substring(db.savesPrefix.length) ?? "save";
-
     render(
       html`
-        <menu-bar data-game-name=${name}></menu-bar>
+        <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
         <dashboard-next-match
           role="article"
           .gs=${this.gs!}

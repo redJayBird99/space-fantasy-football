@@ -38,6 +38,11 @@ function setDB(to: IDBDatabase | undefined): void {
 /** add this prefix to every new game save, it prevents conflicts with any other db in the current origin */
 export const savesPrefix = "sff-";
 
+/** get the game name without the prefix */
+export function getGameName(gs?: GameState): string {
+  return gs?.name.substring(savesPrefix.length) ?? "save";
+}
+
 /** check if the db is available */
 export function on(): boolean {
   return !!db; // when we have a reference it means the db is open;

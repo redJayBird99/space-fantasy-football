@@ -20,8 +20,17 @@ class SimControls extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$GAME.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$GAME.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.render();
   }
 
   render(): void {

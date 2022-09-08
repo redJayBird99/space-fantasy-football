@@ -53,3 +53,10 @@
   text-transform: capitalize;
   white-space: nowrap;
 }
+
+.plr-pos {
+  background-color: var(--dk-bg-color-600, var(--lt-bg-color--200));
+  border-radius: 3px;
+  font-style: italic;
+  padding: 0 0.2rem;
+}
