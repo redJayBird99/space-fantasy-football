@@ -1,6 +1,16 @@
 @import "../util/button.css";
 @import "../util/form.css";
 
+:host {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
 table {
   table-layout: fixed;
   text-align: center;

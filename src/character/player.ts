@@ -151,7 +151,7 @@ type Macroskill =
   | "ability"
   | "offense";
 
-// macroskills are combination of skills
+/** macroskills are combination of skills */
 const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
   mobility: ["speed", "agility", "stamina"],
   physic: ["strength", "height"],

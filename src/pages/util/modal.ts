@@ -50,7 +50,7 @@ class Modal extends HTMLElement {
             aria-label="close modal"
             @click=${this.handleClose}
           >
-            x
+            &#10008;
           </button>
           <slot></slot>
         </div>

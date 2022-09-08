@@ -2,6 +2,7 @@ import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
 import { Player } from "../../character/player";
 import * as _ps from "../util/props-state";
+import "../util/router.ts";
 import style from "./players.css";
 
 class Players extends HTMLElement {
@@ -71,11 +72,17 @@ class PlayersTable extends HTMLElement {
 
   renderRows(): TemplateResult[] {
     const { at, size } = this.state;
+    const playerPath = (p: Player) => `${location.pathname}/player?id=${p.id}`;
+
     return (
       this.players?.slice(at, at + size).map(
         (p) =>
           html`<tr>
-            <td>${p.name}</td>
+            <td>
+              <sff-go href=${playerPath(p)}>
+                <a href=${playerPath(p)}>${p.name}</a>
+              </sff-go>
+            </td>
             <td>${Player.age(p, this.gs!.date)}</td>
             <td>${p.position}</td>
             ${Object.values(p.skills).map((sk) => html`<td>${sk}</td>`)}

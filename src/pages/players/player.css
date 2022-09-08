@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+.plr-info {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  line-height: 1.2;
+}
+
+.plr-photo {
+  background-color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  color: var(--lt-on-bg-color, var(--dk-on-bg-color));
+  height: 150px;
+  margin: 8px;
+  width: 150px;
+}
+
+.plr-bio,
+.plr-team {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding-left: 40px;
+}
+
+.plr-skills {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.skill-score {
+  border-radius: 3px;
+  color: var(--lt-on-bg-color);
+  display: inline-block;
+  font-size: 1rem;
+  font-family: inherit;
+  margin: 0.25rem 0;
+  padding: 0.1rem 0.2rem;
+}
+
+.plr-skills li {
+  list-style-type: none;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
