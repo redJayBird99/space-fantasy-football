@@ -24,8 +24,6 @@ const MIN_WAGE = Math.round(SALARY_CAP / 100);
 const MAX_WAGE = Math.round(SALARY_CAP / 5);
 
 type Foot = "ambidextrous" | "left" | "right";
-type FootChance = { left: number; right: number };
-
 type Position =
   | "gk"
   | "cb"
@@ -92,13 +90,13 @@ function createGrowthState(p: Player, now: Date): number {
   return 1 - annualDegrowthRate * Math.max(0, age - START_DEGROWTH_AGE);
 }
 
-// convert the growth rate to an improvability rating value between 0 and 10
+/** convert the growth rate to an improvability rating value between 0 and 10 */
 function getImprovabilityRating(growthRate: number): number {
   return Math.round((growthRate / MAX_GROWTH_RATE) * 10);
 }
 
 // returns the probability for the preferred foot between left and right
-function preferredFootChance(pos: Position): FootChance {
+function preferredFootChance(pos: Position): { left: number; right: number } {
   if (pos === "lb" || pos === "lm" || pos === "lw") {
     return { left: 0.5, right: 0.25 };
   } else if (pos === "rb" || pos === "rm" || pos === "rw") {
@@ -143,16 +141,9 @@ interface Skills {
 }
 
 type Skill = keyof Skills;
-type Macroskill =
-  | "mobility"
-  | "physic"
-  | "goolkeeper"
-  | "defense"
-  | "ability"
-  | "offense";
 
 /** macroskills are combination of skills */
-const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
+const macroskills: Readonly<Record<string, readonly Skill[]>> = {
   mobility: ["speed", "agility", "stamina"],
   physic: ["strength", "height"],
   goolkeeper: ["reflexes", "handling", "diving"],
@@ -160,6 +151,8 @@ const macroskills: Readonly<Record<Macroskill, readonly Skill[]>> = {
   ability: ["passing", "vision", "technique"],
   offense: ["offensivePositioning", "shot", "finisnishing"],
 };
+
+type Macroskill = keyof typeof macroskills;
 
 // list for every position the amount of malus applied to the player when
 // playing out of its natural postion

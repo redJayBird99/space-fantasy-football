@@ -9,6 +9,7 @@ import {
 } from "../../character/player";
 import "../common/game-header.ts";
 import style from "./player.css";
+import { getImprovability } from "../../character/user";
 
 class PlayerPage extends HTMLElement {
   private gs: GameState = window.$GAME.state!;
@@ -92,6 +93,7 @@ class PlayerInfo extends HTMLElement {
 
 /** biography informations */
 function playerBio(p: Player, gs: GameState): TemplateResult {
+  // TODO: use half starts for improvability
   return html`
     <div class="plr-bio">
       <span>${p.name}</span>
@@ -100,6 +102,10 @@ function playerBio(p: Player, gs: GameState): TemplateResult {
       <span>
         <abbr title="position">pos</abbr>
         <span class="plr-pos">${p.position.toUpperCase()}</span>
+      </span>
+      <span>
+        improvability
+        <span class="plr-stars">${"🟊".repeat(getImprovability(p, gs))}</span>
       </span>
     </div>
   `;
