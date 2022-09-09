@@ -7,9 +7,10 @@ import {
   Macroskill,
   MAX_SKILL,
 } from "../../character/player";
-import "../common/game-header.ts";
-import style from "./player.css";
 import { getImprovability } from "../../character/user";
+import "../common/game-header.ts";
+import "../common/game-nav.ts";
+import style from "./player.css";
 
 class PlayerPage extends HTMLElement {
   private gs: GameState = window.$GAME.state!;
@@ -43,7 +44,7 @@ class PlayerPage extends HTMLElement {
         </style>
         <sff-layout>
           <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
-          <div slot="in-nav"><h2>TODO: nav bar</h2></div>
+          <sff-game-nav slot="in-nav"></sff-game-nav>
           <div slot="in-main">
             <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
             <player-info .gs=${this.gs}></player-info>

@@ -3,8 +3,10 @@ import { GameState } from "../../game-state/game-state";
 import { Player } from "../../character/player";
 import * as _ps from "../util/props-state";
 import * as db from "../../game-state/game-db";
+import { goLink } from "../util/go-link";
 import "../util/router.ts";
 import "../common/game-header.ts";
+import "../common/game-nav.ts";
 import style from "./players.css";
 
 class Players extends HTMLElement {
@@ -39,7 +41,7 @@ class Players extends HTMLElement {
             ${style}
           </style>
           <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
-          <div slot="in-nav"><h2>TODO: nav bar</h2></div>
+          <sff-game-nav slot="in-nav"></sff-game-nav>
           <div slot="in-main">
             <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
             <players-table .gs=${this.gs}></players-table>
@@ -89,11 +91,7 @@ class PlayersTable extends HTMLElement {
       this.players?.slice(at, at + size).map(
         (p) =>
           html`<tr>
-            <td>
-              <sff-go href=${playerPath(p)}>
-                <a href=${playerPath(p)}>${p.name}</a>
-              </sff-go>
-            </td>
+            <td>${goLink(playerPath(p), p.name)}</td>
             <td>${Player.age(p, this.gs!.date)}</td>
             <td>${p.position}</td>
             ${Object.values(p.skills).map((sk) => html`<td>${sk}</td>`)}

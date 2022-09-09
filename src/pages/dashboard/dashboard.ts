@@ -9,6 +9,7 @@ import "../util/layout.ts";
 import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
 import "../common/game-header.ts";
+import "../common/game-nav.ts";
 import style from "./dashboard.css";
 
 class Dashboard extends HTMLElement {
@@ -44,12 +45,7 @@ class Dashboard extends HTMLElement {
             ${style}
           </style>
           <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
-          <div slot="in-nav">
-            <h2>TODO: nav bar</h2>
-            <sff-go href="${window.$PUBLIC_PATH}players">
-              <a href="${window.$PUBLIC_PATH}players">players</a>
-            </sff-go>
-          </div>
+          <sff-game-nav slot="in-nav"></sff-game-nav>
           <dashboard-main slot="in-main" .gs=${this.gs}></dashboard-main>
           <div slot="in-aside">
             <h2>TODO: aside</h2>
