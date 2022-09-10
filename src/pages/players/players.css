@@ -6,10 +6,6 @@ players-table {
   display: block;
 }
 
-players-table {
-  margin-top: 0.25rem;
-}
-
 *,
 *::after,
 *::before {

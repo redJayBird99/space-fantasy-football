@@ -50,6 +50,17 @@ class LeagueTable extends HTMLElement {
     window.$GAME.removeObserver(this);
   }
 
+  static get observedAttributes() {
+    return ["data-mode"];
+  }
+
+  attributeChangedCallback(name: string, old: string | null) {
+    // the first render is left to connectedCallback
+    if (name === "data-mode" && old !== null) {
+      this.render();
+    }
+  }
+
   gameStateUpdated(): void {
     this.render();
   }

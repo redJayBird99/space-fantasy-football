@@ -5,6 +5,7 @@ import "./pages/home/home.ts";
 import "./pages/dashboard/dashboard.ts";
 import "./pages/players/players.ts";
 import "./pages/players/player.ts";
+import "./pages/tables/league.ts";
 import style from "./index.css";
 
 declare global {
@@ -37,6 +38,10 @@ new Router(document.body, "<div>404 page no found</div>")
     {
       path: `${window.$PUBLIC_PATH}players/player`,
       page: "<sff-player></sff-player>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}league`,
+      page: "<sff-league></sff-league>",
     },
   ])
   .renderPage();

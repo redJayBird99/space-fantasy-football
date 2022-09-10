@@ -208,8 +208,9 @@ class VisualSim extends HTMLElement {
     return ["data-modf"];
   }
 
-  attributeChangedCallback(name: string) {
-    if (name === "data-modf") {
+  attributeChangedCallback(name: string, old: string | null) {
+    // the first render is left to connectedCallback
+    if (name === "data-modf" && old !== null) {
       this.render();
     }
   }

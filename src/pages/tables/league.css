@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
