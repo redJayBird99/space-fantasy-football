@@ -22,6 +22,7 @@ export class Go extends HTMLElement {
 
   handleClick = (e: Event) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (this.hasAttribute("href")) {
       goTo(this.getAttribute("href")!);

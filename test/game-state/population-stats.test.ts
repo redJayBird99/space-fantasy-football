@@ -1,5 +1,5 @@
 import * as _p from "../../src/character/player";
-import { setSkillsTo } from "../../src/character/util";
+import { exportedForTesting as _u } from "../../src/character/util";
 import { getPopStats } from "../../src/game-state/population-stats";
 
 describe("getPopStats()", () => {
@@ -8,9 +8,9 @@ describe("getPopStats()", () => {
     new _p.Player("dm", new Date(), 28),
     new _p.Player("am", new Date(), 28),
   ];
-  setSkillsTo(sample[0], 52);
-  setSkillsTo(sample[1], 60);
-  setSkillsTo(sample[2], 71);
+  _u.setSkillsTo(sample[0], 52);
+  _u.setSkillsTo(sample[1], 60);
+  _u.setSkillsTo(sample[2], 71);
 
   test("should have a mean of 61", () => {
     expect(getPopStats(sample).meanScore).toBeCloseTo(61);

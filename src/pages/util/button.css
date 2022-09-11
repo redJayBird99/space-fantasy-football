@@ -1,4 +1,5 @@
 button {
+  cursor: pointer;
   font-family: inherit;
   font-size: 1rem;
 }
@@ -37,4 +38,13 @@ button {
 .btn-link:disabled {
   cursor: default;
   filter: brightness(0.5);
+}
+
+/* only for accessibility */
+.btn-txt {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  padding: 0;
 }

@@ -35,7 +35,62 @@ function getContracts(st: _gs.GameState, team: _t.Team): _t.Contract[] {
   );
 }
 
-export {
+/** keep track of the sorting position */
+export class SorterBy {
+  ascending = false;
+  lastSortBy: unknown;
+
+  /**
+   * it sets lastSortBy to by and updates ascending to false by default but when
+   * by is the same of lastSortBy toggle to the opposite
+   * @returns ascending after an update
+   */
+  ascendingly(by: unknown): boolean {
+    this.ascending = !this.ascending && this.lastSortBy === by;
+    this.lastSortBy = by;
+    return this.ascending;
+  }
+}
+
+export function sortBySkill(
+  s: _p.Skill,
+  pls: _p.Player[],
+  ascending: boolean
+): void {
+  pls.sort((p1, p2) =>
+    ascending
+      ? _p.Player.getSkill(p1, s) - _p.Player.getSkill(p2, s)
+      : _p.Player.getSkill(p2, s) - _p.Player.getSkill(p1, s)
+  );
+}
+
+export function sortByAge(pls: _p.Player[], ascending: boolean): void {
+  pls.sort((p1, p2) =>
+    ascending
+      ? new Date(p2.birthday).getTime() - new Date(p1.birthday).getTime()
+      : new Date(p1.birthday).getTime() - new Date(p2.birthday).getTime()
+  );
+}
+
+/**
+ * it sorts the given players according the preferred player key and direction
+ * NOTE: it doesn't sort for skills, growthRate and growthState keys
+ */
+export function sortByInfo(
+  k: keyof _p.Player,
+  pls: _p.Player[],
+  ascending: boolean
+) {
+  if (k === "birthday") {
+    sortByAge(pls, ascending);
+  } else if (k !== "skills" && k !== "growthRate" && k !== "growthState") {
+    pls.sort((p1, p2) =>
+      ascending ? p1[k].localeCompare(p2[k]) : p2[k].localeCompare(p1[k])
+    );
+  }
+}
+
+export const exportedForTesting = {
   GOOD_STAT,
   BAD_STAT,
   createPlayers,

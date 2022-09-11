@@ -16,6 +16,7 @@ typings/
 
 # complied directory
 dist/
+dev/
 
 package-lock.json
 package.json

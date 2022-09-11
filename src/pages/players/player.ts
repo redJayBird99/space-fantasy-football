@@ -121,7 +121,7 @@ function playerTeam(p: Player, gs: GameState): TemplateResult {
   return html`
     <div class="plr-team">
       <span>team ${p.team}</span>
-      <span>wage ${wage}&#8353;</span>
+      <span>wage ${wage}₡</span>
       <span>contract ${seasons ? `length ${seasons} seasons` : "free"}</span>
     </div>
   `;

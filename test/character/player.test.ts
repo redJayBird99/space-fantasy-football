@@ -3,7 +3,7 @@ import * as _gs from "../../src/game-state/game-state";
 import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
 import { mean, variance } from "../../src/util/math";
 import { Team } from "../../src/character/team";
-import { GOOD_STAT } from "../../src/character/util";
+import { exportedForTesting as _u } from "../../src/character/util";
 
 const poss: _pl.Position[] = [
   "gk",
@@ -479,7 +479,7 @@ describe("Player.wageRequest()", () => {
   describe("for a good player", () => {
     const pr: _pl.Player = JSON.parse(JSON.stringify(plr));
     Object.keys(pr.skills).forEach(
-      (s) => (pr.skills[s as _pl.Skill] = GOOD_STAT - 5)
+      (s) => (pr.skills[s as _pl.Skill] = _u.GOOD_STAT - 5)
     );
 
     test("shouldn't overpay when the team appeal is 2.5 or higher", () => {

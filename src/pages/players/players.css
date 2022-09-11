@@ -39,6 +39,22 @@ th {
 }
 
 abbr[title] {
-  cursor: default;
   text-decoration-thickness: 1px;
+}
+
+th.ascending,
+th.descending {
+  width: 3rem;
+}
+
+th > .btn-txt {
+  width: 100%;
+}
+
+.btn-txt.ascending::after {
+  content: "▲";
+}
+
+.btn-txt.descending::after {
+  content: "▼";
 }

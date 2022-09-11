@@ -2,7 +2,7 @@ import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
 import * as _trde from "../../src/game-sim/trade";
-import * as _u from "../../src/character/util";
+import { exportedForTesting as _u } from "../../src/character/util";
 import { mean } from "../../src/util/math";
 
 // guarantee findoffer

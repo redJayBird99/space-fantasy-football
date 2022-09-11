@@ -249,7 +249,7 @@ class Player {
   name: string;
   team: string;
   position: Position;
-  birthday: string;
+  birthday: string; // a valid date string
   foot: Foot;
   growthRate: number; // monthly growth rate of growthState
   growthState: number; // (percentage 0-1) applying it: skillValue * growthState
