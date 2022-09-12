@@ -1,6 +1,5 @@
 import { html, render, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
-import * as db from "../../game-state/game-db";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
@@ -13,28 +12,15 @@ import "../common/game-nav.ts";
 import style from "./dashboard.css";
 
 class Dashboard extends HTMLElement {
-  private gs: GameState;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.gs = window.$GAME.state!;
   }
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback(): void {
-    window.$GAME.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.gs = window.$GAME.state!; // to be in this page a game exists
-    this.render();
   }
 
   render(): void {
@@ -44,9 +30,9 @@ class Dashboard extends HTMLElement {
           <style>
             ${style}
           </style>
-          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
+          <sff-game-header slot="in-header"></sff-game-header>
           <sff-game-nav slot="in-nav"></sff-game-nav>
-          <dashboard-main slot="in-main" .gs=${this.gs}></dashboard-main>
+          <dashboard-main slot="in-main"></dashboard-main>
           <div slot="in-aside">
             <h2>TODO: aside</h2>
           </div>
@@ -59,32 +45,18 @@ class Dashboard extends HTMLElement {
 }
 
 class Main extends HTMLElement {
-  private gs?: GameState;
-
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback(): void {
-    window.$GAME.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.render(); // the gs is been updated
   }
 
   render(): void {
     render(
       html`
-        <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
-        <dashboard-next-match
-          role="article"
-          .gs=${this.gs!}
-        ></dashboard-next-match>
-        <league-table data-mode="compact" .gs=${this.gs!}></league-table>
+        <menu-bar></menu-bar>
+        <dashboard-next-match role="article"></dashboard-next-match>
+        <league-table data-mode="compact"></league-table>
       `,
       this
     );
@@ -93,20 +65,21 @@ class Main extends HTMLElement {
 
 /** displays the user team next match and the last 5 results of both teams */
 class NextMatch extends HTMLElement {
-  private gs?: GameState;
+  private gs = window.$game.state;
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
+      window.$game.addObserver(this);
       this.render();
     }
   }
 
   disconnectedCallback() {
-    window.$GAME.removeObserver(this);
+    window.$game.removeObserver(this);
   }
 
-  gameStateUpdated(): void {
+  gameStateUpdated(gs?: Readonly<GameState>): void {
+    this.gs = gs;
     this.render();
   }
 

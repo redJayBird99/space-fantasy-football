@@ -160,24 +160,37 @@ class GameState {
 }
 
 interface GameStateObserver {
-  gameStateUpdated: () => void;
+  gameStateUpdated: (gs: Readonly<GameState> | undefined) => void;
 }
 
 class GameStateHandle {
   private observers: Set<GameStateObserver> = new Set();
   private _state?: GameState;
+  private updateScheduled = false;
 
-  // the gameState returned is a deep copy
-  get state(): GameState | undefined {
-    if (this._state) {
-      return structuredClone(this._state);
-    }
+  get state(): Readonly<GameState> | undefined {
+    return this._state;
   }
 
-  // the saved gameState is a copy of updated
+  // it will notify every observer of the change
   set state(updated: GameState | undefined) {
-    this._state = structuredClone(updated);
-    this.notifyObservers();
+    this._state = updated;
+    this.onUpdate();
+  }
+
+  /**
+   * every time the gs get modified call this method to notify every observer,
+   * it batches multiple calls during the same cycle triggers only one call,
+   * performed asynchronously at microtask timing.
+   */
+  private onUpdate(): void {
+    if (!this.updateScheduled) {
+      this.updateScheduled = true;
+      queueMicrotask(() => {
+        this.notifyObservers();
+        this.updateScheduled = false;
+      });
+    }
   }
 
   // if an object depended on the GameState should add itself as an observer
@@ -191,7 +204,7 @@ class GameStateHandle {
   }
 
   private notifyObservers(): void {
-    this.observers.forEach((ob) => ob.gameStateUpdated());
+    this.observers.forEach((ob) => ob.gameStateUpdated(this._state));
   }
 
   /** get the gamseState as a json url, the resource must be revoked when not used */
@@ -199,10 +212,6 @@ class GameStateHandle {
     return URL.createObjectURL(
       new Blob([JSON.stringify(this._state)], { type: "application/json" })
     );
-  }
-
-  hasState(): boolean {
-    return Boolean(this._state);
   }
 
   /** init a new gameSate and try to save it on the db */

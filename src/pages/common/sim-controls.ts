@@ -11,8 +11,6 @@ import {
 import style from "./sim-controls.css";
 
 class SimControls extends HTMLElement {
-  private gs?: GameState;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -20,13 +18,8 @@ class SimControls extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback() {
-    window.$GAME.removeObserver(this);
   }
 
   gameStateUpdated(): void {
@@ -39,7 +32,7 @@ class SimControls extends HTMLElement {
         <style>
           ${style}
         </style>
-        <game-date .gs=${this.gs}></game-date>
+        <game-date></game-date>
         <play-sim></play-sim>
         <btn-sim-options></btn-sim-options>
       `,
@@ -49,17 +42,15 @@ class SimControls extends HTMLElement {
 }
 
 class GameDate extends HTMLElement {
-  private gs?: GameState;
-
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
+      window.$game.addObserver(this);
       this.render();
     }
   }
 
   disconnectedCallback() {
-    window.$GAME.removeObserver(this);
+    window.$game.removeObserver(this);
   }
 
   gameStateUpdated(): void {
@@ -68,7 +59,7 @@ class GameDate extends HTMLElement {
 
   render(): void {
     const date =
-      this.gs?.date.toLocaleDateString("en-GB", {
+      window.$game.state?.date.toLocaleDateString("en-GB", {
         dateStyle: "medium",
       }) ?? "";
 
@@ -80,9 +71,7 @@ class GameDate extends HTMLElement {
 class PlaySim extends HTMLElement {
   private simCloser: ReturnType<typeof simulate> | undefined;
   private state = _ps.newState(
-    {
-      childProps: _ps.newProps({} as { gs?: GameState }),
-    },
+    { childProps: _ps.newProps({} as { gs?: Readonly<GameState> }) },
     () => this.render()
   );
 
@@ -102,14 +91,14 @@ class PlaySim extends HTMLElement {
   };
 
   /** save the given gameState */
-  handleSimEnd = (gs: GameState) => {
-    window.$GAME.state = gs;
-    window.$GAME.saveGsOnDB();
+  handleSimEnd = (gs: Readonly<GameState>) => {
+    window.$game.state = gs;
+    window.$game.saveGsOnDB();
     this.render();
   };
 
   /** update the visual sim proprs with the given gs */
-  handleSimTick = (gs: GameState) => {
+  handleSimTick = (gs: Readonly<GameState>) => {
     _ps.setState(() => {
       _ps.setProps(() => Object.assign(this.state.childProps, { gs }));
       return this.state;
@@ -124,7 +113,7 @@ class PlaySim extends HTMLElement {
 
     const duration = window.$appState.simOptions.duration;
     this.simCloser = simulate(
-      window.$GAME.state!,
+      structuredClone(window.$game.state!),
       this.handleSimTick,
       this.handleSimEnd,
       duration === 0 ? undefined : duration
@@ -196,7 +185,7 @@ class BtnSimOptions extends HTMLElement {
 
 /** show the current state of the simulation */
 class VisualSim extends HTMLElement {
-  private props?: Readonly<_ps.Props & { gs?: GameState }>;
+  private props?: Readonly<_ps.Props & { gs?: Readonly<GameState> }>;
 
   connectedCallback() {
     if (this.isConnected) {

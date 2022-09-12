@@ -3,7 +3,6 @@ import { repeat } from "lit-html/directives/repeat.js";
 import { GameState } from "../../game-state/game-state";
 import { Player, Skill } from "../../character/player";
 import * as _ps from "../util/props-state";
-import * as db from "../../game-state/game-db";
 import { goLink } from "../util/go-link";
 import "../util/router.ts";
 import "../common/game-header.ts";
@@ -12,8 +11,6 @@ import style from "./players.css";
 import { sortByInfo, sortBySkill, SorterBy } from "../../character/util";
 
 class Players extends HTMLElement {
-  private gs: GameState = window.$GAME.state!;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -21,18 +18,8 @@ class Players extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback(): void {
-    window.$GAME.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.gs = window.$GAME.state!;
-    this.render();
   }
 
   render(): void {
@@ -42,11 +29,11 @@ class Players extends HTMLElement {
           <style>
             ${style}
           </style>
-          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
+          <sff-game-header slot="in-header"></sff-game-header>
           <sff-game-nav slot="in-nav"></sff-game-nav>
           <div slot="in-main">
-            <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
-            <players-table .gs=${this.gs}></players-table>
+            <menu-bar></menu-bar>
+            <players-table></players-table>
           </div>
           <div slot="in-aside"><h2>TODO: aside</h2></div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
@@ -61,13 +48,14 @@ const TB_SIZE = 25;
 
 class PlayersTable extends HTMLElement {
   private state = _ps.newState({ size: TB_SIZE, at: 0 }, () => this.render());
-  private gs?: GameState;
+  private gs = window.$game.state;
   private players: Player[] = [];
   private skillsKeys: Skill[] = [];
   private sortBy = new SorterBy();
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.players = Object.values(this.gs?.players ?? {});
       this.skillsKeys = Object.keys(this.players[0]?.skills ?? {}) as Skill[];
       this.addEventListener("click", this.onHeadClick);
@@ -76,7 +64,13 @@ class PlayersTable extends HTMLElement {
   }
 
   disconnectedCallback() {
+    window.$game.removeObserver(this);
     this.removeEventListener("click", this.onHeadClick);
+  }
+
+  gameStateUpdated(gs?: Readonly<GameState>) {
+    this.gs = gs;
+    this.render();
   }
 
   /**

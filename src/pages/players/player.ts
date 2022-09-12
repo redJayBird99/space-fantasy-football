@@ -1,6 +1,5 @@
 import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
-import * as db from "../../game-state/game-db";
 import {
   Player,
   macroskills,
@@ -13,8 +12,6 @@ import "../common/game-nav.ts";
 import style from "./player.css";
 
 class PlayerPage extends HTMLElement {
-  private gs: GameState = window.$GAME.state!;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -22,18 +19,8 @@ class PlayerPage extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback(): void {
-    window.$GAME.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.gs = window.$GAME.state!;
-    this.render();
   }
 
   render(): void {
@@ -43,11 +30,11 @@ class PlayerPage extends HTMLElement {
           ${style}
         </style>
         <sff-layout>
-          <sff-game-header slot="in-header" .gs=${this.gs}></sff-game-header>
+          <sff-game-header slot="in-header"></sff-game-header>
           <sff-game-nav slot="in-nav"></sff-game-nav>
           <div slot="in-main">
-            <menu-bar data-game-name=${db.getGameName(this.gs)}></menu-bar>
-            <player-info .gs=${this.gs}></player-info>
+            <menu-bar></menu-bar>
+            <player-info></player-info>
           </div>
           <div slot="in-aside"><h2>TODO: aside</h2></div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
@@ -59,20 +46,30 @@ class PlayerPage extends HTMLElement {
 }
 
 /** get the searched player from the gameState */
-function getSearchParamPlayer(gs: GameState): Player | undefined {
+function getSearchParamPlayer(gs: Readonly<GameState>): Player | undefined {
   const id = new URLSearchParams(location.search).get("id");
   return gs.players[id ?? ""];
 }
 
 class PlayerInfo extends HTMLElement {
-  private gs?: GameState;
+  private gs = window.$game.state;
   private player?: Player;
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.player = getSearchParamPlayer(this.gs!);
       this.render();
     }
+  }
+
+  disconnectedCallback(): void {
+    window.$game.removeObserver(this);
+  }
+
+  gameStateUpdated(gs?: Readonly<GameState>): void {
+    this.gs = gs;
+    this.render();
   }
 
   render(): void {
@@ -93,7 +90,7 @@ class PlayerInfo extends HTMLElement {
 }
 
 /** biography informations */
-function playerBio(p: Player, gs: GameState): TemplateResult {
+function playerBio(p: Player, gs: Readonly<GameState>): TemplateResult {
   // TODO: use half starts for improvability
   return html`
     <div class="plr-bio">
@@ -113,7 +110,7 @@ function playerBio(p: Player, gs: GameState): TemplateResult {
 }
 
 /** contractual informations */
-function playerTeam(p: Player, gs: GameState): TemplateResult {
+function playerTeam(p: Player, gs: Readonly<GameState>): TemplateResult {
   const c = GameState.getContract(gs, p);
   const wage = new Intl.NumberFormat("en-GB").format(c?.wage ?? 0);
   const seasons = c?.duration;

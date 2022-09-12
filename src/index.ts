@@ -11,14 +11,14 @@ import style from "./index.css";
 declare global {
   // eslint-disable-next-line no-unused-vars
   interface Window {
-    $GAME: GameStateHandle;
+    $game: GameStateHandle;
     $appState: typeof appState;
     $PUBLIC_PATH: string;
   }
 }
 
 window.$appState = appState;
-window.$GAME = new GameStateHandle();
+window.$game = new GameStateHandle();
 window.$PUBLIC_PATH = "/github/";
 
 document.documentElement.classList.add("dark");

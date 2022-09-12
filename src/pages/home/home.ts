@@ -135,7 +135,7 @@ class NewGame extends HTMLElement {
     const input = this.querySelector("#game-name") as HTMLInputElement;
 
     if (input.value && /^\w{4,14}$/.test(input.value)) {
-      window.$GAME.newGame(this.pickedTeam, `${savesPrefix}${input.value}`);
+      window.$game.newGame(this.pickedTeam, `${savesPrefix}${input.value}`);
       goTo(`${window.$PUBLIC_PATH}dashboard`);
     } else {
       alert(`${input.value} is not a valid name`);
@@ -197,7 +197,7 @@ class FilePicker extends HTMLElement {
     const warning = `are you sure do you want to open this file?, any other autosave with the name ${name} will be overridden`;
 
     if (confirm(warning)) {
-      window.$GAME.loadGameFrom(gs);
+      window.$game.loadGameFrom(gs);
       goTo(`${window.$PUBLIC_PATH}dashboard`);
     }
   };
@@ -243,7 +243,7 @@ class LoadGame extends HTMLElement {
   /** try to load the clicked game from the db, when successful redirect to the dashboard */
   private handleLoadSave = (e: Event): void => {
     const v = (e.target as HTMLButtonElement).value;
-    window.$GAME.loadGameFromDB(
+    window.$game.loadGameFromDB(
       v,
       () => goTo(`${window.$PUBLIC_PATH}dashboard`),
       () => alert(`something went wrong, the ${v} game wasn't loaded`)
@@ -256,7 +256,7 @@ class LoadGame extends HTMLElement {
     const name = v.substring(savesPrefix.length);
 
     if (confirm(`are you sure you want to delete ${name}`)) {
-      window.$GAME.deleteGame(v, () => this.render());
+      window.$game.deleteGame(v, () => this.render());
     }
   };
 

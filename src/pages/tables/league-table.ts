@@ -32,8 +32,6 @@ const cmpctCols = columns.filter(
  * TODO: switch mode according the screen size (use the media query)
  */
 class LeagueTable extends HTMLElement {
-  private gs?: GameState;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -41,13 +39,13 @@ class LeagueTable extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
+      window.$game.addObserver(this);
       this.render();
     }
   }
 
   disconnectedCallback() {
-    window.$GAME.removeObserver(this);
+    window.$game.removeObserver(this);
   }
 
   static get observedAttributes() {
@@ -87,7 +85,7 @@ class LeagueTable extends HTMLElement {
       html`<tr>
         ${this.renderDatas(e)}
       </tr>`;
-    return new League(GameState.getSeasonMatches(this.gs!, season))
+    return new League(GameState.getSeasonMatches(window.$game.state!, season))
       .getSortedTable()
       .map(renderRow);
   }

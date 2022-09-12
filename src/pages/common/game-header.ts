@@ -1,15 +1,9 @@
 import { html, render } from "lit-html";
-import { GameState } from "../../game-state/game-state";
 import "../common/sim-controls";
 import style from "./game-header.css";
 
-/**
- * the header of the pages when in game
- * @param {GameState} gs - property the current game
- */
+/** the header of the pages when in game */
 class GameHeader extends HTMLElement {
-  private gs?: GameState;
-
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -17,17 +11,8 @@ class GameHeader extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
       this.render();
     }
-  }
-
-  disconnectedCallback(): void {
-    window.$GAME.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.render();
   }
 
   render(): void {
@@ -37,7 +22,7 @@ class GameHeader extends HTMLElement {
           ${style}
         </style>
         <h1>TODO: header</h1>
-        <sim-controls .gs=${this.gs}></sim-controls>
+        <sim-controls></sim-controls>
       `,
       this.shadowRoot!
     );

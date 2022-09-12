@@ -79,8 +79,8 @@ function timeout(start: number, duration?: number): (now: number) => boolean {
  */
 export function simulate(
   gs: GameState,
-  onTick: (gs: GameState) => unknown,
-  onEnd: (gs: GameState) => unknown,
+  onTick: (gs: Readonly<GameState>) => unknown,
+  onEnd: (gs: Readonly<GameState>) => unknown,
   duration?: number
 ): () => void {
   const thisSimCtrl = simController; // bind a new reference to the lexical environment

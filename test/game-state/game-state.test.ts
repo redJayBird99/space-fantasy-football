@@ -387,11 +387,42 @@ describe("GameState.getRound", () => {
   });
 });
 
-// TODO: jest has some problem with structuredClone...
-xdescribe("GameStateHandle", () => {
-  test(".state should return a copy of the GameState", () => {
-    const gh = new _gs.GameStateHandle();
-    gh.state = st;
-    expect(gh.state).not.toBe(st);
+describe("GameStateHandle", () => {
+  const mockFn = jest.fn();
+  const gameStateUpdated = (gs?: _gs.GameState) => mockFn();
+  beforeEach(() => mockFn.mockReset());
+
+  test("when the a state change should notify the observers", () => {
+    return new Promise<any>((resolve) => {
+      const gh = new _gs.GameStateHandle();
+      mockFn.mockImplementation(() => resolve(mockFn));
+      const obs = { gameStateUpdated };
+      gh.addObserver(obs);
+      gh.state = st;
+    }).then((mk) => expect(mk.mock.calls.length).toBe(1));
+  });
+
+  test("when the a state change should not notify removed observers", () => {
+    return new Promise<any>((resolve) => {
+      const gh = new _gs.GameStateHandle();
+      mockFn.mockImplementation(() => resolve(mockFn));
+      const obs = { gameStateUpdated };
+      const obs2 = { gameStateUpdated };
+      gh.addObserver(obs);
+      gh.addObserver(obs2);
+      gh.removeObserver(obs2);
+      gh.state = st;
+    }).then((mk) => expect(mk.mock.calls.length).toBe(1));
+  });
+
+  test(".gameStateUpdated() should be called with the updated state", () => {
+    return new Promise<_gs.GameState>((resolve) => {
+      const gh = new _gs.GameStateHandle();
+      const obs = {
+        gameStateUpdated: (gs?: _gs.GameState) => resolve(gs!),
+      };
+      gh.addObserver(obs);
+      gh.state = JSON.parse(JSON.stringify(st));
+    }).then((gs) => expect(gs).not.toBe(st));
   });
 });

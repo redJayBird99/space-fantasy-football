@@ -3,10 +3,7 @@ import * as _ps from "../util/props-state";
 import * as db from "../../game-state/game-db";
 import style from "./menu-bar.css";
 
-/**
- * menu with utils like game saver
- * @param data-game-name attribute the name of the current game
- */
+/** menu with utils like game saver */
 class MenuBar extends HTMLElement {
   constructor() {
     super();
@@ -28,7 +25,7 @@ class MenuBar extends HTMLElement {
         </style>
         <autosave-led></autosave-led>
         <menu-save></menu-save>
-        <menu-save-file data-name=${this.dataset.gameName!}></menu-save-file>
+        <menu-save-file></menu-save-file>
         <saved-signal>game saved</saved-signal>
       `,
       this.shadowRoot!
@@ -109,29 +106,28 @@ class SaveGameJson extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$GAME.addObserver(this);
-      this.json = window.$GAME.getStateAsJsonUrl();
+      window.$game.addObserver(this);
+      this.json = window.$game.getStateAsJsonUrl();
       this.render();
     }
   }
 
   disconnectedCallback() {
     URL.revokeObjectURL(this.json ?? "");
-    window.$GAME.removeObserver(this);
+    window.$game.removeObserver(this);
   }
 
   gameStateUpdated(): void {
     // when the gamestate update we need a new json referece for the new state
     URL.revokeObjectURL(this.json ?? "");
-    this.json = window.$GAME.getStateAsJsonUrl();
+    this.json = window.$game.getStateAsJsonUrl();
     this.render();
   }
 
   render(): void {
+    const name = db.getGameName(window.$game.state);
     render(
-      html`<a download="${this.dataset.name}.json" href=${this.json!}
-        >save file</a
-      >`,
+      html`<a download="${name}.json" href=${this.json!}>save file</a>`,
       this
     );
   }
@@ -161,7 +157,7 @@ class SaveOnDB extends HTMLElement {
   handleClick = (): void => {
     // TODO handle error
     _ps.setState(() => Object.assign(this.state, { disabled: true }));
-    window.$GAME.saveGsOnDB(() =>
+    window.$game.saveGsOnDB(() =>
       _ps.setState(() => Object.assign(this.state, { disabled: !db.on() }))
     );
   };
