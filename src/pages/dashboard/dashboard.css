@@ -1,13 +1,7 @@
-:host,
+sff-dashboard,
 dashboard-main,
 dashboard-next-match {
   display: block;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
 }
 
 dashboard-next-match {

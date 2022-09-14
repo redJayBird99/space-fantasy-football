@@ -1,15 +1,9 @@
 @import "../util/button.css";
 @import "../util/form.css";
 
-:host,
+sff-players,
 players-table {
   display: block;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
 }
 
 table {

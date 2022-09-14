@@ -1,9 +1,3 @@
-:host {
+sff-inbox-page {
   display: block;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
 }

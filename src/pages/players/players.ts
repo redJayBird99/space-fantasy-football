@@ -5,17 +5,10 @@ import { Player, Skill } from "../../character/player";
 import * as _ps from "../util/props-state";
 import { goLink } from "../util/go-link";
 import "../util/router.ts";
-import "../common/game-header.ts";
-import "../common/game-nav.ts";
 import style from "./players.css";
 import { sortByInfo, sortBySkill, SorterBy } from "../../character/util";
 
 class Players extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
   connectedCallback() {
     if (this.isConnected) {
       this.render();
@@ -25,21 +18,14 @@ class Players extends HTMLElement {
   render(): void {
     render(
       html`
-        <sff-layout>
+        <sff-game-page>
           <style>
             ${style}
           </style>
-          <sff-game-header slot="in-header"></sff-game-header>
-          <sff-game-nav slot="in-nav"></sff-game-nav>
-          <div slot="in-main">
-            <menu-bar></menu-bar>
-            <players-table></players-table>
-          </div>
-          <div slot="in-aside"><h2>TODO: aside</h2></div>
-          <div slot="in-footer"><h2>TODO: footer</h2></div>
-        </sff-layout>
+          <players-table slot="in-main"></players-table>
+        </sff-game-page>
       `,
-      this.shadowRoot!
+      this
     );
   }
 }

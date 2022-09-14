@@ -3,20 +3,11 @@ import { GameState } from "../../game-state/game-state";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
-import "../util/layout.ts";
-import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
-import "../common/game-header.ts";
-import "../common/game-nav.ts";
 import "../inbox/inbox.ts";
 import style from "./dashboard.css";
 
 class Dashboard extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
   connectedCallback() {
     if (this.isConnected) {
       this.render();
@@ -26,20 +17,14 @@ class Dashboard extends HTMLElement {
   render(): void {
     render(
       html`
-        <sff-layout>
+        <sff-game-page>
           <style>
             ${style}
           </style>
-          <sff-game-header slot="in-header"></sff-game-header>
-          <sff-game-nav slot="in-nav"></sff-game-nav>
           <dashboard-main slot="in-main"></dashboard-main>
-          <div slot="in-aside">
-            <h2>TODO: aside</h2>
-          </div>
-          <div slot="in-footer"><h2>TODO: footer</h2></div>
-        </sff-layout>
+        </sff-game-page>
       `,
-      this.shadowRoot!
+      this
     );
   }
 }
@@ -54,7 +39,6 @@ class Main extends HTMLElement {
   render(): void {
     render(
       html`
-        <menu-bar></menu-bar>
         <dashboard-next-match role="article"></dashboard-next-match>
         <league-table data-mode="compact"></league-table>
         <sff-inbox data-compact></sff-inbox>

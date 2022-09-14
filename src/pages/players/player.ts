@@ -7,16 +7,9 @@ import {
   MAX_SKILL,
 } from "../../character/player";
 import { getImprovability } from "../../character/user";
-import "../common/game-header.ts";
-import "../common/game-nav.ts";
 import style from "./player.css";
 
 class PlayerPage extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
   connectedCallback() {
     if (this.isConnected) {
       this.render();
@@ -26,21 +19,14 @@ class PlayerPage extends HTMLElement {
   render(): void {
     render(
       html`
-        <style>
-          ${style}
-        </style>
-        <sff-layout>
-          <sff-game-header slot="in-header"></sff-game-header>
-          <sff-game-nav slot="in-nav"></sff-game-nav>
-          <div slot="in-main">
-            <menu-bar></menu-bar>
-            <player-info></player-info>
-          </div>
-          <div slot="in-aside"><h2>TODO: aside</h2></div>
-          <div slot="in-footer"><h2>TODO: footer</h2></div>
-        </sff-layout>
+        <sff-game-page>
+          <style>
+            ${style}
+          </style>
+          <player-info slot="in-main"></player-info>
+        </sff-game-page>
       `,
-      this.shadowRoot!
+      this
     );
   }
 }
