@@ -3,12 +3,12 @@ import { GameState } from "../../game-state/game-state";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
-import "../util/router.ts";
 import "../util/layout.ts";
 import "../common/menu-bar.ts";
 import "../tables/league-table.ts";
 import "../common/game-header.ts";
 import "../common/game-nav.ts";
+import "../inbox/inbox.ts";
 import style from "./dashboard.css";
 
 class Dashboard extends HTMLElement {
@@ -57,6 +57,7 @@ class Main extends HTMLElement {
         <menu-bar></menu-bar>
         <dashboard-next-match role="article"></dashboard-next-match>
         <league-table data-mode="compact"></league-table>
+        <sff-inbox data-compact></sff-inbox>
       `,
       this
     );

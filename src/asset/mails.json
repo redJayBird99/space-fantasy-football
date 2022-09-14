@@ -1,0 +1,7 @@
+{
+  "mail-welcome": {
+    "sender": "${team} Owner",
+    "subject": "Welcome to the ${team} Club",
+    "content": "I am delighted to welcome you as our new Head Coach, you are a proven coach and an innovator who fits our vision for the Club. I look forward to see you realising the full potential of our squad in the coming months and years."
+  }
+}

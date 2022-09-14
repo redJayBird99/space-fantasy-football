@@ -3,15 +3,19 @@ import style from "./modal.css";
 
 /**
  * on close dispatch a "closeModal" customElement
- * the given data-id attribute is added to the detail propery
+ * the given data-id attribute is added to the detail property
+ * @param {(id?: string) => unknown} closeHandler called on close click
+ *
  * the actual removal of this element should be handled by the parent node
- * css --modal-container-flex: set the container flex property
- * css --modal-bg-color: background color of the modal
- * css --modal-container-bg-color: background color of the content container
- * css --modal-close-btn-bg-color: close button background color
- * css --modal-close-btn-color: button color
+ * @param css variable --modal-container-flex: set the container flex property
+ * @param css variable --modal-bg-color: background color of the modal
+ * @param css variable --modal-container-bg-color: background color of the content container
+ * @param css variable --modal-close-btn-bg-color: close button background color
+ * @param css variable --modal-close-btn-color: button color
  */
 class Modal extends HTMLElement {
+  private closeHandler?: (id?: string) => unknown;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -29,6 +33,7 @@ class Modal extends HTMLElement {
   }
 
   handleClose = () => {
+    this.closeHandler?.(this.dataset.id);
     this.dispatchEvent(
       new CustomEvent("closeModal", {
         bubbles: true,

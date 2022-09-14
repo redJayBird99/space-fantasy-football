@@ -6,6 +6,7 @@ import {
   handleSeasonStart,
   enqueueSkillUpdateEvent,
 } from "../game-sim/game-simulation";
+import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
@@ -27,6 +28,7 @@ class GameState {
   contracts: { [playerId: string]: Contract } = {};
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
+  mails: Mail[] = [];
   userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {
@@ -63,6 +65,7 @@ class GameState {
     initTeams(s, teams);
     initGameEvents(s);
     initTeamsAppeal(s);
+    s.mails = [welcome(team, s.date)];
     s.popStats = getPopStats(Object.values(s.players));
 
     return s;

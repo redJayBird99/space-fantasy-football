@@ -77,13 +77,8 @@ class PlaySim extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      this.addEventListener("closeModal", this.handleCloseModal);
       this.render();
     }
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener("closeModal", this.handleCloseModal);
   }
 
   handleCloseModal = () => {
@@ -124,7 +119,7 @@ class PlaySim extends HTMLElement {
 
   renderSim(): TemplateResult {
     return html`
-      <sff-modal>
+      <sff-modal .closeHandler=${this.handleCloseModal}>
         <visual-sim
           data-modf=${this.state.childProps[_ps.MODF]}
           .props=${this.state.childProps}
