@@ -44,6 +44,10 @@ game-date {
   width: 100%;
 }
 
+btn-sim-options > .btn {
+  padding: 0.7rem 1.2rem;
+}
+
 btn-sim-options {
   position: relative;
 }

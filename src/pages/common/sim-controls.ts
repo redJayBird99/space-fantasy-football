@@ -168,8 +168,12 @@ class BtnSimOptions extends HTMLElement {
   render() {
     render(
       html`
-        <button @click=${this.handleOptionsClick} class="btn btn--acc">
-          ${this.open ? "close" : "open"} sim options
+        <button
+          aria-label="${this.open ? "close" : "open"} sim options"
+          @click=${this.handleOptionsClick}
+          class="btn btn--acc"
+        >
+          ⚙
         </button>
         ${this.open ? html`<sim-options></sim-options>` : nothing}
       `,

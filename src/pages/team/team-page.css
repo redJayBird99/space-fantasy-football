@@ -1,0 +1,92 @@
+sff-team {
+  display: block;
+}
+
+.pitch {
+  background-color: hsl(120, 84%, 63%);
+  border: 2px solid var(--lt-on-bg-color);
+  /* half pitch */
+  min-height: calc(50px * 2);
+  min-width: calc(65px * 2);
+}
+
+.team-main {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.team-main > * {
+  flex-grow: 1;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.plr,
+.plr-head {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  gap: clamp(2px, 0.5vw, 10px);
+  padding: 3px 10px;
+}
+
+.plr-head {
+  padding: 2px 10px;
+}
+
+.plr:nth-of-type(even) {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 15%);
+}
+
+.plr-name {
+  flex-grow: 1;
+  flex-shrink: 2;
+  text-align: left;
+  width: 10rem;
+}
+
+.plr-pos {
+  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 15%);
+  font-style: italic;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.plr-head-pos,
+.plr-pos {
+  padding: 0.4rem 0;
+  width: 2.5rem;
+}
+
+.skill-score {
+  width: 3rem;
+}
+
+td.skill-score {
+  border-radius: 4px;
+  color: var(--lt-on-bg-color);
+  text-align: center;
+}
+
+td.skill-score > span {
+  padding: 0.1rem 0;
+  width: 1.6rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.plr > td,
+.plr-head > th {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

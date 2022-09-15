@@ -132,10 +132,17 @@ function playerMacroskill(p: Player, m: Macroskill): TemplateResult {
 }
 
 function playersSkillScore(score: number): TemplateResult {
-  score = Math.round(score);
-  const s = `background-color: hsl(${(score / MAX_SKILL) * 120}deg 100% 60%)`;
-  const v = score ? String(score).padStart(2, " ") : "";
-  return html`<pre class="skill-score" style=${s}>${v}</pre>`;
+  const d = skillData(score);
+  const sl = `background-color: ${d.color}`;
+  return html`<span class="skill-score" style=${sl}>${d.score}</span>`;
+}
+
+export function skillData(score: number): { color: string; score: string } {
+  const s = Math.round(score);
+  return {
+    color: `hsl(${(score / MAX_SKILL) * 120}deg 100% 60%)`,
+    score: s ? String(s).padStart(2, "0") : "",
+  };
 }
 
 if (!customElements.get("sff-player")) {

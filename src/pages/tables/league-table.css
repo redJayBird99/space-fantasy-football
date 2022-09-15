@@ -21,6 +21,7 @@ th {
   border: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 0.25rem 0;
 }
 

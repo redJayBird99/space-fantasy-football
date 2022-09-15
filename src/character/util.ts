@@ -83,11 +83,36 @@ export function sortByInfo(
 ) {
   if (k === "birthday") {
     sortByAge(pls, ascending);
+  } else if (k === "position") {
+    sortByPosition(pls, ascending);
   } else if (k !== "skills" && k !== "growthRate" && k !== "growthState") {
     pls.sort((p1, p2) =>
       ascending ? p1[k].localeCompare(p2[k]) : p2[k].localeCompare(p1[k])
     );
   }
+}
+
+const posOrder: Record<_p.Position, number> = {
+  gk: 1,
+  cb: 2,
+  lb: 3,
+  rb: 4,
+  cm: 5,
+  dm: 6,
+  lm: 7,
+  rm: 8,
+  am: 9,
+  rw: 10,
+  lw: 11,
+  cf: 12,
+};
+
+export function sortByPosition(pls: _p.Player[], ascending: boolean): void {
+  pls.sort((p1, p2) =>
+    ascending
+      ? posOrder[p1.position] - posOrder[p2.position]
+      : posOrder[p2.position] - posOrder[p1.position]
+  );
 }
 
 export const exportedForTesting = {

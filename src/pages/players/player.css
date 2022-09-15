@@ -36,8 +36,6 @@ sff-player {
   border-radius: 3px;
   color: var(--lt-on-bg-color);
   display: inline-block;
-  font-size: 1rem;
-  font-family: inherit;
   margin: 0.25rem 0;
   padding: 0.1rem 0.2rem;
 }

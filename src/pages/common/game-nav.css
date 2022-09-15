@@ -21,4 +21,5 @@ li {
 
 a {
   color: var(--dk-on-bg-color, var(--lt-on-db-color));
+  text-transform: capitalize;
 }
