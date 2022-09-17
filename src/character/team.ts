@@ -16,9 +16,9 @@ const MAX_SCOUTING_OFFSET = 0.2;
 type GsTm = { gs: GameState; t: Team }; // eslint-disable-line no-use-before-define
 type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
 type Affordable = (wage: number) => boolean;
-type Fanbase = "huge" | "big" | "medium" | "small" | "verySmall";
+type fanBase = "huge" | "big" | "medium" | "small" | "verySmall";
 
-const fanbaseScore: Readonly<Record<Fanbase, number>> = {
+const fanBaseScore: Readonly<Record<fanBase, number>> = {
   huge: 4,
   big: 3,
   medium: 2,
@@ -26,15 +26,15 @@ const fanbaseScore: Readonly<Record<Fanbase, number>> = {
   verySmall: 0,
 };
 
-function initMoneyAmount(fb: Fanbase, min: number): number {
+function initMoneyAmount(fb: fanBase, min: number): number {
   const extra = (0.5 * min) / 5;
-  return Math.round(min + fanbaseScore[fb] * extra + Math.random() * extra);
+  return Math.round(min + fanBaseScore[fb] * extra + Math.random() * extra);
 }
 
 function initScoutOffset(t: Team): number {
   const hf = MAX_SCOUTING_OFFSET / 2;
   return within(
-    hf * ((fanbaseScore.huge - fanbaseScore[t.fanbase]) / fanbaseScore.huge) +
+    hf * ((fanBaseScore.huge - fanBaseScore[t.fanBase]) / fanBaseScore.huge) +
       Math.random() * hf,
     0,
     MAX_SCOUTING_OFFSET
@@ -70,20 +70,20 @@ class Team {
   name: string;
   playerIds: string[] = [];
   finances: Finances;
-  fanbase: Fanbase;
+  fanBase: fanBase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
 
   constructor(name: string) {
     this.name = name;
-    this.fanbase = teams[name] ? teams[name].fanbase : "verySmall";
+    this.fanBase = teams[name] ? teams[name].fanBase : "verySmall";
     this.scoutOffset = initScoutOffset(this);
     this.finances = {
-      budget: initMoneyAmount(this.fanbase, 10 * SALARY_CAP),
-      revenue: initMoneyAmount(this.fanbase, SALARY_CAP + SALARY_CAP / 10),
-      health: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
-      scouting: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
-      facilities: initMoneyAmount(this.fanbase, SALARY_CAP / 20),
+      budget: initMoneyAmount(this.fanBase, 10 * SALARY_CAP),
+      revenue: initMoneyAmount(this.fanBase, SALARY_CAP + SALARY_CAP / 10),
+      health: initMoneyAmount(this.fanBase, SALARY_CAP / 20),
+      scouting: initMoneyAmount(this.fanBase, SALARY_CAP / 20),
+      facilities: initMoneyAmount(this.fanBase, SALARY_CAP / 20),
     };
   }
 
@@ -100,7 +100,7 @@ class Team {
   }
 
   // remove the player from the team and delete the contract from the gameState
-  static unsignPlayer(gs: GameState, c: Contract): void {
+  static unSignPlayer(gs: GameState, c: Contract): void {
     const team = gs.teams[c.teamName];
     const player = gs.players[c.playerId];
     player.team = "free agent";
@@ -111,30 +111,30 @@ class Team {
   // moves the contracted player to the new team, the contract has the same conditions
   static transferPlayer(gs: GameState, c: Contract, to: Team): void {
     const p = gs.players[c.playerId];
-    Team.unsignPlayer(gs, c);
+    Team.unSignPlayer(gs, c);
     Team.signPlayer({ gs, p, t: to }, c.wage, c.duration);
   }
 
   // returns players with contract duration of 0
-  static getExipiringPlayers({ gs, t }: GsTm): Player[] {
+  static getExpiringPlayers({ gs, t }: GsTm): Player[] {
     return GameState.getTeamPlayers(gs, t.name).filter(
       (p) => GameState.getContract(gs, p)?.duration === 0
     );
   }
 
   // returns players with contract duration greater than 0
-  static getNotExipiringPlayers({ gs, t }: GsTm): Player[] {
+  static getNotExpiringPlayers({ gs, t }: GsTm): Player[] {
     return GameState.getTeamPlayers(gs, t.name).filter(
       (p) => GameState.getContract(gs, p)?.duration !== 0
     );
   }
 
-  // try to resign the exipiring players according to the team needs and player scores
-  static renewExipiringContracts({ gs, t }: GsTm): void {
-    const notExpiring = Team.getNotExipiringPlayers({ gs, t });
+  // try to resign the expiring players according to the team needs and player scores
+  static renewExpiringContracts({ gs, t }: GsTm): void {
+    const notExpiring = Team.getNotExpiringPlayers({ gs, t });
     let rtgs = new RatingAreaByNeed(notExpiring);
     let affordable = Team.canAfford({ gs, t });
-    const expiring = Team.getExipiringPlayers({ gs, t }).sort(
+    const expiring = Team.getExpiringPlayers({ gs, t }).sort(
       (a, b) =>
         Team.ratingPlayerByNeed({ p: b, t, gs }, rtgs) -
         Team.ratingPlayerByNeed({ p: a, t, gs }, rtgs)
@@ -155,9 +155,9 @@ class Team {
     });
   }
 
-  // returns the wages sum of every not exipiring team player
+  // returns the wages sum of every not expiring team player
   static getWagesAmount({ gs, t }: GsTm): number {
-    return sumWages(gs, Team.getNotExipiringPlayers({ gs, t }));
+    return sumWages(gs, Team.getNotExpiringPlayers({ gs, t }));
   }
 
   // returns the sum of all the monthly expenses wages and luxuryTax included
@@ -187,8 +187,8 @@ class Team {
 
   // return true when the team need a new player
   static needPlayer(g: GsTm): boolean {
-    // TODO: take in cosideration the quality of the teamPlayers
-    const players = Team.getNotExipiringPlayers(g);
+    // TODO: take in consideration the quality of the teamPlayers
+    const players = Team.getNotExpiringPlayers(g);
     const rgs = new RatingAreaByNeed(players);
     return players.length < 30 && Object.values(rgs).some((v) => v > 0);
   }
@@ -211,7 +211,7 @@ class Team {
   // sign the best (by rating) affordable willing to sign player between the
   // given free agents returns the signed player
   static signFreeAgent({ gs, t }: GsTm, free: Player[]): Player | void {
-    const rts = new RatingAreaByNeed(Team.getNotExipiringPlayers({ gs, t }));
+    const rts = new RatingAreaByNeed(Team.getNotExpiringPlayers({ gs, t }));
     const affordable = Team.canAfford({ gs, t });
     const signables = free.filter(
       (p) =>
@@ -232,7 +232,7 @@ class Team {
   // pick and sign for 4 seasons a draft player for the given ones
   // return the signed one
   static pickDraftPlayer({ gs, t }: GsTm, players: Player[]): Player {
-    const rts = new RatingAreaByNeed(Team.getNotExipiringPlayers({ gs, t }));
+    const rts = new RatingAreaByNeed(Team.getNotExpiringPlayers({ gs, t }));
     const target = findBest(players, { t, gs }, rts);
     Team.signPlayer({ gs, t, p: target }, Player.wantedWage(gs, target), 4);
     return target;
@@ -245,10 +245,10 @@ class Team {
 
   // returns a team appeal score between 0 and 5
   // 3 points for the position in ranking ( the order of the array is the ranking )
-  // 1 point for the fanbase size
+  // 1 point for the fanBase
   // 1 point for the position in facilityRanking ( the order of the array is the ranking )
   static calcAppeal(t: Team, ranking: Team[], facilityRanking: Team[]): number {
-    const fanPoints = fanbaseScore[t.fanbase] / fanbaseScore.huge;
+    const fanPoints = fanBaseScore[t.fanBase] / fanBaseScore.huge;
     const rankNth = ranking.indexOf(t);
     const facilityNth = facilityRanking.indexOf(t);
     const l = ranking.length - 1;
@@ -262,7 +262,7 @@ class Team {
   }
 
   /**
-   * a rating of how mutch a player is needed by a team
+   * a rating of how match a player is needed by a team
    * one point for position needs, 4 on the score of the player
    * @returns a value between 0 and 5
    */
@@ -271,7 +271,7 @@ class Team {
   }
 
   // this method is meant for the user when he want to see the player improvability
-  // returns a predicted player growth rate by the team scountig, the max offset
+  // returns a predicted player growth rate by the team scouting, the max offset
   // from the real growth is of (2 * MAX_SCOUTING_OFFSET)% percentage
   static estimateGrowthRate(t: Team, p: Player): number {
     // the hash it used to get a deterministic value for each player and team without storing anything extra
@@ -289,10 +289,10 @@ function sumWages(gs: GameState, pls: Player[]): number {
   return pls.reduce((a, p) => a + (GameState.getContract(gs, p)?.wage ?? 0), 0);
 }
 
-// a rating of how mutch the player area is needed by a team with the given
+// a rating of how match the player area is needed by a team with the given
 // players the ratings are between 0 (low) 1 (high)
 class RatingAreaByNeed {
-  goolkeeper = 0;
+  goalkeeper = 0;
   defender = 0;
   midfielder = 0;
   forward = 0;
@@ -302,7 +302,7 @@ class RatingAreaByNeed {
     const maxRt = 1;
     // counts the players per area
     teamPlayers.forEach((p) => this[getArea(p.position)]++);
-    this.goolkeeper = within((3 - this.goolkeeper) / 3, minRt, maxRt);
+    this.goalkeeper = within((3 - this.goalkeeper) / 3, minRt, maxRt);
     this.defender = within((8 - this.defender) / 8, minRt, maxRt);
     this.midfielder = within((8 - this.midfielder) / 8, minRt, maxRt);
     this.forward = within((6 - this.forward) / 6, minRt, maxRt);

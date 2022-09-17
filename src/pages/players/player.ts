@@ -2,8 +2,8 @@ import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
 import {
   Player,
-  macroskills,
-  Macroskill,
+  MACRO_SKILLS,
+  MacroSkill,
   MAX_SKILL,
 } from "../../character/player";
 import { getImprovability } from "../../character/user";
@@ -67,7 +67,7 @@ class PlayerInfo extends HTMLElement {
           ${this.player && this.gs && playerTeam(this.player, this.gs)}
         </section>
         <div class="plr-skills">
-          ${this.player && playersMacroskills(this.player)}
+          ${this.player && playersMacroSkills(this.player)}
         </div>
       `,
       this
@@ -110,20 +110,20 @@ function playerTeam(p: Player, gs: Readonly<GameState>): TemplateResult {
   `;
 }
 
-/** lists all macroskills with their subskills values */
-function playersMacroskills(p: Player): TemplateResult[] {
-  return Object.keys(macroskills).map((m) =>
-    playerMacroskill(p, m as Macroskill)
+/** lists all macroSkills with their subSkills values */
+function playersMacroSkills(p: Player): TemplateResult[] {
+  return Object.keys(MACRO_SKILLS).map((m) =>
+    playerMacroSkill(p, m as MacroSkill)
   );
 }
 
-/**  macroskill with all its subskills values */
-function playerMacroskill(p: Player, m: Macroskill): TemplateResult {
+/**  macroSkill with all its subSkills values */
+function playerMacroSkill(p: Player, m: MacroSkill): TemplateResult {
   return html`
     <ul>
-      <li>${playersSkillScore(Player.getMacroskill(p, m))} ${m}</li>
+      <li>${playersSkillScore(Player.getMacroSkill(p, m))} ${m}</li>
       <ul>
-        ${macroskills[m].map(
+        ${MACRO_SKILLS[m].map(
           (s) => html`<li>${playersSkillScore(Player.getSkill(p, s))} ${s}</li>`
         )}
       </ul>

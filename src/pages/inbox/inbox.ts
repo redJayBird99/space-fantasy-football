@@ -6,10 +6,11 @@ import { Mail } from "../../character/mail";
 import { GameState } from "../../game-state/game-state";
 import { classMap } from "lit-html/directives/class-map.js";
 import * as _ps from "../util/props-state";
+import { isEqual } from "lodash-es";
 
 /**
  * an inbox for listing and reading news feed, email etc, it has to mode
- * @param {attribute} data-compact - when the attribute is setted the inbox
+ * @param {attribute} data-compact - when the attribute exists the inbox
  * is limited only to redirecting to the inbox page
  */
 class Inbox extends HTMLElement {
@@ -34,10 +35,11 @@ class Inbox extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (!this.hasAttribute("data-compact")) {
+    const gs = window.$game.state as GameState;
+
+    if (!this.dataset.compact && !isEqual(gs.mails, this.state.mails)) {
       // we actually want to mutate the gs only one time when the inbox section is closed
       // the compact mode doesn't mutate the mails only redirect
-      const gs = window.$game.state as GameState;
       gs.mails = this.state.mails;
       window.$game.state = gs;
     }

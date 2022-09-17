@@ -25,7 +25,7 @@ const atPos = poss.find((pp) => pp !== samplePos);
 
 describe("getArea()", () => {
   test.each(poss)("position: %s should returns the corresponding area", (p) => {
-    expect(_pl.positionArea[_pl.getArea(p)]).toContainEqual(p);
+    expect(_pl.POSITION_AREA[_pl.getArea(p)]).toContainEqual(p);
   });
 });
 
@@ -44,17 +44,17 @@ describe("createAge()", () => {
     ages.forEach((age) => expect(age).toBeLessThanOrEqual(_pl.MAX_AGE));
   });
 
-  test("loosely around 13% sould be teens", () => {
+  test("loosely around 13% should be teens", () => {
     expect(teens.length / ages.length).toBeGreaterThan(0.13 - dif);
     expect(teens.length / ages.length).toBeLessThan(0.13 + dif);
   });
 
-  test("loosely around 58% sould be 20s", () => {
+  test("loosely around 58% should be 20s", () => {
     expect(age20s.length / ages.length).toBeGreaterThan(0.58 - dif);
     expect(age20s.length / ages.length).toBeLessThan(0.58 + dif);
   });
 
-  test("loosely around 22% sould be 30s", () => {
+  test("loosely around 22% should be 30s", () => {
     expect(age30s.length / ages.length).toBeGreaterThan(0.22 - dif);
     expect(age30s.length / ages.length).toBeLessThan(0.22 + dif);
   });
@@ -151,24 +151,24 @@ describe("createPreferredFoot()", () => {
   });
 });
 
-describe("getOutOfPositionMalus()", () => {
+describe("getOutOfPositionPenalty()", () => {
   poss.forEach((p) => {
     const plr = new _pl.Player(p, new Date());
     const at = poss.find((pp) => pp !== p);
 
     test(`should return 0 when isn't out of position`, () => {
-      expect(_pl.getOutOfPositionMalus(plr)).toBe(0);
+      expect(_pl.getOutOfPositionPenalty(plr)).toBe(0);
     });
 
     describe(`when ${p} is playing at ${at}`, () => {
-      const malus = _pl.getOutOfPositionMalus(plr, at);
+      const penalty = _pl.getOutOfPositionPenalty(plr, at);
 
-      test(`should return a factor malus greater than 0`, () => {
-        expect(malus).toBeGreaterThan(0);
+      test(`should return a factor penalty greater than 0`, () => {
+        expect(penalty).toBeGreaterThan(0);
       });
 
-      test(`should return a factor malus less or equal than 1`, () => {
-        expect(malus).toBeLessThanOrEqual(1);
+      test(`should return a factor penalty less or equal than 1`, () => {
+        expect(penalty).toBeLessThanOrEqual(1);
       });
     });
   });
@@ -182,7 +182,7 @@ describe("Player.getSkill()", () => {
     );
   });
 
-  _pl.skillsApplicableMalus.forEach((sk) => {
+  _pl.SKILLS_APPLICABLE_PENALTY.forEach((sk) => {
     test(`when is playing out of position the ${sk} value is reduced`, () => {
       expect(_pl.Player.getSkill(smpPlr, sk)).toBeGreaterThan(
         _pl.Player.getSkill(smpPlr, sk, atPos)
@@ -190,7 +190,7 @@ describe("Player.getSkill()", () => {
     });
   });
 
-  _pl.noGrowthSkill.forEach((sk) => {
+  _pl.NO_GROWTH_SKILL.forEach((sk) => {
     const plr = new _pl.Player("am", new Date(), 18);
     plr.growthState = 0.8;
 
@@ -202,7 +202,7 @@ describe("Player.getSkill()", () => {
   Object.keys(smpPlr.skills).forEach((s) => {
     const sk = s as keyof _pl.Skills;
 
-    if (!_pl.noGrowthSkill.has(sk)) {
+    if (!_pl.NO_GROWTH_SKILL.has(sk)) {
       test(`should take in account the growthState`, () => {
         const skl = smpPlr.skills[sk] * smpPlr.growthState;
         expect(skl).toBeCloseTo(_pl.Player.getSkill(smpPlr, sk));
@@ -223,18 +223,18 @@ describe("Player.getSkill()", () => {
   });
 });
 
-describe("Player.getMacroskill()", () => {
-  Object.keys(_pl.macroskills).forEach((m) => {
-    const s = m as _pl.Macroskill;
+describe("Player.getMacroSkill()", () => {
+  Object.keys(_pl.MACRO_SKILLS).forEach((m) => {
+    const s = m as _pl.MacroSkill;
 
     test(`${s} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
-      expect(_pl.Player.getMacroskill(smpPlr, s, atPos)).toBeGreaterThan(
+      expect(_pl.Player.getMacroSkill(smpPlr, s, atPos)).toBeGreaterThan(
         _pl.MIN_SKILL
       );
     });
 
     test(`${s} value is less than or equal ${_pl.MAX_SKILL}`, () => {
-      expect(_pl.Player.getMacroskill(smpPlr, s, atPos)).toBeLessThanOrEqual(
+      expect(_pl.Player.getMacroSkill(smpPlr, s, atPos)).toBeLessThanOrEqual(
         _pl.MAX_SKILL
       );
     });
@@ -242,18 +242,18 @@ describe("Player.getMacroskill()", () => {
 });
 
 describe("Player.createPlayerAt()", () => {
-  Object.keys(_pl.positionArea).forEach((area) => {
+  Object.keys(_pl.POSITION_AREA).forEach((area) => {
     const pArea = area as _pl.PositionArea;
-    const plrs = Array.from({ length: 100 }, () =>
+    const pls = Array.from({ length: 100 }, () =>
       _pl.Player.createPlayerAt(new Date(), pArea)
     );
 
     describe(`when at is ${pArea}`, () => {
-      _pl.positionArea[pArea].forEach((p) => {
+      _pl.POSITION_AREA[pArea].forEach((p) => {
         const pp = p as _pl.Position;
 
         test(`should be able to return a player at ${pp}`, () => {
-          expect(plrs.some((pr) => pr.position === pp)).toBe(true);
+          expect(pls.some((pr) => pr.position === pp)).toBe(true);
         });
       });
     });
@@ -263,12 +263,12 @@ describe("Player.createPlayerAt()", () => {
 });
 
 describe("positionScoreFactors", () => {
-  Object.keys(_pl.positionScoreFactors).forEach((p) => {
+  Object.keys(_pl.POSITION_SCORE_FACTORS).forEach((p) => {
     const pp = p as _pl.Position;
 
     describe(`the sum of factor of ${pp} score is 1`, () => {
       expect(
-        Object.values(_pl.positionScoreFactors[pp]).reduce((a, v) => a + v)
+        Object.values(_pl.POSITION_SCORE_FACTORS[pp]).reduce((a, v) => a + v)
       ).toBeCloseTo(1);
     });
   });
@@ -316,7 +316,7 @@ describe("predictScore()", () => {
   const dt = new Date();
   const p = new _pl.Player("lm", dt, 17);
 
-  test("should be deterministic given the same imput", () => {
+  test("should be deterministic given the same input", () => {
     expect(_pl.Player.predictScore(p, dt, team)).toBe(
       _pl.Player.predictScore(p, dt, team)
     );
@@ -369,19 +369,19 @@ describe("predictScore()", () => {
         _pl.Player.getScore(p, undefined, false) -
           _pl.Player.predictScore(p, dt, team)
       );
-    const plrs = poss.map((p) => new _pl.Player(p, dt, 18));
+    const pls = poss.map((p) => new _pl.Player(p, dt, 18));
     const team2 = new Team("insert name");
     team2.scoutOffset = 0.2;
     team.scoutOffset = 0.05;
-    const offset = plrs.reduce((a, p) => a + dist(p, team), 0) / plrs.length;
-    const offset2 = plrs.reduce((a, p) => a + dist(p, team2), 0) / plrs.length;
+    const offset = pls.reduce((a, p) => a + dist(p, team), 0) / pls.length;
+    const offset2 = pls.reduce((a, p) => a + dist(p, team2), 0) / pls.length;
     expect(offset).toBeLessThan(offset2);
   });
 
   test("should never return a value less than current score", () => {
-    const plrs = poss.map((p) => new _pl.Player(p, dt, _pl.END_GROWTH_AGE - 2));
+    const pls = poss.map((p) => new _pl.Player(p, dt, _pl.END_GROWTH_AGE - 2));
     team.scoutOffset = 0.5;
-    plrs.forEach((p) =>
+    pls.forEach((p) =>
       expect(_pl.Player.predictScore(p, dt, team)).toBeGreaterThanOrEqual(
         _pl.Player.getScore(p)
       )

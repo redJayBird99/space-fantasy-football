@@ -1,62 +1,62 @@
 {
   "Moon": {
-    "fanbase": "big"
+    "fanBase": "big"
   },
   "Earth": {
-    "fanbase": "huge"
+    "fanBase": "huge"
   },
   "Mercury": {
-    "fanbase": "verySmall"
+    "fanBase": "verySmall"
   },
   "Venus": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Mars": {
-    "fanbase": "big"
+    "fanBase": "big"
   },
   "Jupiter": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Uranus": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Neptune": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Callisto": {
-    "fanbase": "medium"
+    "fanBase": "medium"
   },
   "Europa": {
-    "fanbase": "big"
+    "fanBase": "big"
   },
   "Pluto": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Ceres": {
-    "fanbase": "medium"
+    "fanBase": "medium"
   },
   "Enceladus": {
-    "fanbase": "big"
+    "fanBase": "big"
   },
   "Titan": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Triton": {
-    "fanbase": "small"
+    "fanBase": "small"
   },
   "Charon": {
-    "fanbase": "medium"
+    "fanBase": "medium"
   },
   "Pandora": {
-    "fanbase": "medium"
+    "fanBase": "medium"
   },
   "Oberon": {
-    "fanbase": "verySmall"
+    "fanBase": "verySmall"
   },
   "Ariel": {
-    "fanbase": "verySmall"
+    "fanBase": "verySmall"
   },
   "Deimos": {
-    "fanbase": "verySmall"
+    "fanBase": "verySmall"
   }
 }

@@ -127,12 +127,12 @@ describe("updateContracts()", () => {
   });
 });
 
-describe("renewExipiringContracts()", () => {
+describe("renewExpiringContracts()", () => {
   test("should renew most contracts", () => {
     _gs.initTeams(st, ["Martians", "insert name"]);
     const cts = Object.values(st.contracts);
     cts.forEach((c) => (c.duration = 0));
-    _sm.renewExipiringContracts(st);
+    _sm.renewExpiringContracts(st);
     const renewed = cts.filter((c) => c.duration > 0);
     const expiring = cts.filter((c) => c.duration === 0);
     expect(renewed.length).toBeLessThan(expiring.length);
@@ -148,11 +148,11 @@ describe("removeExpiredContracts()", () => {
   _sm.removeExpiredContracts(st);
 
   test("should remove all expired contracts", () => {
-    const expred = Object.values(st.contracts).filter((c) => c.duration === 0);
-    expect(expred.length).toBe(0);
+    const expired = Object.values(st.contracts).filter((c) => c.duration === 0);
+    expect(expired.length).toBe(0);
   });
 
-  test("team shoulden't have expired player", () => {
+  test("team shouldn't have expired player", () => {
     const pls = [
       ..._gs.GameState.getTeamPlayers(st, "a"),
       ..._gs.GameState.getTeamPlayers(st, "b"),
@@ -179,7 +179,7 @@ describe("teamsSignFreeAgents()", () => {
 
   test("should only sign one player per team", () => {
     const st = _gs.GameState.init("ab".split(""));
-    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
     _sm.teamsSignFreeAgents(st);
     expect(st.teams.a.playerIds.length).toBe(1);
     expect(st.teams.b.playerIds.length).toBe(1);
@@ -188,7 +188,7 @@ describe("teamsSignFreeAgents()", () => {
   test("should only sign free agents", () => {
     const st = _gs.GameState.init("ab".split(""));
     Object.values(st.contracts).forEach(
-      (c) => Math.random() > 0.6 && _t.Team.unsignPlayer(st, c)
+      (c) => Math.random() > 0.6 && _t.Team.unSignPlayer(st, c)
     );
     const oldFree = getFreeAgents(st);
     _sm.teamsSignFreeAgents(st);
@@ -269,7 +269,7 @@ describe("updateTeamsScouting()", () => {
 });
 
 describe("enqueueSkillUpdateEvent()", () => {
-  test("should enqueue a new skillUpdate GameEvent for the firts day of next month", () => {
+  test("should enqueue a new skillUpdate GameEvent for the first day of next month", () => {
     _sm.enqueueSkillUpdateEvent(st);
     expect(st.eventQueue).toContainEqual({
       date: new Date(startD.getFullYear(), startD.getMonth() + 1, 1),
@@ -307,7 +307,7 @@ describe("createDraftPlayers()", () => {
 });
 
 describe("enqueueSeasonEndEvent()", () => {
-  test("should enqueue a new seasonEnd GameEvent for june firts of next year", () => {
+  test("should enqueue a new seasonEnd GameEvent for june first of next year", () => {
     _sm.enqueueSeasonEndEvent(st);
     expect(st.eventQueue).toContainEqual({ date: endD, type: "seasonEnd" });
   });
@@ -317,7 +317,7 @@ describe("enqueueSeasonStartEvent()", () => {
   const date = new Date(startD.getFullYear(), _sm.SEASON_START_MONTH - 1, 10);
   const st = new _gs.GameState(date);
 
-  test("should enqueue a new seasonStart GameEvent for september firts of this year", () => {
+  test("should enqueue a new seasonStart GameEvent for september first of this year", () => {
     _sm.enqueueSeasonStartEvent(st);
     expect(st.eventQueue).toContainEqual({ date: startD, type: "seasonStart" });
   });
@@ -400,7 +400,7 @@ describe("handleSkillUpdate()", () => {
     expect(p1.growthState).toBeGreaterThan(oldGrowthState);
   });
 
-  test("should update the pupulation stats", () => {
+  test("should update the population stats", () => {
     _gs.GameState.savePlayer(st, new _pl.Player("am", new Date(), 18));
     const old = getPopStats(Object.values(st.players));
     st.popStats = old;
@@ -458,7 +458,7 @@ describe("handleSeasonStart()", () => {
     expect(st.eventQueue).toContainEqual(evt);
   });
 
-  test("should enqueue a closeFreeSigingWindow gameEvent one month before the season end date", () => {
+  test("should enqueue a closeFreeSigningWindow gameEvent one month before the season end date", () => {
     const st = new _gs.GameState(startD);
     _sm.handleSeasonStart(st);
     const y = st.date.getFullYear() + 1;
@@ -514,15 +514,15 @@ describe("handleSeasonStart()", () => {
 
 describe("handleRetiring()", () => {
   _gs.initTeams(st, ["a", "b", "c", "d"]);
-  const allPlrs = Object.values(st.players);
+  const allPls = Object.values(st.players);
   _sm.handleRetiring(st);
-  const retirees = allPlrs.filter((p) => !st.players[p.id]);
+  const retirees = allPls.filter((p) => !st.players[p.id]);
 
   test("should remove some players from the game", () => {
     expect(retirees.length).toBeGreaterThan(0);
   });
 
-  test("should remove all retirees contracs", () => {
+  test("should remove all retirees contracts", () => {
     retirees.forEach((p) =>
       expect(_gs.GameState.getContract(st, p)).not.toBeDefined()
     );
@@ -625,7 +625,7 @@ describe("handleSignings()", () => {
   test("should sign one new players per team when players are needed and the free signing window is open", () => {
     const st = _gs.GameState.init("abcd".split(""));
     st.flags.openFreeSigningWindow = true;
-    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
     _sm.handleSignings(st);
     expect(st.teams.a.playerIds.length).toBe(1);
     expect(st.teams.b.playerIds.length).toBe(1);
@@ -634,7 +634,7 @@ describe("handleSignings()", () => {
   test("should not sign any players when the free signing window is closed", () => {
     const st = _gs.GameState.init("abcd".split(""));
     st.flags.openFreeSigningWindow = false;
-    Object.values(st.contracts).forEach((c) => _t.Team.unsignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
     _sm.handleSignings(st);
     expect(st.teams.a.playerIds.length).toBe(0);
     expect(st.teams.b.playerIds.length).toBe(0);
@@ -690,6 +690,7 @@ describe("handleTrade", () => {
     });
 
     test("should not trade players", () => {
+      // cSpell:ignore abcdefghijklmnopqrst
       const st = _gs.GameState.init("abcdefghijklmnopqrst".split(""));
       st.flags.openTradeWindow = false;
       const old = Object.values(st.teams).map((t) => t.playerIds);
@@ -802,13 +803,13 @@ describe("handleGameEvent()", () => {
 });
 
 describe("process()", () => {
-  test("when the gamestate.eventQueue is empty doesn't mutate the gameState date", () => {
+  test("when the gameState.eventQueue is empty doesn't mutate the gameState date", () => {
     st.eventQueue = [];
     _sm.process(st);
     expect(st.date).toEqual(startD);
   });
 
-  test("when the gamestate.eventQueue is empty return true", () => {
+  test("when the gameState.eventQueue is empty return true", () => {
     expect(_sm.process(st)).toBe(true);
   });
 

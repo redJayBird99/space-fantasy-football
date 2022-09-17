@@ -16,7 +16,7 @@ const INIT_DATE = 1;
 const INIT_HOUR = 10;
 type ScheduleRound = { date: Date; matchIds: string[] };
 
-// instances of this inferface are saved as JSON on the user machine, this is
+// instances of this interface are saved as JSON on the user machine, this is
 // the game save
 class GameState {
   name: string;
@@ -114,10 +114,10 @@ class GameState {
    * the saved schedule is flatten in two object schedules and matches
    * key is used as index for the schedule, for the current season use the "now" as key
    */
-  static saveSchedule(s: GameState, schd: Schedule, key: string): void {
+  static saveSchedule(s: GameState, scd: Schedule, key: string): void {
     s.schedules[key] = [];
 
-    schd.rounds.forEach((round) => {
+    scd.rounds.forEach((round) => {
       s.schedules[key].push({
         date: round.date,
         matchIds: round.matches.map((m) => m.id),
@@ -162,6 +162,15 @@ class GameState {
   }
 }
 
+/** sync the tabs games when the gameState is updated */
+let BChannel: BroadcastChannel | null;
+try {
+  BChannel = new BroadcastChannel("sync-game");
+  BChannel.onmessage = (e) => window.$game.onSyncGameUpdate(e.data);
+} catch (e: any) {
+  // just to make jest shut up
+}
+
 interface GameStateObserver {
   gameStateUpdated: (gs: Readonly<GameState> | undefined) => void;
 }
@@ -175,10 +184,24 @@ class GameStateHandle {
     return this._state;
   }
 
-  // it will notify every observer of the change
+  /** it will notify every observer of the change */
   set state(updated: GameState | undefined) {
+    const init = !this._state;
     this._state = updated;
     this.onUpdate();
+
+    if (!init) {
+      this.sendState();
+    }
+  }
+
+  /** send the state to the other open tabs */
+  private sendState(): void {
+    try {
+      BChannel?.postMessage(this.state);
+    } catch (e: any) {
+      // only to make jest shut up
+    }
   }
 
   /**
@@ -210,7 +233,7 @@ class GameStateHandle {
     this.observers.forEach((ob) => ob.gameStateUpdated(this._state));
   }
 
-  /** get the gamseState as a json url, the resource must be revoked when not used */
+  /** get the gameState as a json url, the resource must be revoked when not used */
   getStateAsJsonUrl(): string {
     return URL.createObjectURL(
       new Blob([JSON.stringify(this._state)], { type: "application/json" })
@@ -229,14 +252,14 @@ class GameStateHandle {
     this.saveNewGSOnDB();
   }
 
-  /** try to save the current gamestate as a new entry on the db, if a game name is provided */
+  /** try to save the current gameState as a new entry on the db, if a game name is provided */
   private saveNewGSOnDB(): void {
     if (this._state?.name) {
       db.openNewGame(this._state);
     }
   }
 
-  /** try to save the current gamestate on the current db, if a game name is provided */
+  /** try to save the current gameState on the current db, if a game name is provided */
   saveGsOnDB(onSaved?: () => unknown): void {
     if (this._state?.name) {
       db.saveGame(this._state, onSaved);
@@ -278,6 +301,14 @@ class GameStateHandle {
       onDel();
     }
   }
+
+  /** when a game in another tab get updated, this will handles the synchronization when needed */
+  onSyncGameUpdate(gs: GameState): void {
+    if (gs.name === this._state?.name) {
+      this._state = gs; // set _state directly otherwise would call BChannel.postMessage again
+      this.notifyObservers();
+    }
+  }
 }
 
 /**
@@ -304,13 +335,13 @@ function initTeams(gs: GameState, names: string[]): Team[] {
   return names.map((name) => {
     const team = new Team(name);
     GameState.saveTeam(gs, team);
-    const signPlayers = (plrs: Player[]) =>
-      plrs.forEach((p) =>
+    const signPlayers = (pls: Player[]) =>
+      pls.forEach((p) =>
         Team.signPlayer({ gs, t: team, p }, Player.wantedWage(gs, p))
       );
 
     const arg = { gs, t: team };
-    signPlayers(pickBest(arg, createPlayers(gs, "goolkeeper", 4), 3));
+    signPlayers(pickBest(arg, createPlayers(gs, "goalkeeper", 4), 3));
     signPlayers(pickBest(arg, createPlayers(gs, "defender", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "midfielder", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "forward", 8), 6));

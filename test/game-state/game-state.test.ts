@@ -33,14 +33,14 @@ describe("GameState handle contracts", () => {
   const c = { teamName: team.name, playerId: plr.id, duration: 12, wage: 5000 };
 
   describe("GameState.saveContract()", () => {
-    test("should save a contract to the gamestate", () => {
+    test("should save a contract to the gameState", () => {
       _gs.GameState.saveContract(st, c);
       expect(_gs.GameState.getContract(st, plr)).toBeDefined();
     });
   });
 
   describe("GameState.deleteContract()", () => {
-    test("should delete a contract to the gamestate", () => {
+    test("should delete a contract to the gameState", () => {
       _gs.GameState.saveContract(st, c);
       _gs.GameState.deleteContract(st, c);
       expect(_gs.GameState.getContract(st, plr)).not.toBeDefined();
@@ -62,7 +62,7 @@ describe("GameState handle contracts", () => {
 describe("GameState.savePlayer()", () => {
   const plr = new _pl.Player("cf", startD);
 
-  test("should save the player on the gamestate", () => {
+  test("should save the player on the gameState", () => {
     _gs.GameState.savePlayer(st, plr);
     expect(st.players[plr.id]).toBeDefined();
   });
@@ -71,14 +71,14 @@ describe("GameState.savePlayer()", () => {
 describe("GameState.saveTeam()", () => {
   const team = new _tm.Team("next");
 
-  test("should save the team on the gamestate", () => {
+  test("should save the team on the gameState", () => {
     _gs.GameState.saveTeam(st, team);
     expect(st.teams[team.name]).toBeDefined();
   });
 });
 
 describe("createPlayers()", () => {
-  const areas = Object.keys(_pl.positionArea) as _pl.PositionArea[];
+  const areas = Object.keys(_pl.POSITION_AREA) as _pl.PositionArea[];
   const n = Math.floor(Math.random() * 20);
   const at = areas[Math.floor(Math.random() * areas.length)];
 
@@ -87,8 +87,8 @@ describe("createPlayers()", () => {
   });
 
   test("should return n unique players", () => {
-    const plrs = _gs.createPlayers(st, at, n);
-    expect(plrs.length).toBe(new Set(plrs).size);
+    const pls = _gs.createPlayers(st, at, n);
+    expect(pls.length).toBe(new Set(pls).size);
   });
 
   test("all new players created are stored in the gameState", () => {
@@ -107,7 +107,7 @@ describe("createPlayers()", () => {
 
 describe("initTeams()", () => {
   const plrInPosArea = (area: _pl.PositionArea) => {
-    return (p: _pl.Player) => _pl.positionArea[area]?.includes(p.position);
+    return (p: _pl.Player) => _pl.POSITION_AREA[area]?.includes(p.position);
   };
 
   test("should return an array with n new teams with the given names", () => {
@@ -129,10 +129,10 @@ describe("initTeams()", () => {
     });
   });
 
-  test("should have at least 3 goolkeepers for each team", () => {
+  test("should have at least 3 goalkeepers for each team", () => {
     _gs.initTeams(st, [teamNames[0]]);
     const pls = _gs.GameState.getTeamPlayers(st, teamNames[0]);
-    expect(pls.filter(plrInPosArea("goolkeeper")).length).toBeGreaterThan(2);
+    expect(pls.filter(plrInPosArea("goalkeeper")).length).toBeGreaterThan(2);
   });
 
   test("should have at least 7 defender for each team", () => {
@@ -163,7 +163,7 @@ describe("initTeams()", () => {
 
 describe("initTeamsAppeal()", () => {
   test("should set a new appeal value for every team", () => {
-    // rarel some value don't change it is part of the randomness nature
+    // sometimes some value doesn't change it is part of the randomness nature
     _gs.initTeams(st, teamNames);
     const old: _tm.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
     _gs.initTeamsAppeal(st);
@@ -347,8 +347,8 @@ describe("GameState.init()", () => {
 
 describe("GameState.getSeasonRounds", () => {
   test("should return all rounds of the season when it was scheduled", () => {
-    const schd = new Schedule(teamNames, st.date);
-    _gs.GameState.saveSchedule(st, schd, "now");
+    const scd = new Schedule(teamNames, st.date);
+    _gs.GameState.saveSchedule(st, scd, "now");
     expect(_gs.GameState.getSeasonRounds(st, "now")).toHaveLength(6);
   });
 
@@ -375,11 +375,9 @@ describe("GameState.getNextRound", () => {
 
 describe("GameState.getRound", () => {
   test("should return the nth round when exists", () => {
-    const schd = new Schedule(teamNames, st.date);
-    _gs.GameState.saveSchedule(st, schd, "now");
-    expect(_gs.GameState.getRound(st, 1, "now")).toEqual(
-      schd.rounds[1].matches
-    );
+    const scd = new Schedule(teamNames, st.date);
+    _gs.GameState.saveSchedule(st, scd, "now");
+    expect(_gs.GameState.getRound(st, 1, "now")).toEqual(scd.rounds[1].matches);
   });
 
   test("should return nothing when the round doesn't exist", () => {

@@ -66,7 +66,7 @@ function timeout(start: number, duration?: number): (now: number) => boolean {
   return (now: number) => Boolean(duration && start + duration <= now);
 }
 
-// make sure to prevent any external mutation to the gs ultil the simulation end
+// make sure to prevent any external mutation to the gs until the simulation end
 /**
  * it runs a single simulation asynchronously at time until some event happens,
  * the duration is reached or is ended by calling the returned function.
@@ -74,7 +74,7 @@ function timeout(start: number, duration?: number): (now: number) => boolean {
  * @param onTick get called when the simulation handled an event or every MAX_SIM_TIME_PER_TICK
  * @param onEnd get called when the simulation end
  * @param duration game time threshold in milliseconds, it could be exceeded a little (MAX_SIM_TIME_PER_TICK amount)
- * @returns a function that when called end the ceated simulation,
+ * @returns a function that when called end the created simulation,
  * if the simulation was already ended or is a new one has no effect
  */
 export function simulate(
@@ -205,7 +205,7 @@ export function handleSeasonStart(gs: GameState): boolean {
 
 function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
   updateContracts(gs);
-  renewExipiringContracts(gs);
+  renewExpiringContracts(gs);
   removeExpiredContracts(gs);
   return false;
 }
@@ -238,7 +238,7 @@ function handleRetiring(gs: GameState): boolean {
     .filter((p) => Player.retire(p, gs.date))
     .forEach((p) => {
       const c = GameState.getContract(gs, p);
-      c && Team.unsignPlayer(gs, c);
+      c && Team.unSignPlayer(gs, c);
       delete gs.players[p.id];
     });
 
@@ -279,7 +279,7 @@ function handleOpenTradeWindow(gs: GameState): boolean {
 }
 
 /**
- * open the free signing window setting the gamestate flag to false and enqueue a sigings event
+ * open the free signing window setting the gameState flag to false and enqueue a signings event
  */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
@@ -288,7 +288,7 @@ function handleOpenFreeSigningWindow(gs: GameState): boolean {
 }
 
 /**
- * close the free signing window setting the gamestate flag to false
+ * close the free signing window setting the gameState flag to false
  */
 function handleCloseFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = false;
@@ -299,7 +299,7 @@ function handleCloseFreeSigningWindow(gs: GameState): boolean {
 function createDraftPlayers(gs: GameState): Player[] {
   const genTeens = () => MIN_AGE + Math.floor(Math.random() * (20 - MIN_AGE));
   return [
-    ...createPlayers(gs, "goolkeeper", 6, genTeens),
+    ...createPlayers(gs, "goalkeeper", 6, genTeens),
     ...createPlayers(gs, "defender", 17, genTeens),
     ...createPlayers(gs, "midfielder", 17, genTeens),
     ...createPlayers(gs, "forward", 12, genTeens),
@@ -310,17 +310,17 @@ function updateContracts(gs: GameState): void {
   Object.values(gs.contracts).forEach((c) => c.duration--);
 }
 
-// every team try to resign most exipiring players according to their needs
-function renewExipiringContracts(gs: GameState): void {
+// every team try to resign most expiring players according to their needs
+function renewExpiringContracts(gs: GameState): void {
   Object.values(gs.teams).forEach((t) => {
-    Team.renewExipiringContracts({ gs, t });
+    Team.renewExpiringContracts({ gs, t });
   });
 }
 
 function removeExpiredContracts(gs: GameState): void {
   Object.values(gs.contracts).forEach((c) => {
     if (c.duration === 0) {
-      Team.unsignPlayer(gs, c);
+      Team.unSignPlayer(gs, c);
     }
   });
 }
@@ -346,7 +346,7 @@ function updateTeamsAppeal(gs: GameState): void {
   });
 }
 
-// change the teams.scoutOffset according to team scountig expenses ranking and
+// change the teams.scoutOffset according to team scouting expenses ranking and
 // randomness the max magnitude change MAX_SCOUTING_OFFSET / 10
 function updateTeamsScouting(gs: GameState): void {
   const dif = MAX_SCOUTING_OFFSET / 10;
@@ -463,7 +463,7 @@ function enqueueUpdateFinancesEvent(gs: GameState): void {
   GameState.enqueueGameEvent(gs, { date, type: "updateFinances" });
 }
 
-// save a new schedule for the current season to the gamestate, should be called
+// save a new schedule for the current season to the gameState, should be called
 // before SEASON_END_MONTH and SEASON_START_DATE + 1 of the same year
 function newSeasonSchedule(gs: GameState, teams: string[]): void {
   const start = new Date(
@@ -484,11 +484,11 @@ function newSeasonSchedule(gs: GameState, teams: string[]): void {
 // store the current season on the gameState.schedules with key {startYear}-{endYear}
 // only if the current season (as gs.schedules.now) exists
 function storeEndedSeasonSchedule(gs: GameState): void {
-  const schd = gs.schedules.now;
+  const scd = gs.schedules.now;
 
-  if (schd) {
-    const startY = schd[0].date.getFullYear();
-    const endY = schd[schd.length - 1].date.getFullYear();
+  if (scd) {
+    const startY = scd[0].date.getFullYear();
+    const endY = scd[scd.length - 1].date.getFullYear();
     gs.schedules[`${startY}-${endY}`] = gs.schedules.now;
   }
 }
@@ -525,7 +525,7 @@ export const exportedForTesting = {
   teamsSignFreeAgents,
   updateTeamsAppeal,
   updateTeamsScouting,
-  renewExipiringContracts,
+  renewExpiringContracts,
   removeExpiredContracts,
   enqueueSimRoundEvent,
   enqueueSkillUpdateEvent,

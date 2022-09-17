@@ -1,6 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { getSavesNames, savesPrefix } from "../../game-state/game-db";
+import { getSavesNames, SAVES_PREFIX } from "../../game-state/game-db";
 import { GameState } from "../../game-state/game-state";
 import "../util/layout.ts";
 import "../util/modal.ts";
@@ -135,7 +135,7 @@ class NewGame extends HTMLElement {
     const input = this.querySelector("#game-name") as HTMLInputElement;
 
     if (input.value && /^\w{4,14}$/.test(input.value)) {
-      window.$game.newGame(this.pickedTeam, `${savesPrefix}${input.value}`);
+      window.$game.newGame(this.pickedTeam, `${SAVES_PREFIX}${input.value}`);
       goTo(`${window.$PUBLIC_PATH}dashboard`);
     } else {
       alert(`${input.value} is not a valid name`);
@@ -193,7 +193,7 @@ class FilePicker extends HTMLElement {
   private openSave = (json: string): void => {
     // TODO check if state is a valid GameState
     const gs = GameState.parse(json);
-    const name = gs.name.substring(savesPrefix.length);
+    const name = gs.name.substring(SAVES_PREFIX.length);
     const warning = `are you sure do you want to open this file?, any other autosave with the name ${name} will be overridden`;
 
     if (confirm(warning)) {
@@ -253,7 +253,7 @@ class LoadGame extends HTMLElement {
   /** ask for confirmation defore deliting the clicked game from from the saved ones */
   private handleDeleteGame = (e: Event): void => {
     const v = (e.target as HTMLButtonElement).value;
-    const name = v.substring(savesPrefix.length);
+    const name = v.substring(SAVES_PREFIX.length);
 
     if (confirm(`are you sure you want to delete ${name}`)) {
       window.$game.deleteGame(v, () => this.render());
@@ -262,7 +262,7 @@ class LoadGame extends HTMLElement {
 
   private saves(): TemplateResult[] {
     return getSavesNames().map((s) => {
-      const name = s.substring(savesPrefix.length);
+      const name = s.substring(SAVES_PREFIX.length);
       return html`
         <li>
           <em>${name}</em>

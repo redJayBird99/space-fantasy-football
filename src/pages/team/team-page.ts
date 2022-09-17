@@ -1,6 +1,6 @@
 import { render, html, TemplateResult } from "lit-html";
 import { GameState } from "../../game-state/game-state";
-import { macroskills, Player } from "../../character/player";
+import { MacroSkill, MACRO_SKILLS, Player } from "../../character/player";
 import "../common/game-page.ts";
 import style from "./team-page.css";
 import { skillData } from "../players/player";
@@ -37,18 +37,18 @@ function teamMain(team: string): TemplateResult {
 }
 
 function teamPlayersTable(team: string): TemplateResult {
-  const plrs = GameState.getTeamPlayers(window.$game.state!, team);
-  sortByPosition(plrs, true);
-  const mSkills = Object.keys(macroskills);
+  const pls = GameState.getTeamPlayers(window.$game.state!, team);
+  sortByPosition(pls, true);
+  const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
   return html`<table>
     ${teamPlayersTableHead(mSkills)}
-    ${plrs.map(
+    ${pls.map(
       (p) =>
         html`<tr class="plr">
           <td class="plr-pos">${p.position}</td>
           <td class="plr-name">${p.name}</td>
           ${mSkills.map((sk) =>
-            playersSkillScore(sk, Player.getMacroskill(p, sk))
+            playersSkillScore(sk, Player.getMacroSkill(p, sk))
           )}
         </tr>`
     )}

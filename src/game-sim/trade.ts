@@ -129,7 +129,7 @@ function acceptable({ gs, t }: GsTm, get: Player[], give: Player[]): boolean {
 function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
   // TOFIX: this is the subset sum problem we uses a brute force solution (find combinations)
   // shuffle to make it indeterministic and slice for performance
-  const plrs = shuffle(Team.getNotExipiringPlayers({ gs, t })).slice(0, 20);
+  const plrs = shuffle(Team.getNotExpiringPlayers({ gs, t })).slice(0, 20);
   const _affordable = affordable({ gs, t });
   const plrsAppeal = new Map<Player, number>();
   plrs.forEach((p) => plrsAppeal.set(p, Team.evaluatePlayer({ gs, t, p })));
@@ -176,7 +176,7 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
  */
 function seachTrade({ gs, t }: GsTm, other: Team): Trade | void {
   // TOFIX it is a temp solution
-  const get = shuffle(Team.getNotExipiringPlayers({ gs, t: other })).slice(
+  const get = shuffle(Team.getNotExpiringPlayers({ gs, t: other })).slice(
     0,
     Math.floor(MAX_EXCHANGE_SIZE * Math.random()) + 1
   );

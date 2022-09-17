@@ -9,9 +9,9 @@ import { GameState } from "./game-state";
  * all the games are stored with a prefix
  */
 let db: IDBDatabase | undefined;
-const savesKey = "sff-saves"; // for the localStorage where the saves names are stored
-const storeKey = "game"; // for the ObjectStore where the gameState is stored
-const gameStateKey = "state"; // for the gameState stored in the ObjectStore
+const SAVES_KEY = "sff-saves"; // for the localStorage where the saves names are stored
+const STORE_KEY = "game"; // for the ObjectStore where the gameState is stored
+const GAME_STATE_KEY = "state"; // for the gameState stored in the ObjectStore
 export type DBState = "on" | "off" | "saved";
 
 interface DBStateObserver {
@@ -36,11 +36,11 @@ function setDB(to: IDBDatabase | undefined): void {
 }
 
 /** add this prefix to every new game save, it prevents conflicts with any other db in the current origin */
-export const savesPrefix = "sff-";
+export const SAVES_PREFIX = "sff-";
 
 /** get the game name without the prefix */
 export function getGameName(gs?: GameState): string {
-  return gs?.name.substring(savesPrefix.length) ?? "save";
+  return gs?.name.substring(SAVES_PREFIX.length) ?? "save";
 }
 
 /** check if the db is available */
@@ -50,20 +50,20 @@ export function on(): boolean {
 
 /** get all the saved games names on the local machine */
 export function getSavesNames(): string[] {
-  return JSON.parse(localStorage.getItem(savesKey) ?? "[]");
+  return JSON.parse(localStorage.getItem(SAVES_KEY) ?? "[]");
 }
 
 /** save the saved game name on the local machine  */
 export function saveGameName(name: string): void {
   const saves = getSavesNames();
   !saves.includes(name) && saves?.push(name);
-  localStorage.setItem(savesKey, JSON.stringify(saves));
+  localStorage.setItem(SAVES_KEY, JSON.stringify(saves));
 }
 
 /** remove from the local machine the given game save name */
 function deleteGameName(name: string): void {
   localStorage.setItem(
-    savesKey,
+    SAVES_KEY,
     JSON.stringify(getSavesNames().filter((s) => s !== name))
   );
 }
@@ -71,7 +71,7 @@ function deleteGameName(name: string): void {
 /** handle the upgradeneeded when opening a db and create a new store for the game save */
 function onupgradeneeded(req: IDBOpenDBRequest) {
   req.onupgradeneeded = () => {
-    req.result.createObjectStore(storeKey);
+    req.result.createObjectStore(STORE_KEY);
   };
 }
 
@@ -113,8 +113,8 @@ export function openNewGame(gs: GameState) {
 
 /** try to save the given game on the current open db, when the game is saved call onSaved */
 export function saveGame(gs: GameState, onSaved?: () => unknown) {
-  const ts = db?.transaction(storeKey, "readwrite");
-  ts?.objectStore(storeKey).put(gs, gameStateKey);
+  const ts = db?.transaction(STORE_KEY, "readwrite");
+  ts?.objectStore(STORE_KEY).put(gs, GAME_STATE_KEY);
   ts?.addEventListener("error", () => {}); // TODO: handle
   ts?.addEventListener("complete", () => {
     onSaved?.();
@@ -142,9 +142,9 @@ export function openGame(
 /** try to load the game from the current open db and pass it to onLoad */
 function loadGame(onLoad: (s: GameState) => unknown): void {
   const req = db
-    ?.transaction(storeKey, "readonly")
-    .objectStore(storeKey)
-    .get(gameStateKey);
+    ?.transaction(STORE_KEY, "readonly")
+    .objectStore(STORE_KEY)
+    .get(GAME_STATE_KEY);
   req?.addEventListener("success", () => onLoad(req.result));
   req?.addEventListener("error", () => {
     // TODO: if the game doesn't exist we should warn the user and remove
@@ -154,7 +154,7 @@ function loadGame(onLoad: (s: GameState) => unknown): void {
 }
 
 /**
- * try to delte with the given name
+ * try to delete the game with the given name
  * @param onDel called when the game get deleted
  */
 export function deleteGame(name: string, onDel: () => unknown): void {

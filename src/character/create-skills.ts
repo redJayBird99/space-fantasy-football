@@ -4,12 +4,12 @@ import { customGaussian } from "../util/generator";
 const SKILL_NOISE = 20;
 const SKILL_EXTRA_NOISE = SKILL_NOISE + 10;
 
-// return a skill value between mean - maxOffeset and mean + maxOffeset seemingly
+// return a skill value between mean - maxOffset and mean + maxOffset seemingly
 // taken from a normal distribution with hint as mean
-export function createSkill(hint: number, maxOffeset?: number) {
-  const defltOffset = Math.min(MAX_SKILL - hint, hint - MIN_SKILL);
-  maxOffeset = maxOffeset ? Math.min(maxOffeset, defltOffset) : defltOffset;
-  return Math.round(customGaussian(hint, maxOffeset));
+export function createSkill(hint: number, maxOffset?: number) {
+  const defaultOffset = Math.min(MAX_SKILL - hint, hint - MIN_SKILL);
+  maxOffset = maxOffset ? Math.min(maxOffset, defaultOffset) : defaultOffset;
+  return Math.round(customGaussian(hint, maxOffset));
 }
 
 // returns the set of skills that best fit the position
@@ -65,7 +65,7 @@ function createBasicSkills(): Skills {
     technique: createSkill(ability, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -93,7 +93,7 @@ function createGkSkills(): Skills {
     technique: createSkill(ability, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -117,7 +117,7 @@ function createCbSkills(): Skills {
     technique: createSkill(technique, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -139,7 +139,7 @@ function createFbSkills(): Skills {
     technique: createSkill(ability, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -159,7 +159,7 @@ function createDmSkills(): Skills {
     stamina: createSkill(65),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -179,7 +179,7 @@ function createCmSkills(): Skills {
     technique: createSkill(ability, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(shot, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -202,7 +202,7 @@ function createAmSkills(): Skills {
   const defensive = createSkill(30);
   const offensive = createSkill(60);
   const shot = offensive + 10 > MAX_SKILL ? offensive : offensive + 10;
-  const offpos = offensive - 5 < MIN_SKILL ? offensive : offensive - 5;
+  const offPos = offensive - 5 < MIN_SKILL ? offensive : offensive - 5;
 
   return {
     ...createBasicSkills(),
@@ -212,9 +212,9 @@ function createAmSkills(): Skills {
     passing: createSkill(ability, SKILL_NOISE),
     vision: createSkill(ability, SKILL_NOISE),
     technique: createSkill(ability, SKILL_NOISE),
-    offensivePositioning: createSkill(offpos, SKILL_NOISE),
+    offensivePositioning: createSkill(offPos, SKILL_NOISE),
     shot: createSkill(shot, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -236,7 +236,7 @@ function createWgSkills(): Skills {
     vision: createSkill(vision, SKILL_NOISE),
     technique: createSkill(technique, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }
 
@@ -251,6 +251,6 @@ function createCfSkills(): Skills {
     marking: createSkill(defensive, SKILL_NOISE),
     offensivePositioning: createSkill(offensive, SKILL_NOISE),
     shot: createSkill(offensive, SKILL_NOISE),
-    finisnishing: createSkill(offensive, SKILL_NOISE),
+    finishing: createSkill(offensive, SKILL_NOISE),
   };
 }

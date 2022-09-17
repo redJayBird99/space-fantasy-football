@@ -4,7 +4,7 @@ import * as _t from "./team";
 
 const GOOD_STAT = 75;
 const BAD_STAT = 35;
-const areas = Object.keys(_p.positionArea) as _p.PositionArea[];
+const areas = Object.keys(_p.POSITION_AREA) as _p.PositionArea[];
 
 function createPlayers(a: _p.PositionArea, n: number): _p.Player[] {
   return Array.from({ length: n }, () =>

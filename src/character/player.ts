@@ -38,22 +38,22 @@ type Position =
   | "lw"
   | "cf";
 
-type PositionArea = "goolkeeper" | "defender" | "midfielder" | "forward";
-const positionArea: Readonly<Record<PositionArea, readonly Position[]>> = {
-  goolkeeper: ["gk"],
+type PositionArea = "goalkeeper" | "defender" | "midfielder" | "forward";
+const POSITION_AREA: Readonly<Record<PositionArea, readonly Position[]>> = {
+  goalkeeper: ["gk"],
   defender: ["cb", "cb", "lb", "rb"],
   midfielder: ["cm", "cm", "lm", "rm", "dm", "am"],
   forward: ["cf", "cf", "lw", "rw"],
 };
 
 function getArea(p: Position): PositionArea {
-  if (positionArea.goolkeeper.includes(p)) {
-    return "goolkeeper";
+  if (POSITION_AREA.goalkeeper.includes(p)) {
+    return "goalkeeper";
   }
-  if (positionArea.defender.includes(p)) {
+  if (POSITION_AREA.defender.includes(p)) {
     return "defender";
   }
-  if (positionArea.midfielder.includes(p)) {
+  if (POSITION_AREA.midfielder.includes(p)) {
     return "midfielder";
   }
 
@@ -76,7 +76,7 @@ function createAge(): number {
 
 // return a value between 0 and 1 depending on the age of the player
 // for players younger than 27 usually the value is less than 1, fro players
-// older than 32 the valueis less than 1
+// older than 32 the values less than 1
 function createGrowthState(p: Player, now: Date): number {
   const age = Player.age(p, now);
 
@@ -137,110 +137,110 @@ interface Skills {
   technique: number;
   offensivePositioning: number;
   shot: number;
-  finisnishing: number;
+  finishing: number;
 }
 
 type Skill = keyof Skills;
+type SkillList = readonly Skill[];
 
-/** macroskills are combination of skills */
-const macroskills: Readonly<Record<string, readonly Skill[]>> = {
-  mobility: ["speed", "agility", "stamina"],
-  physic: ["strength", "height"],
-  goolkeeper: ["reflexes", "handling", "diving"],
-  defense: ["defensivePositioning", "interception", "marking"],
-  ability: ["passing", "vision", "technique"],
-  offense: ["offensivePositioning", "shot", "finisnishing"],
-};
+/** macroSkills are combination of skills */
+const MACRO_SKILLS = {
+  mobility: ["speed", "agility", "stamina"] as SkillList,
+  physic: ["strength", "height"] as SkillList,
+  goalkeeper: ["reflexes", "handling", "diving"] as SkillList,
+  defense: ["defensivePositioning", "interception", "marking"] as SkillList,
+  ability: ["passing", "vision", "technique"] as SkillList,
+  offense: ["offensivePositioning", "shot", "finishing"] as SkillList,
+} as const;
 
-type Macroskill = keyof typeof macroskills;
+type MacroSkill = keyof typeof MACRO_SKILLS;
 
-// list for every position the amount of malus applied to the player when
-// playing out of its natural postion
-// TODO: should it be part of the game save state so can be customisable as a JSON??
-type PosMalus = Readonly<Record<Position, Record<string, readonly Position[]>>>;
-const outOfPositionMalus: PosMalus = {
+type Penalty = "smallPenalty" | "midPenalty"; // bigPenalty default
+type PosPenalty = Readonly<
+  Record<Position, Record<Penalty, readonly Position[]>>
+>;
+/** list for every position the amount of penalty applied to the player when playing out of its natural position */
+const OUT_OF_POSITION_PENALTY: PosPenalty = {
   gk: {
-    smallMalus: [],
-    midMalus: [],
-    // bigMalus is the default for all other position left out (expect this position itself)
+    smallPenalty: [],
+    midPenalty: [],
+    // bigPenalty is the default for all other position left out (expect this position itself)
   },
   lb: {
-    smallMalus: ["rb"],
-    midMalus: ["cb", "lm"],
-    // bigMalus is the default
+    smallPenalty: ["rb"],
+    midPenalty: ["cb", "lm"],
+    // bigPenalty is the default
   },
   rb: {
-    smallMalus: ["lb"],
-    midMalus: ["cb", "rm"],
+    smallPenalty: ["lb"],
+    midPenalty: ["cb", "rm"],
   },
   cb: {
-    smallMalus: [],
-    midMalus: ["lb", "rb"],
+    smallPenalty: [],
+    midPenalty: ["lb", "rb"],
   },
   dm: {
-    smallMalus: ["cm"],
-    midMalus: ["cb", "lb", "rb", "rm", "lm"],
+    smallPenalty: ["cm"],
+    midPenalty: ["cb", "lb", "rb", "rm", "lm"],
   },
   lm: {
-    smallMalus: ["rm"],
-    midMalus: ["lb", "lw", "rw", "cm", "am"],
+    smallPenalty: ["rm"],
+    midPenalty: ["lb", "lw", "rw", "cm", "am"],
   },
   rm: {
-    smallMalus: ["lm"],
-    midMalus: ["rb", "lw", "rw", "cm", "am"],
+    smallPenalty: ["lm"],
+    midPenalty: ["rb", "lw", "rw", "cm", "am"],
   },
   cm: {
-    smallMalus: ["dm", "am"],
-    midMalus: ["lm", "rm"],
+    smallPenalty: ["dm", "am"],
+    midPenalty: ["lm", "rm"],
   },
   am: {
-    smallMalus: ["cm"],
-    midMalus: ["lm", "rm", "lw", "rw", "cf"],
+    smallPenalty: ["cm"],
+    midPenalty: ["lm", "rm", "lw", "rw", "cf"],
   },
   lw: {
-    smallMalus: ["lm", "am"],
-    midMalus: ["rm", "cf"],
+    smallPenalty: ["lm", "am"],
+    midPenalty: ["rm", "cf"],
   },
   rw: {
-    smallMalus: ["rm", "am"],
-    midMalus: ["lm", "cf"],
+    smallPenalty: ["rm", "am"],
+    midPenalty: ["lm", "cf"],
   },
   cf: {
-    smallMalus: [],
-    midMalus: ["lw", "rw"],
+    smallPenalty: [],
+    midPenalty: ["lw", "rw"],
   },
 };
 
-// get a malus factor between 0 and 1 to applied to the player skills when is
-// playing out of position, the amount of malus is depending at which position
+// get a Penalty factor between 0 and 1 to applied to the player skills when is
+// playing out of position, the amount of Penalty is depending at which position
 // it is playing
-function getOutOfPositionMalus(p: Player, at = p.position): number {
+function getOutOfPositionPenalty(p: Player, at = p.position): number {
   if (p.position === at) {
     return 0;
   }
-  if (outOfPositionMalus[p.position].smallMalus.includes(at)) {
+  if (OUT_OF_POSITION_PENALTY[p.position].smallPenalty.includes(at)) {
     return 0.05;
   }
-  if (outOfPositionMalus[p.position].midMalus.includes(at)) {
+  if (OUT_OF_POSITION_PENALTY[p.position].midPenalty.includes(at)) {
     return 0.1;
   }
 
   return 0.2;
 }
 
-// the only skills where the out of position malus is applicable
-// TODO: readonly
-const skillsApplicableMalus = new Set<Skill>([
+/** readonly, the only skills where the out of position penalty is applicable */
+const SKILLS_APPLICABLE_PENALTY = new Set<Skill>([
   "defensivePositioning",
   "interception",
   "marking",
   "offensivePositioning",
-  "finisnishing",
+  "finishing",
   "vision",
 ]);
 
-// TODO: readonly
-const noGrowthSkill = new Set<Skill>(["height"]);
+const NO_GROWTH_SKILL = new Set<Skill>(["height"]);
 
 // Player creates semi-random player that best fit the position characteristics
 // note instances of this class are saved as JSON on the user machine
@@ -253,7 +253,7 @@ class Player {
   foot: Foot;
   growthRate: number; // monthly growth rate of growthState
   growthState: number; // (percentage 0-1) applying it: skillValue * growthState
-  skills: Skills; // to get the skill values with all modifiers (growth, malus and etc) applied use getSkill
+  skills: Skills; // to get the skill values with all modifiers (growth, penalty and etc) applied use getSkill
 
   constructor(pos: Position, now: Date, age?: number) {
     this.name = createName();
@@ -272,42 +272,42 @@ class Player {
     return getAgeAt(p.birthday, now);
   }
 
-  // get the skill player value taking in cosideration all modifiers like
-  // out of position malus and growthState
+  // get the skill player value taking in consideration all modifiers like
+  // out of position penalty and growthState
   // if growth is false the growthState modifier isn't applied
   static getSkill(p: Player, s: Skill, at = p.position, growth = true): number {
     const v =
-      noGrowthSkill.has(s) || !growth
+      NO_GROWTH_SKILL.has(s) || !growth
         ? p.skills[s]
         : p.skills[s] * p.growthState;
 
-    return skillsApplicableMalus.has(s)
-      ? v - v * getOutOfPositionMalus(p, at)
+    return SKILLS_APPLICABLE_PENALTY.has(s)
+      ? v - v * getOutOfPositionPenalty(p, at)
       : v;
   }
 
-  // get the macroskill player value taking in cosideration all modifiers
+  // get the macroSkill player value taking in consideration all modifiers
   // if growth is false the growthState modifier isn't applied
   // the value is between MIN_SKILL and MAX_SKILL
-  // check macroskills for all possible macroskills
-  static getMacroskill(
+  // check macroSkills for all possible macroSkills
+  static getMacroSkill(
     p: Player,
-    m: Macroskill,
+    m: MacroSkill,
     at = p.position,
     growth = true
   ): number {
     return (
-      macroskills[m].reduce(
+      MACRO_SKILLS[m].reduce(
         (sum, sk) => Player.getSkill(p, sk, at, growth) + sum,
         0
-      ) / macroskills[m].length
+      ) / MACRO_SKILLS[m].length
     );
   }
 
   // get a player at the given PositionArea randomly, some position is more
   // frequent than other cm for midfielder, cf for forward and cb for defender
   static createPlayerAt(now: Date, at: PositionArea, age?: number): Player {
-    const picks = JSON.parse(JSON.stringify(positionArea)); // in case of performance extract this object
+    const picks = JSON.parse(JSON.stringify(POSITION_AREA)); // in case of performance extract this object
     // raise up the probability to pick the position
     picks.defender.push("cb");
     picks.midfielder.push("cm");
@@ -321,21 +321,22 @@ class Player {
    *  a player score is like an overall but this game doesn't use it explicitly
    *  an overall is a tricky concept but a way to compare two player is necessary
    *  which skills are more important for a position is subjective, the most
-   *  important thing is to have a good balance between postions score so every
+   *  important thing is to have a good balance between positions score so every
    *  position have equal opportunities to be picked by a team when compared
    *  TODO: some statistical analysis
    *
-   *  @param at take in cosideration out of position malus
+   *  @param at take in consideration out of position penalty
    *  @param growth if false the growthState modifier isn't applied
    *  @Returns a value between MIN_SKILL and MAX_SKILL
    */
   static getScore(p: Player, at = p.position, growth = true): number {
     let score = 0;
 
-    for (const macro in positionScoreFactors[at]) {
-      const mk = macro as Macroskill;
+    for (const macro in POSITION_SCORE_FACTORS[at]) {
+      const mk = macro as MacroSkill;
       score +=
-        Player.getMacroskill(p, mk, at, growth) * positionScoreFactors[at][mk];
+        Player.getMacroSkill(p, mk, at, growth) *
+        POSITION_SCORE_FACTORS[at][mk];
     }
 
     return score;
@@ -343,8 +344,8 @@ class Player {
 
   // returns a player peak score prediction by the team when the player is
   // younger than END_GROWTH_AGE, otherwise the current score,
-  // the prediction accuracy is depended on team scountig and luck
-  // the max prediction offeset is team.scoutOffset percentage
+  // the prediction accuracy is depended on team scouting and luck
+  // the max prediction offset is team.scoutOffset percentage
   static predictScore(p: Player, now: Date, t: Team): number {
     if (Player.age(p, now) >= END_GROWTH_AGE) {
       return Player.getScore(p);
@@ -355,9 +356,9 @@ class Player {
     const maxOffset =
       ((END_GROWTH_AGE - Player.age(p, now)) / (END_GROWTH_AGE - MIN_AGE)) *
       t.scoutOffset;
-    const prdction = (1 + maxOffset * h) * Player.getScore(p, undefined, false);
+    const rst = (1 + maxOffset * h) * Player.getScore(p, undefined, false);
     const scoreNow = Player.getScore(p);
-    return prdction <= scoreNow ? scoreNow : prdction;
+    return rst <= scoreNow ? scoreNow : rst;
   }
 
   // update the growthState if the player can still grow, it is meant to be used
@@ -385,17 +386,17 @@ class Player {
   /**
    * use wageRequest when a team is trying to sign a player (except for the draft and init)
    * return a wage between 2000 and 64000 per month wanted by the player it is
-   * depended on the score of the player, defenders and goolkeepers usually ask for less
+   * depended on the score of the player, defenders and goalkeepers usually ask for less
    */
   static wantedWage(gs: GameState, p: Player): number {
     const lowS = gs.popStats.meanScore - 1.24 * gs.popStats.standardDev;
     const step = gs.popStats.standardDev * 0.9;
-    const posFctr =
-      positionArea.goolkeeper.includes(p.position) ||
-      positionArea.defender.includes(p.position)
+    const posFtr =
+      POSITION_AREA.goalkeeper.includes(p.position) ||
+      POSITION_AREA.defender.includes(p.position)
         ? 0.8
         : 1;
-    const wage = 2 ** ((Player.getScore(p) - lowS) / step) * MIN_WAGE * posFctr;
+    const wage = 2 ** ((Player.getScore(p) - lowS) / step) * MIN_WAGE * posFtr;
 
     return Math.round(within(wage, MIN_WAGE, MAX_WAGE));
   }
@@ -435,10 +436,10 @@ class Player {
 }
 
 // the sum of scoreFactors should always be 1 (expect for rounding error)
-type ScoreFactors = Readonly<Record<Macroskill, number>>;
-const fbScoreFactors: ScoreFactors = {
-  // higher is the value more important the macroskill is for the player position score
-  goolkeeper: 0,
+type ScoreFactors = Readonly<Record<MacroSkill, number>>;
+const FB_SCORE_FACTORS: ScoreFactors = {
+  // higher is the value more important the macroSkill is for the player position score
+  goalkeeper: 0,
   mobility: 0.25,
   physic: 0.05,
   defense: 0.5,
@@ -446,8 +447,8 @@ const fbScoreFactors: ScoreFactors = {
   ability: 0.2,
 };
 
-const emScoreFactors: ScoreFactors = {
-  goolkeeper: 0,
+const EM_SCORE_FACTORS: ScoreFactors = {
+  goalkeeper: 0,
   mobility: 0.25,
   physic: 0.05,
   defense: 0.09,
@@ -455,8 +456,8 @@ const emScoreFactors: ScoreFactors = {
   offense: 0.09,
 };
 
-const wgScoreFactors: ScoreFactors = {
-  goolkeeper: 0,
+const WG_SCORE_FACTORS: ScoreFactors = {
+  goalkeeper: 0,
   mobility: 0.19,
   physic: 0.11,
   ability: 0.35,
@@ -464,9 +465,9 @@ const wgScoreFactors: ScoreFactors = {
   defense: 0,
 };
 
-const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
+const POSITION_SCORE_FACTORS: Readonly<Record<Position, ScoreFactors>> = {
   gk: {
-    goolkeeper: 0.49,
+    goalkeeper: 0.49,
     mobility: 0.12,
     physic: 0.28,
     ability: 0.11,
@@ -474,17 +475,17 @@ const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
     defense: 0,
   },
   cb: {
-    goolkeeper: 0,
+    goalkeeper: 0,
     mobility: 0.1,
     physic: 0.2,
     defense: 0.5,
     offense: 0,
     ability: 0.2,
   },
-  lb: fbScoreFactors,
-  rb: fbScoreFactors,
+  lb: FB_SCORE_FACTORS,
+  rb: FB_SCORE_FACTORS,
   dm: {
-    goolkeeper: 0,
+    goalkeeper: 0,
     mobility: 0.15,
     physic: 0.1,
     defense: 0.35,
@@ -492,7 +493,7 @@ const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
     ability: 0.4,
   },
   cm: {
-    goolkeeper: 0,
+    goalkeeper: 0,
     mobility: 0.13,
     physic: 0.1,
     defense: 0.11,
@@ -500,19 +501,19 @@ const positionScoreFactors: Readonly<Record<Position, ScoreFactors>> = {
     offense: 0.11,
   },
   am: {
-    goolkeeper: 0,
+    goalkeeper: 0,
     mobility: 0.13,
     physic: 0.1,
     ability: 0.47,
     offense: 0.25,
     defense: 0.05,
   },
-  lm: emScoreFactors,
-  rm: emScoreFactors,
-  lw: wgScoreFactors,
-  rw: wgScoreFactors,
+  lm: EM_SCORE_FACTORS,
+  rm: EM_SCORE_FACTORS,
+  lw: WG_SCORE_FACTORS,
+  rw: WG_SCORE_FACTORS,
   cf: {
-    goolkeeper: 0,
+    goalkeeper: 0,
     mobility: 0.125,
     physic: 0.125,
     ability: 0.2,
@@ -538,18 +539,18 @@ export {
   PositionArea,
   Skills,
   Skill,
-  Macroskill,
+  MacroSkill,
   Player,
-  positionArea,
+  POSITION_AREA,
   getArea,
   createAge,
   createGrowthState,
   getImprovabilityRating,
   preferredFootChance,
   createPreferredFoot,
-  macroskills,
-  getOutOfPositionMalus,
-  positionScoreFactors,
-  noGrowthSkill,
-  skillsApplicableMalus,
+  MACRO_SKILLS,
+  getOutOfPositionPenalty,
+  POSITION_SCORE_FACTORS,
+  NO_GROWTH_SKILL,
+  SKILLS_APPLICABLE_PENALTY,
 };
