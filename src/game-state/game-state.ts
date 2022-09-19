@@ -10,6 +10,7 @@ import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
+import { sendSyncUpdatedGame } from "./game-sync";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -162,15 +163,6 @@ class GameState {
   }
 }
 
-/** sync the tabs games when the gameState is updated */
-let BChannel: BroadcastChannel | null;
-try {
-  BChannel = new BroadcastChannel("sync-game");
-  BChannel.onmessage = (e) => window.$game.onSyncGameUpdate(e.data);
-} catch (e: any) {
-  // just to make jest shut up
-}
-
 interface GameStateObserver {
   gameStateUpdated: (gs: Readonly<GameState> | undefined) => void;
 }
@@ -198,7 +190,9 @@ class GameStateHandle {
   /** send the state to the other open tabs */
   private sendState(): void {
     try {
-      BChannel?.postMessage(this.state);
+      const time = performance.now();
+      this.state && sendSyncUpdatedGame(this.state);
+      console.log(performance.now() - time);
     } catch (e: any) {
       // only to make jest shut up
     }
@@ -305,7 +299,7 @@ class GameStateHandle {
   /** when a game in another tab get updated, this will handles the synchronization when needed */
   onSyncGameUpdate(gs: GameState): void {
     if (gs.name === this._state?.name) {
-      this._state = gs; // set _state directly otherwise would call BChannel.postMessage again
+      this._state = gs; // set _state directly otherwise would call sendSyncUpdatedGame again
       this.notifyObservers();
     }
   }
