@@ -10,6 +10,7 @@ import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
 import { hash } from "../util/generator";
 import { within } from "../util/math";
+import { Formation, Formations, Spot } from "./formation";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 
@@ -73,6 +74,7 @@ class Team {
   fanBase: fanBase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
+  formation?: { name: Formations; lineup: { plID: string; sp: Spot }[] };
 
   constructor(name: string) {
     this.name = name;
@@ -278,6 +280,14 @@ class Team {
     const h = (hash(p.id + t.name, 200) - 100) / 100;
     return (1 + 2 * t.scoutOffset * h) * p.growthRate;
   }
+}
+
+/** set the team formation property to the given formation */
+export function setFormation(t: Team, fm: Formation): void {
+  t.formation = {
+    name: fm.name,
+    lineup: fm.lineup.map(({ pl, sp }) => ({ sp, plID: pl.id })),
+  };
 }
 
 /**

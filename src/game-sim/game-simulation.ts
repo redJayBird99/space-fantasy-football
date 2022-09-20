@@ -6,7 +6,7 @@ import {
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
 import { Player, MIN_AGE } from "../character/player";
-import { Team, MAX_SCOUTING_OFFSET } from "../character/team";
+import { Team, MAX_SCOUTING_OFFSET, setFormation } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
@@ -23,19 +23,20 @@ const SEASON_END_MONTH = 5; // june, the distance is enough for 38 games every w
 const SEASON_END_DATE = 1;
 
 type GameEventTypes =
-  | "simRound"
-  | "skillUpdate"
-  | "seasonEnd"
-  | "seasonStart"
-  | "updateContract"
-  | "updateFinances"
-  | "signings"
-  | "draft"
-  | "retiring"
-  | "trade"
-  | "openTradeWindow"
-  | "openFreeSigningWindow"
-  | "closeFreeSigningWindow";
+  | "simRound" // sim all the round matches
+  | "skillUpdate" // increase or decrease the ability of a player
+  | "seasonEnd" // end the current season
+  | "seasonStart" // prepare the new season,
+  | "updateContract" // update the duration, renewal and expiring of players contracts
+  | "updateFinances" // update the team finances
+  | "signings" // sim signing free players
+  | "draft" // sim the drafting of young players
+  | "retiring" // remove retiring players
+  | "trade" // sim trading player between teams
+  | "openTradeWindow" // start the exchanging of players period
+  | "openFreeSigningWindow" // start the signing free players period
+  | "closeFreeSigningWindow" //
+  | "newFormation"; // find a formation for each team
 export type SimRound = { round: number };
 type DateOffset = { years?: number; months?: number; days?: number };
 
@@ -45,8 +46,23 @@ export interface GameEvent {
   detail?: SimRound;
 }
 
-let simRunning = false; // a single simulation at the time
-let simController = { stop: false }; // when true stop the current simulation
+// const worker = new Worker("sim-worker.js") doesn't work for jest so...
+let worker: any; // to offload some heavy tasks
+try {
+  worker = new Worker("sim-worker.js") as Worker; // to offload some heavy tasks
+} catch (e) {
+  // just to make jest shut up
+  if (!(e instanceof ReferenceError)) {
+    throw e;
+  }
+}
+
+/** the state of the sim, only one single simulation at the time */
+let simOn = false;
+/** make a running sim wait before proceeding beyond. (like waiting for the worker to finish) */
+let simWait = false;
+/** when true stop the current simulation */
+let simCtrl = { stop: false };
 
 export function setTickInterval(v: number) {
   tickInterval = v;
@@ -54,7 +70,7 @@ export function setTickInterval(v: number) {
 
 /** check if the previous called simulate() function is still simulating */
 export function isSimulating(): boolean {
-  return simRunning;
+  return simOn;
 }
 
 /**
@@ -83,20 +99,22 @@ export function simulate(
   onEnd: (gs: Readonly<GameState>) => unknown,
   duration?: number
 ): () => void {
-  const thisSimCtrl = simController; // bind a new reference to the lexical environment
+  const thisSimCtrl = simCtrl; // bind a new reference to the lexical environment
   const stop = () => (thisSimCtrl.stop = true);
 
-  if (simRunning) {
+  if (isSimulating()) {
     return stop;
   }
 
   const simTimeout = timeout(gs.date.getTime(), duration);
-  simRunning = true;
+  simOn = true;
 
   setTimeout(function run() {
-    if (simController.stop || simTimeout(gs.date.getTime()) || process(gs)) {
-      simRunning = false;
-      simController = { stop: false }; // now thisSimCtrl can't stop the next sim
+    if (simWait) {
+      setTimeout(run, tickInterval);
+    } else if (simCtrl.stop || simTimeout(gs.date.getTime()) || process(gs)) {
+      simOn = false;
+      simCtrl = { stop: false }; // now thisSimCtrl can't stop the next sim
       onEnd(gs);
     } else {
       onTick(gs);
@@ -158,6 +176,8 @@ function handleGameEvent(gs: GameState, evt: GameEvent): boolean {
     return handleOpenFreeSigningWindow(gs);
   } else if (evt.type === "closeFreeSigningWindow") {
     return handleCloseFreeSigningWindow(gs);
+  } else if (evt.type === "newFormation") {
+    return setNewFormation(gs);
   }
 
   return false;
@@ -293,6 +313,31 @@ function handleOpenFreeSigningWindow(gs: GameState): boolean {
 function handleCloseFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = false;
   return false;
+}
+
+/** find a new formation for each team asynchronously and make the sim wait until they are found */
+export function setNewFormation(gs: GameState): boolean {
+  simWait = true;
+
+  worker.onmessage = (e: any) => {
+    worker.onmessage = null;
+    Object.values(gs.teams).forEach((t) => setFormation(t, e.data[t.name])); // set the given formation to each team in the gs
+    simWait = false;
+  };
+  worker.postMessage({ type: "getFormations", teams: teamsAndPlayers(gs) });
+
+  return true;
+}
+
+/** convert the gameState teams to {team : players} pairings */
+function teamsAndPlayers(gs: GameState): { [team: string]: Player[] } {
+  const rst: { [team: string]: Player[] } = {};
+
+  for (const team in gs.teams) {
+    rst[team] = GameState.getTeamPlayers(gs, team);
+  }
+
+  return rst;
 }
 
 // add 52 new teens Players in every position area to the game and return them

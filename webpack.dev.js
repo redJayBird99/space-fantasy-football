@@ -3,7 +3,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "development",
-  entry: "./src/index.ts",
+  entry: {
+    main: "./src/index.ts",
+    "sim-worker": "./src/game-sim/sim-worker.ts",
+  },
   devtool: "eval-source-map",
   devServer: {
     static: './dev',
@@ -34,7 +37,7 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    filename: "main.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dev"),
     clean: true,
   },

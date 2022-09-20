@@ -250,7 +250,7 @@ class LoadGame extends HTMLElement {
     );
   };
 
-  /** ask for confirmation defore deliting the clicked game from from the saved ones */
+  /** ask for confirmation before deleting the clicked game from from the saved ones */
   private handleDeleteGame = (e: Event): void => {
     const v = (e.target as HTMLButtonElement).value;
     const name = v.substring(SAVES_PREFIX.length);

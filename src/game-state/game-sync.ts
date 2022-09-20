@@ -8,7 +8,7 @@ interface Message {
 }
 
 let BChannel: BroadcastChannel | null;
-const bcState = { receiving: false, sending: false };
+let bcState: "sending" | "receiving" | "idle" = "idle";
 const mx: Message = {};
 
 try {
@@ -18,21 +18,22 @@ try {
   BChannel = new BroadcastChannel("sync-game");
   BChannel!.onmessage = (e) => {
     const localGameName = window.$game.state?.name;
+    const type = e.data.type;
 
-    if (e.data.type === "gameUpdate" && e.data.name === localGameName) {
+    if (type === "gameUpdate" && e.data.name === localGameName) {
       // respond to the notification asking to send the game state
-      bcState.receiving = true;
+      bcState = "receiving";
       BChannel?.postMessage({ type: "sendGameUpdate" });
-    } else if (e.data.type === "sendGameUpdate" && bcState.sending) {
+    } else if (type === "sendGameUpdate" && bcState === "sending") {
       // respond to the request sending the game state
-      BChannel?.postMessage({ type: "gameState", state: mx.gs });
-      bcState.sending = false;
-      mx.gs = undefined;
       clearTimeout(mx.timeoutID);
-    } else if (e.data.type === "gameState") {
+      BChannel?.postMessage({ type: "gameState", state: mx.gs });
+      bcState = "idle";
+      mx.gs = undefined;
+    } else if (type === "gameState") {
       // handle the received game state
       window.$game.onSyncGameUpdate(e.data.state);
-      bcState.receiving = false;
+      bcState = "idle";
     }
   };
 } catch (e: any) {
@@ -41,16 +42,16 @@ try {
 
 /** send the given game to any other page with the same game open */
 export function sendSyncUpdatedGame(gs: GameState) {
-  if (bcState.receiving) {
+  if (bcState === "receiving") {
     return; // when busy, the first caller win
   }
 
   clearTimeout(mx.timeoutID); // clean when it was already trying to send something
-  bcState.sending = true;
+  bcState = "sending";
   mx.gs = gs;
   BChannel?.postMessage({ type: "gameUpdate", name: gs.name });
 
   mx.timeoutID = setTimeout(() => {
-    bcState.sending = false;
-  }, 60); // close when no one responded, the timing could be tricky
+    bcState = "idle";
+  }, 50); // close when no one responded, the timing could be tricky
 }

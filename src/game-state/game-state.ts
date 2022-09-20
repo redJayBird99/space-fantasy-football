@@ -5,6 +5,7 @@ import {
   GameEvent,
   handleSeasonStart,
   enqueueSkillUpdateEvent,
+  setNewFormation,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
@@ -68,7 +69,7 @@ class GameState {
     initTeamsAppeal(s);
     s.mails = [welcome(team, s.date)];
     s.popStats = getPopStats(Object.values(s.players));
-
+    setNewFormation(s);
     return s;
   }
 
@@ -190,9 +191,7 @@ class GameStateHandle {
   /** send the state to the other open tabs */
   private sendState(): void {
     try {
-      const time = performance.now();
       this.state && sendSyncUpdatedGame(this.state);
-      console.log(performance.now() - time);
     } catch (e: any) {
       // only to make jest shut up
     }

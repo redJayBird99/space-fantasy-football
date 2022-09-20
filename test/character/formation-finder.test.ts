@@ -2,8 +2,8 @@ import * as _p from "../../src/character/player";
 import {
   exportedForTesting as _etL,
   exportedTypesForTesting as _ettL,
-  Spot,
-} from "../../src/character/formation";
+} from "../../src/character/formation-finder";
+import { FORMATIONS, Spot } from "../../src/character/formation";
 
 jest.mock("../../src/character/player");
 /* eslint-disable no-import-assign */
@@ -95,7 +95,7 @@ describe("fillLineup()", () => {
 
   test("should not remove already present good fit in the lineup", () => {
     const goodFit = pls[pls.length - 1];
-    const spot = _etL.FORMATIONS["4-5-1(2)"][0];
+    const spot = FORMATIONS["4-5-1(2)"][0];
     mockPlrGetScore.mockImplementation((p) => (p === goodFit ? 20 : 10));
     const st: _ettL.TLineupState = {
       key: "4-5-1(2)",
@@ -109,7 +109,7 @@ describe("fillLineup()", () => {
 
   test("should remove already present bad fit in the lineup", () => {
     const badFit = pls[pls.length - 1];
-    const spot = _etL.FORMATIONS["5-4-1(3)"][0];
+    const spot = FORMATIONS["5-4-1(3)"][0];
     mockPlrGetScore.mockImplementation((p) => (p === badFit ? 10 : 20));
     const st: _ettL.TLineupState = {
       key: "5-4-1(3)",
@@ -130,7 +130,7 @@ describe("findBestLineup()", () => {
     const st = _etL.findFormation(pls);
     expect(st.picked.size).toBe(11);
     expect([...st.lineup.keys()]).toEqual(
-      expect.arrayContaining(_etL.FORMATIONS[st.key].slice())
+      expect.arrayContaining(FORMATIONS[st.key].slice())
     );
   });
 
