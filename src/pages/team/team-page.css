@@ -61,6 +61,11 @@ table {
   text-transform: uppercase;
 }
 
+.plr-pos-on {
+  /* background-color: #d44e4e; */
+  background-color: var(--dk-primary-color-700, var(--lt-primary-color-700));
+}
+
 .plr-head-pos,
 .plr-pos {
   padding: 0.4rem 0;
@@ -72,16 +77,16 @@ table {
 }
 
 td.skill-score {
-  border-radius: 4px;
-  color: var(--lt-on-bg-color);
   text-align: center;
 }
 
 td.skill-score > span {
-  padding: 0.1rem 0;
-  width: 1.6rem;
-  border-radius: 4px;
+  border-bottom-style: solid;
+  background-clip: padding-box;
+  border-bottom-width: 2px;
   display: inline-block;
+  font-weight: bold;
+  width: 1.5rem;
 }
 
 .plr > td,
@@ -89,4 +94,8 @@ td.skill-score > span {
   overflow-x: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+abbr[title] {
+  text-decoration-thickness: 1px;
 }

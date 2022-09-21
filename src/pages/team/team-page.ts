@@ -37,21 +37,18 @@ function teamMain(team: string): TemplateResult {
 }
 
 function teamPlayersTable(team: string): TemplateResult {
-  const pls = GameState.getTeamPlayers(window.$game.state!, team);
+  const st = window.$game.state!;
+  const pls = GameState.getTeamPlayers(st, team);
+  const startPls = new Set(st.teams[team].formation?.lineup.map((e) => e.plID));
   sortByPosition(pls, true);
   const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
+
   return html`<table>
+    <caption>
+      ${st.teams[team].formation?.name}
+    </caption>
     ${teamPlayersTableHead(mSkills)}
-    ${pls.map(
-      (p) =>
-        html`<tr class="plr">
-          <td class="plr-pos">${p.position}</td>
-          <td class="plr-name">${p.name}</td>
-          ${mSkills.map((sk) =>
-            playersSkillScore(sk, Player.getMacroSkill(p, sk))
-          )}
-        </tr>`
-    )}
+    ${pls.map((p) => teamPlayerRow(p, startPls.has(p.id), mSkills))}
   </table>`;
 }
 
@@ -68,10 +65,22 @@ function teamPlayersTableHead(mSkills: string[]): TemplateResult {
   </tr>`;
 }
 
+function teamPlayerRow(
+  p: Player,
+  starting: boolean,
+  skl: MacroSkill[]
+): TemplateResult {
+  return html`<tr class="plr">
+    <td class="plr-pos ${starting ? "plr-pos-on" : ""}">${p.position}</td>
+    <td class="plr-name">${p.name}</td>
+    ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
+  </tr>`;
+}
+
 function playersSkillScore(skill: string, score: number): TemplateResult {
   const d = skillData(score);
-  return html`<td title=${skill} aria-label=${skill} class="skill-score">
-    <span style=${`background-color: ${d.color}`}>${d.score}</span>
+  return html`<td class="skill-score">
+    <span title=${skill} style=${`border-color: ${d.color}`}> ${d.score} </span>
   </td>`;
 }
 
