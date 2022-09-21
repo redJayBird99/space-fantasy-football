@@ -25,8 +25,8 @@ const SEASON_END_DATE = 1;
 type GameEventTypes =
   | "simRound" // sim all the round matches
   | "skillUpdate" // increase or decrease the ability of a player
-  | "seasonEnd" // end the current season
-  | "seasonStart" // prepare the new season,
+  | "seasonEnd" // end the current season, enqueue the next one and update results
+  | "seasonStart" // prepare the new season and enqueue most of the seasons events (like draft etc.)
   | "updateContract" // update the duration, renewal and expiring of players contracts
   | "updateFinances" // update the team finances
   | "signings" // sim signing free players
@@ -243,7 +243,7 @@ function handleUpdateFinances(gs: GameState): boolean {
 function handleSignings(gs: GameState): boolean {
   if (gs.flags.openFreeSigningWindow) {
     teamsSignFreeAgents(gs);
-    // if the season didn't already try new signings every day
+    // if the season didn't already start try new signings every day
     const days = gs.eventQueue.some((e) => e.type === "seasonStart") ? 1 : 7;
     enqueueEventFor(gs, gs.date, "signings", { days });
   }
@@ -315,14 +315,18 @@ function handleCloseFreeSigningWindow(gs: GameState): boolean {
   return false;
 }
 
-/** find a new formation for each team asynchronously and make the sim wait until they are found */
-export function setNewFormation(gs: GameState): boolean {
+/**
+ * find a new formation for each team asynchronously and make the sim wait until they are setted
+ * @param onEnd called when the formations are set to the gs
+ */
+export function setNewFormation(gs: GameState, onEnd?: () => unknown): boolean {
   simWait = true;
 
   worker.onmessage = (e: any) => {
     worker.onmessage = null;
     Object.values(gs.teams).forEach((t) => setFormation(t, e.data[t.name])); // set the given formation to each team in the gs
     simWait = false;
+    onEnd?.();
   };
   worker.postMessage({ type: "getFormations", teams: teamsAndPlayers(gs) });
 

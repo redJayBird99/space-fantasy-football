@@ -74,7 +74,7 @@ class Team {
   fanBase: fanBase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
-  formation?: { name: Formations; lineup: { plID: string; sp: Spot }[] };
+  formation?: { name: Formations; lineup: { plID: string; sp: Spot }[] }; // this will only get saved (in the JSON file) for the userTeam
 
   constructor(name: string) {
     this.name = name;

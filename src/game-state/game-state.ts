@@ -50,26 +50,34 @@ class GameState {
     this.date = new Date(date.getTime());
   }
 
-  // init a new game state filling it with players, team and all the necessary for a new game
-
   /**
+   * init a new game state filling it with players, team and all the necessary,
+   * the returned state is not complete right away, some not essential data is
+   * added asynchronously (formations)
+   * not essential data don't get saved in the JSON file
    * @param teams part of the game
-   * @param team user team
-   * @param name of the game
-   * @returns a new game state with the given teams, user team and name
+   * @param uTeam the user team name
+   * @param gName the game name
+   * @param onComplete called when the game state is fully complete
+   * @returns a new not complete game state util onComplete is called
    */
-  static init(teams = Object.keys(teamsJson), team = "", name = ""): GameState {
+  static init(
+    teams = Object.keys(teamsJson),
+    uTeam = "",
+    gName = "",
+    onComplete?: () => unknown
+  ): GameState {
     const s = new GameState(
       new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR),
-      teams.find((t) => t === team) ? team : "",
-      name
+      teams.find((t) => t === uTeam) ? uTeam : "",
+      gName
     );
     initTeams(s, teams);
     initGameEvents(s);
     initTeamsAppeal(s);
-    s.mails = [welcome(team, s.date)];
+    s.mails = [welcome(uTeam, s.date)];
     s.popStats = getPopStats(Object.values(s.players));
-    setNewFormation(s);
+    setNewFormation(s, onComplete);
     return s;
   }
 
@@ -226,23 +234,46 @@ class GameStateHandle {
     this.observers.forEach((ob) => ob.gameStateUpdated(this._state));
   }
 
-  /** get the gameState as a json url, the resource must be revoked when not used */
+  /** get the current gameState without not essential data as a json url,
+   * the resource must be revoked when not used */
   getStateAsJsonUrl(): string {
     return URL.createObjectURL(
-      new Blob([JSON.stringify(this._state)], { type: "application/json" })
+      new Blob([this.getJSONSave()], {
+        type: "application/json",
+      })
     );
+  }
+
+  /** get the current game state as a JSON to be saved on the local machine,
+   * the returned JSON doesn't contain some not essential data from the game state
+   * (like formations expect the userTeam one)
+   */
+  getJSONSave(): string {
+    const gs = this._state;
+    function remover(this: any, k: string, v: unknown) {
+      return k === "formation" && gs?.userTeam !== this.name ? undefined : v;
+    }
+
+    return JSON.stringify(this._state, remover);
   }
 
   /** init a new gameSate and try to save it on the db */
   newGame(userTeam?: string, gameName?: string): void {
-    this.state = GameState.init(undefined, userTeam, gameName);
-    this.saveNewGSOnDB();
+    this.state = GameState.init(
+      undefined,
+      userTeam,
+      gameName,
+      () => (this.state = this._state) // just to notify everyone
+    );
+    this.saveNewGSOnDB(); // saving the complete game state is not needed
   }
 
   /** load the given the gameState, any similar named game on the db will be overridden */
   loadGameFrom(gs: GameState): void {
     this._state = gs;
     this.saveNewGSOnDB();
+    // we need to set the formation because they don't get saved in a json file
+    setNewFormation(this._state, () => (this.state = this._state)); // set just to notify everyone
   }
 
   /** try to save the current gameState as a new entry on the db, if a game name is provided */
@@ -273,6 +304,7 @@ class GameStateHandle {
       (s: GameState) => {
         this.state = s;
         onLoad();
+        setNewFormation(this.state, () => (this.state = this._state)); // set just to notify everyone
       },
       onErr
     );
