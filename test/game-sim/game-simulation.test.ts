@@ -1,6 +1,7 @@
 import {
   exportedForTesting as _sm,
   GameEvent,
+  prepareSeasonStart,
 } from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 import { LeagueTable } from "../../src/game-state/league-table";
@@ -433,26 +434,26 @@ describe("handleSeasonEnd()", () => {
   });
 });
 
-describe("handleSeasonStart()", () => {
+describe("prepareSeasonStart()", () => {
   const teams = ["dragons", "foxes", "birds", "snakes"];
 
   test("should enqueue a seasonEnd", () => {
     _gs.initTeams(st, teams);
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const e = { date: endD, type: "seasonEnd" };
     expect(st.eventQueue).toContainEqual(e);
   });
 
   test("should create a new schedule for the season", () => {
     _gs.initTeams(st, teams);
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const rounds = 2 * (teams.length - 1);
     expect(st.schedules.now.length).toBe(rounds);
   });
 
   test("should enqueue a simRound 0", () => {
     _gs.initTeams(st, teams);
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = st.schedules.now[0].date;
     const evt = { date, type: "simRound", detail: { round: 0 } };
     expect(st.eventQueue).toContainEqual(evt);
@@ -460,7 +461,7 @@ describe("handleSeasonStart()", () => {
 
   test("should enqueue a closeFreeSigningWindow gameEvent one month before the season end date", () => {
     const st = new _gs.GameState(startD);
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const y = st.date.getFullYear() + 1;
     const date = new Date(y, _sm.SEASON_END_MONTH - 1, _sm.SEASON_END_DATE);
     expect(st.eventQueue).toContainEqual({
@@ -474,35 +475,35 @@ describe("handleSeasonStart()", () => {
   });
 
   test("should enqueue a retiring GameEvent one day after the end of the season", () => {
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 1);
     expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
   });
 
   test("should enqueue a updateContract GameEvent two day after the end of the season", () => {
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 2);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
   });
 
   test("should enqueue a draft GameEvent three day after the end of the season", () => {
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 3);
     expect(st.eventQueue).toContainEqual({ date, type: "draft" });
   });
 
   test("should enqueue a openTradeWindow GameEvent four day after the end of the season", () => {
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 4);
     expect(st.eventQueue).toContainEqual({ date, type: "openTradeWindow" });
   });
 
   test("should enqueue a openFreeSigningWindow GameEvent four day after the end of the season", () => {
-    _sm.handleSeasonStart(st);
+    prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 4);
     expect(st.eventQueue).toContainEqual({
@@ -725,101 +726,101 @@ describe("handleTrade", () => {
 
 describe("handleGameEvent()", () => {
   describe("handle simRound GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e = { date: startD, type: "simRound", detail: { round: 0 } };
-      expect(_sm.handleGameEvent(st, e as GameEvent)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e as GameEvent)).toBe(false);
     });
   });
 
   describe("handle skillUpdate GameEvent", () => {
-    test("should return true", () => {
+    test("should return true", async () => {
       const e: GameEvent = { date: startD, type: "skillUpdate" };
-      expect(_sm.handleGameEvent(st, e)).toBe(true);
+      expect(await _sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle seasonEnd GameEvent", () => {
-    test("should return true for a seasonEnd type GameEvent", () => {
+    test("should return true for a seasonEnd type GameEvent", async () => {
       const e: GameEvent = { date: startD, type: "seasonEnd" };
-      expect(_sm.handleGameEvent(st, e)).toBe(true);
+      expect(await _sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle seasonStart GameEvent", () => {
-    test("should return true", () => {
+    test("should return true", async () => {
       const e: GameEvent = { date: startD, type: "seasonStart" };
-      expect(_sm.handleGameEvent(st, e)).toBe(true);
+      expect(await _sm.handleGameEvent(st, e)).toBe(true);
     });
   });
 
   describe("handle updateContract GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: startD, type: "updateContract" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle updateFinances GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: startD, type: "updateFinances" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle signings GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: startD, type: "signings" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle openTradeWindow GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: endD, type: "openTradeWindow" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle trade GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: endD, type: "trade" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle openFreeSigningWindow GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: endD, type: "openFreeSigningWindow" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 
   describe("handle closeFreeSigningWindow GameEvent", () => {
-    test("should return false", () => {
+    test("should return false", async () => {
       const e: GameEvent = { date: endD, type: "closeFreeSigningWindow" };
-      expect(_sm.handleGameEvent(st, e)).toBe(false);
+      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 });
 
 describe("process()", () => {
-  test("when the gameState.eventQueue is empty doesn't mutate the gameState date", () => {
+  test("when the gameState.eventQueue is empty doesn't mutate the gameState date", async () => {
     st.eventQueue = [];
-    _sm.process(st);
+    await _sm.process(st);
     expect(st.date).toEqual(startD);
   });
 
-  test("when the gameState.eventQueue is empty return true", () => {
-    expect(_sm.process(st)).toBe(true);
+  test("when the gameState.eventQueue is empty return true", async () => {
+    expect(await _sm.process(st)).toBe(true);
   });
 
-  test("process one event at the time and pop it from the queue", () => {
+  test("process one event at the time and pop it from the queue", async () => {
     const evts: GameEvent[] = [
       { date: startD, type: "simRound", detail: { round: 0 } },
       { date: startD, type: "simRound", detail: { round: 1 } },
     ];
     st.eventQueue.push(...evts);
-    _sm.process(st);
+    await _sm.process(st);
     expect(st.eventQueue).toEqual([evts[1]]);
   });
 });

@@ -3,9 +3,9 @@ import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
-  handleSeasonStart,
   enqueueSkillUpdateEvent,
   setNewFormation,
+  prepareSeasonStart,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
@@ -377,7 +377,7 @@ function initTeams(gs: GameState, names: string[]): Team[] {
 // save the starting events for the game in te gameState.eventQueue as
 // skillUpdate and simRound for the first round (when the current season schedule exists)
 function initGameEvents(gs: GameState): void {
-  handleSeasonStart(gs);
+  prepareSeasonStart(gs);
   enqueueSkillUpdateEvent(gs);
   GameState.enqueueGameEvent(gs, {
     date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),

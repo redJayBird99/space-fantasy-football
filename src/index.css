@@ -19,7 +19,7 @@
   --lt-neutral-color: #e1c457;
 
   font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: clamp(13px, 2vw, 16px);
 }
 
 @media (prefers-color-scheme: dark) {
