@@ -1,7 +1,10 @@
+import "../../src/game-sim/sim-worker-interface";
+import "../mock/broadcast-channel.mock";
 import * as _pl from "../../src/character/player";
 import { Team } from "../../src/character/team";
 import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 async function sim10Years(st: _gs.GameState): Promise<_gs.GameState> {
   const end = new Date(
@@ -10,15 +13,9 @@ async function sim10Years(st: _gs.GameState): Promise<_gs.GameState> {
     _sm.SEASON_START_DATE
   );
 
-  console.log("before", st.date.toLocaleDateString());
   while (st.date.getTime() <= end.getTime()) {
     await _sm.process(st);
-
-    if (st.eventQueue.length === 0) {
-      console.log("empty");
-    }
   }
-  console.log("after", st.date.toLocaleDateString());
 
   return _gs.GameState.parse(JSON.stringify(st));
 }

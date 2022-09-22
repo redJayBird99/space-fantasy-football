@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import * as _pl from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
 import { isMoreFrequent, getAgeAt } from "../../src/util/generator";

@@ -77,7 +77,7 @@ class GameState {
     initTeamsAppeal(s);
     s.mails = [welcome(uTeam, s.date)];
     s.popStats = getPopStats(Object.values(s.players));
-    setNewFormation(s, onComplete);
+    setNewFormation(s).then(() => onComplete); // no need to wait for not essential data
     return s;
   }
 
@@ -273,7 +273,7 @@ class GameStateHandle {
     this._state = gs;
     this.saveNewGSOnDB();
     // we need to set the formation because they don't get saved in a json file
-    setNewFormation(this._state, () => (this.state = this._state)); // set just to notify everyone
+    setNewFormation(this._state).then(() => (this.state = this._state)); // set just to notify everyone
   }
 
   /** try to save the current gameState as a new entry on the db, if a game name is provided */
@@ -304,7 +304,8 @@ class GameStateHandle {
       (s: GameState) => {
         this.state = s;
         onLoad();
-        setNewFormation(this.state, () => (this.state = this._state)); // set just to notify everyone
+        // we don't know if the formations were saved, set to notify
+        setNewFormation(this.state).then(() => (this.state = this._state));
       },
       onErr
     );

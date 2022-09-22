@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import { getImprovability } from "../../src/character/user";
 import * as _gs from "../../src/game-state/game-state";
 

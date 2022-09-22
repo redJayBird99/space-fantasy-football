@@ -11,6 +11,7 @@ import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
 import { makeTrades } from "./trade";
+import { fetchNewFormations } from "./sim-worker-interface";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -44,18 +45,6 @@ export interface GameEvent {
   date: Date;
   type: GameEventTypes;
   detail?: SimRound;
-}
-
-// TODO: the worker and related function (setNewFormation) needs testing (with cypress)
-// const worker = new Worker("sim-worker.js") doesn't work for jest so...
-let worker: any; // to offload some heavy tasks
-try {
-  worker = new Worker("sim-worker.js") as Worker; // to offload some heavy tasks
-} catch (e) {
-  // just to make jest shut up
-  if (!(e instanceof ReferenceError)) {
-    throw e;
-  }
 }
 
 /** the state of the sim, only one single simulation at the time */
@@ -207,14 +196,11 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   return true;
 }
 
-// TODO: testing
+// TODO: testing the setNewFormation part
 /** prepare the season events and the team formations */
 async function handleSeasonStart(gs: GameState): PBool {
   prepareSeasonStart(gs);
-  return await new Promise((resolve) => {
-    setNewFormation(gs, () => resolve(true));
-    setTimeout(() => resolve(true), 400); // TODO: this is a major hack to make jest complete, move the testing to cypress
-  });
+  return await setNewFormation(gs);
 }
 
 /**
@@ -327,37 +313,14 @@ function handleCloseFreeSigningWindow(gs: GameState): boolean {
 }
 
 /**
- * find a new formation for each team asynchronously and make the sim wait until they are setted
- * @param onEnd called when the formations are set to the gs
+ * find a new formation for each team asynchronously and make the sim wait until they are setted,
  */
-export function setNewFormation(gs: GameState, onEnd?: () => unknown): boolean {
+export async function setNewFormation(gs: GameState): PBool {
   simWait = true;
-
-  try {
-    // now I am thinking to completely migrate to cypress
-    worker.onmessage = (e: any) => {
-      worker.onmessage = null;
-      Object.values(gs.teams).forEach((t) => setFormation(t, e.data[t.name])); // set the given formation to each team in the gs
-      simWait = false;
-      onEnd?.();
-    };
-    worker.postMessage({ type: "getFormations", teams: teamsAndPlayers(gs) });
-  } catch (e) {
-    // just to make jest shut up
-  }
-
+  const forms = await fetchNewFormations(gs);
+  Object.entries(forms).forEach((v) => setFormation(gs.teams[v[0]], v[1])); // set the given formation to each team in the gs
+  simWait = false;
   return true;
-}
-
-/** convert the gameState teams to {team : players} pairings */
-function teamsAndPlayers(gs: GameState): { [team: string]: Player[] } {
-  const rst: { [team: string]: Player[] } = {};
-
-  for (const team in gs.teams) {
-    rst[team] = GameState.getTeamPlayers(gs, team);
-  }
-
-  return rst;
 }
 
 // add 52 new teens Players in every position area to the game and return them

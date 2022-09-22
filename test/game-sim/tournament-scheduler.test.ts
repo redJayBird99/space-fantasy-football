@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import * as _tr from "../../src/game-sim/tournament-scheduler";
 import tms from "../../src/asset/team-names.json";
 import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";

@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";

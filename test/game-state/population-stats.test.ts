@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import * as _p from "../../src/character/player";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { getPopStats } from "../../src/game-state/population-stats";

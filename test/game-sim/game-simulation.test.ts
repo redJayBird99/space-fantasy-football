@@ -1,3 +1,5 @@
+import "../../src/game-sim/sim-worker-interface";
+import "../mock/broadcast-channel.mock";
 import {
   exportedForTesting as _sm,
   GameEvent,
@@ -9,6 +11,7 @@ import * as _pl from "../../src/character/player";
 import * as _t from "../../src/character/team";
 import teamsJson from "../../src/asset/team-names.json";
 import { getPopStats } from "../../src/game-state/population-stats";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 const rdmYear = 1990 + Math.floor(Math.random() * 35);
 let startD = new Date(rdmYear, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);

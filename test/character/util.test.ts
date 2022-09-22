@@ -1,3 +1,4 @@
+import "../mock/broadcast-channel.mock";
 import {
   exportedForTesting as _u,
   SorterBy,
