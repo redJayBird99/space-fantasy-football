@@ -1,4 +1,5 @@
 import "../mock/broadcast-channel.mock";
+import "../../src/game-sim/sim-worker-interface";
 import {
   exportedForTesting as _u,
   SorterBy,
@@ -7,6 +8,7 @@ import {
   sortByInfo,
 } from "../../src/character/util";
 import { Player } from "../../src/character/player";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 const sample = _u.createPlayers("forward", 10);
 

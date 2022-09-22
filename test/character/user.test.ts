@@ -1,6 +1,8 @@
 import "../mock/broadcast-channel.mock";
+import "../../src/game-sim/sim-worker-interface";
 import { getImprovability } from "../../src/character/user";
 import * as _gs from "../../src/game-state/game-state";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 describe("getImprovability(", () => {
   const st = _gs.GameState.init(["hacks", "cats", "dogs", "birds"], "hacks");

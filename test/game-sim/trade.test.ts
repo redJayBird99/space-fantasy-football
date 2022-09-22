@@ -1,3 +1,4 @@
+import "../../src/game-sim/sim-worker-interface";
 import "../mock/broadcast-channel.mock";
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
@@ -5,6 +6,7 @@ import * as _gs from "../../src/game-state/game-state";
 import * as _trde from "../../src/game-sim/trade";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { mean } from "../../src/util/math";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 // guarantee findoffer
 const getSampleOffer = (gs: _gs.GameState, by: _t.Team, to: _t.Team) => {

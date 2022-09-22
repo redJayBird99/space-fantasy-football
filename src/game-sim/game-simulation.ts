@@ -11,7 +11,10 @@ import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
 import { makeTrades } from "./trade";
-import { fetchNewFormations } from "./sim-worker-interface";
+import {
+  fetchNewFormations,
+  fetchUpdatedFormations,
+} from "./sim-worker-interface";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -145,7 +148,7 @@ async function process(gs: GameState): PBool {
 // returns true when a particular event handling require to momentarily stop the simulation
 async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
   if (evt.type === "simRound") {
-    return handleSimRound(gs, evt.detail as SimRound);
+    return await handleSimRound(gs, evt.detail as SimRound);
   } else if (evt.type === "skillUpdate") {
     return handleSkillUpdate(gs);
   } else if (evt.type === "seasonEnd") {
@@ -175,7 +178,9 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
   return false;
 }
 
-function handleSimRound(gs: GameState, r: SimRound): boolean {
+/** before sim all matches updates all formations */
+async function handleSimRound(gs: GameState, r: SimRound): PBool {
+  await updateFormations(gs);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
   return false;
@@ -200,7 +205,7 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
 /** prepare the season events and the team formations */
 async function handleSeasonStart(gs: GameState): PBool {
   prepareSeasonStart(gs);
-  return await setNewFormation(gs);
+  return await setNewFormations(gs);
 }
 
 /**
@@ -315,12 +320,22 @@ function handleCloseFreeSigningWindow(gs: GameState): boolean {
 /**
  * find a new formation for each team asynchronously and make the sim wait until they are setted,
  */
-export async function setNewFormation(gs: GameState): PBool {
+export async function setNewFormations(gs: GameState): PBool {
   simWait = true;
-  const forms = await fetchNewFormations(gs);
-  Object.entries(forms).forEach((v) => setFormation(gs.teams[v[0]], v[1])); // set the given formation to each team in the gs
+  const forms = await fetchNewFormations({ gs, teams: Object.keys(gs.teams) });
+  forms.forEach((res) => setFormation(gs.teams[res.team], res.f)); // set the given formation to each team in the gs
   simWait = false;
   return true;
+}
+
+/** update (swapping and filling spots) the current formations or set new ones
+ * if no one was found for each team */
+async function updateFormations(gs: GameState): Promise<void> {
+  const forms = await fetchUpdatedFormations({
+    gs,
+    teams: Object.keys(gs.teams),
+  });
+  forms.forEach((res) => setFormation(gs.teams[res.team], res.f)); // set the given formation to each team in the gs
 }
 
 // add 52 new teens Players in every position area to the game and return them

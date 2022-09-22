@@ -1,7 +1,9 @@
 import "../mock/broadcast-channel.mock";
+import "../../src/game-sim/sim-worker-interface";
 import * as _tr from "../../src/game-sim/tournament-scheduler";
 import tms from "../../src/asset/team-names.json";
 import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
+jest.mock("../../src/game-sim/sim-worker-interface");
 
 const teamsJson = tms.eng.names;
 const teams = ["a", "b", "c", "d", "e", "f", "g", "h"];

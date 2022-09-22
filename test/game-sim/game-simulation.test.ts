@@ -370,17 +370,17 @@ describe("enqueueUpdateFinancesEvent()", () => {
 });
 
 describe("handleSimRound()", () => {
-  test("should simulate all matches of the given round", () => {
+  test("should simulate all matches of the given round", async () => {
     _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
-    _sm.handleSimRound(st, { round: 0 });
+    await _sm.handleSimRound(st, { round: 0 });
     st.schedules.now[0].matchIds.forEach((id) => {
       expect(st.matches[id].result).toBeDefined();
     });
   });
 
-  test("should enqueue the next round for the next week", () => {
+  test("should enqueue the next round for the next week", async () => {
     _sm.newSeasonSchedule(st, ["Hawks", "Foxes", " Wolfs", "Cats"]);
-    _sm.handleSimRound(st, { round: 0 });
+    await _sm.handleSimRound(st, { round: 0 });
     const date = st.schedules.now[1].date;
     const evt = { date, type: "simRound", detail: { round: 1 } };
     expect(st.eventQueue).toContainEqual(evt);
