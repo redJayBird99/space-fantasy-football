@@ -2,14 +2,6 @@ sff-team {
   display: block;
 }
 
-.pitch {
-  background-color: hsl(120, 84%, 63%);
-  border: 2px solid var(--lt-on-bg-color);
-  /* half pitch */
-  min-height: calc(50px * 2);
-  min-width: calc(65px * 2);
-}
-
 .team-main {
   align-items: flex-start;
   display: flex;
@@ -17,12 +9,29 @@ sff-team {
   gap: 0.5rem;
 }
 
-.team-main > * {
-  flex-grow: 1;
+.controls {
+  flex-grow: 0.5;
+}
+
+.cnt-pitch {
+  flex-grow: 2;
+  position: relative;
+  /* this value should match ENTIRE_PITCH_WIDTH */
+  min-width: calc((66px + 3px * 2) * 4.9);
+  max-width: calc((66px + 3px * 2) * 12);
+}
+
+@media screen and (min-width: 500px) {
+  .cnt-pitch {
+    /* this value should match ENTIRE_PITCH_WIDTH */
+    min-width: calc((66px + 3px * 2) * 6.5);
+  }
 }
 
 table {
+  flex-grow: 1;
   table-layout: fixed;
+  text-align: center;
   width: 100%;
 }
 
@@ -52,32 +61,30 @@ table {
 }
 
 .plr-pos {
+  padding: 0.4rem 0;
+  width: 2.5rem;
+}
+
+td.plr-pos {
   background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
   border-radius: 8px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 15%);
   font-style: italic;
   font-weight: bold;
-  text-align: center;
   text-transform: uppercase;
 }
 
-.plr-pos-on {
+.plr-at {
   /* background-color: #d44e4e; */
-  background-color: var(--dk-primary-color-700, var(--lt-primary-color-700));
+  align-self: stretch;
 }
 
-.plr-head-pos,
-.plr-pos {
-  padding: 0.4rem 0;
-  width: 2.5rem;
+.starting > .plr-pos {
+  background-color: var(--dk-primary-color-700, var(--lt-primary-color-700));
 }
 
 .skill-score {
   width: 3rem;
-}
-
-td.skill-score {
-  text-align: center;
 }
 
 td.skill-score > span {
@@ -98,4 +105,54 @@ td.skill-score > span {
 
 abbr[title] {
   text-decoration-thickness: 1px;
+}
+
+svg {
+  display: block;
+}
+
+rect.pitch {
+  fill: hsl(120, 53%, 27%);
+}
+
+rect.playing-pitch {
+  stroke: white;
+  fill: transparent;
+}
+
+.starter-tag {
+  background-color: hsla(275deg, 4%, 16%, 0.75);
+  border-radius: 5px;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: 7rem;
+  white-space: nowrap;
+}
+
+.starter-tag > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-name {
+  font-size: 0.9rem;
+  padding: 0 0.1rem;
+  padding-top: 0.1rem;
+}
+
+.tag-info {
+  background-color: hsla(275deg, 4%, 23.5%, 0.75);
+  font-size: 0.7rem;
+  padding: 0 0.1rem;
+  padding-bottom: 0.1rem;
+  text-transform: uppercase;
+}
+
+.tag-pos {
+  background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
+  border-radius: 2px;
+  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
+  padding: 0 0.1rem;
 }

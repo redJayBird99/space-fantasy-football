@@ -10,10 +10,7 @@ sff-player {
   line-height: 1.2;
 }
 
-.plr-photo {
-  background-color: var(--dk-on-bg-color, var(--lt-on-bg-color));
-  color: var(--lt-on-bg-color, var(--dk-on-bg-color));
-  height: 150px;
+.plr-img {
   margin: 8px;
   width: 150px;
 }

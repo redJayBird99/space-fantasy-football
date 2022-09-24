@@ -31,6 +31,10 @@ module.exports = {
           exportType: "string",
         },
       },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      },
     ],
   },
   resolve: {

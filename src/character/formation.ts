@@ -2,6 +2,7 @@ import { Player, Position } from "./player";
 
 /** the player spot in a formation */
 export type Spot = Readonly<{ pos: Position; row: number; col: number }>;
+export type Starter = { pl: Player; sp: Spot }; // TODO find a better name
 type Lineup = readonly Spot[];
 export type Side = "home" | "away";
 export const ROWS = 7; // lineup rows
@@ -17,7 +18,7 @@ export const COLUMNS = 13; // lineup Columns
   |    |    |    |    |    |    |    |    |    |    |    |    |    |  5
   | r2 |    | w0 |    | f0 |    | f1 |    | f2 |    | w1 |    | l2 |  6
 */
-const GK: Spot = { pos: "gk", row: -1, col: -1 }; // the GK should be treated specially
+const GK: Spot = { pos: "gk", row: -2, col: 6 }; // the GK should be treated specially
 const C0: Spot = { pos: "cb", row: 0, col: 2 };
 const C1: Spot = { pos: "cb", row: 0, col: 3 };
 const C2: Spot = { pos: "cb", row: 0, col: 4 };
@@ -89,6 +90,11 @@ export const FORMATIONS = {
 
 export type Formations = keyof typeof FORMATIONS;
 
+export interface Formation {
+  name: Formations;
+  lineup: Starter[];
+}
+
 /**
  * when given the home spot side return the equivalent away spot
  * @param sp home spot
@@ -97,7 +103,22 @@ export function getAwaySpot(sp: Spot): Spot {
   return { pos: sp.pos, row: ROWS - 1 - sp.row, col: COLUMNS - 1 - sp.col };
 }
 
-export interface Formation {
-  name: Formations;
-  lineup: { pl: Player; sp: Spot }[];
+/**
+ * get the x coordinate (starting at the left corner) for the given spot col value
+ * @param col of a Spot
+ * @param width the available wideness to position the players
+ */
+export function getX(col: number, width: number): number {
+  const trackSize = width / COLUMNS;
+  return (col / COLUMNS) * width + trackSize / 2;
+}
+
+/**
+ * get the y coordinate (starting at the top corner) for the given spot row value
+ * @param row of a Spot
+ * @param height the available lengthiness to position the players
+ */
+export function getY(row: number, height: number): number {
+  const trackSize = height / ROWS;
+  return (row / ROWS) * height + trackSize / 2;
 }

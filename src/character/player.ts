@@ -213,9 +213,11 @@ const OUT_OF_POSITION_PENALTY: PosPenalty = {
   },
 };
 
-// get a Penalty factor between 0 and 1 to applied to the player skills when is
-// playing out of position, the amount of Penalty is depending at which position
-// it is playing
+/**
+ * get a Penalty factor applying to the player skills when the player is out of position
+ * @param at the playing position
+ * @returns 0 isn't out of pos, 0.05 small, 0.1 middle and 0.2 major
+ */
 function getOutOfPositionPenalty(p: Player, at = p.position): number {
   if (p.position === at) {
     return 0;

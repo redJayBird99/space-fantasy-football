@@ -8,6 +8,7 @@ import {
 } from "../../character/player";
 import { getImprovability } from "../../character/user";
 import style from "./player.css";
+import pImg from "../../asset/player.svg";
 
 class PlayerPage extends HTMLElement {
   connectedCallback() {
@@ -62,7 +63,7 @@ class PlayerInfo extends HTMLElement {
     render(
       html`
         <section class="plr-info">
-          <div class="plr-photo">TODO: add photo</div>
+          <img class="plr-img" src=${pImg} alt="a football player" />
           ${this.player && this.gs && playerBio(this.player, this.gs)}
           ${this.player && this.gs && playerTeam(this.player, this.gs)}
         </section>
@@ -103,9 +104,9 @@ function playerTeam(p: Player, gs: Readonly<GameState>): TemplateResult {
 
   return html`
     <div class="plr-team">
-      <span>team ${p.team}</span>
-      <span>wage ${wage}₡</span>
-      <span>contract ${seasons ? `length ${seasons} seasons` : "free"}</span>
+      <span>team: ${p.team}</span>
+      <span>wage: ${wage}₡</span>
+      <span>contract: ${seasons ? `length ${seasons} seasons` : "free"}</span>
     </div>
   `;
 }

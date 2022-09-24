@@ -290,6 +290,20 @@ export function setFormation(t: Team, fm: Formation): void {
   };
 }
 
+/** get the formation of the given team if any exist */
+export function getFormation(g: GsTm): Formation | void {
+  if (g.t.formation) {
+    return {
+      name: g.t.formation.name,
+      lineup:
+        g.t.formation?.lineup.map((s) => ({
+          pl: g.gs.players[s.plID],
+          sp: s.sp,
+        })) ?? [],
+    };
+  }
+}
+
 /**
  *
  * when a player does't have a contract his wage is 0
