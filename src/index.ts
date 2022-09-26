@@ -3,11 +3,12 @@ import { appState } from "./app-state/app-state";
 import { Router } from "./pages/util/router";
 import "./pages/home/home.ts";
 import "./pages/dashboard/dashboard.ts";
-import "./pages/players/players.ts";
-import "./pages/players/player.ts";
+import "./pages/players/players-page.ts";
+import "./pages/players/player-page.ts";
 import "./pages/tables/league.ts";
 import "./pages/inbox/inbox-page.ts";
 import "./pages/team/team-page.ts";
+import "./pages/finances/finances-page.ts";
 import style from "./index.css";
 
 declare global {
@@ -52,6 +53,10 @@ new Router(document.body, "<div>404 page no found</div>")
     {
       path: `${window.$PUBLIC_PATH}team`,
       page: "<sff-team></sff-team>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}finances`,
+      page: "<sff-team-finances></sff-team-finances>",
     },
   ])
   .renderPage();

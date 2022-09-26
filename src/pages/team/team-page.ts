@@ -9,7 +9,7 @@ import {
 } from "../../character/player";
 import "../common/game-page.ts";
 import style from "./team-page.css";
-import { skillData } from "../players/player";
+import { skillData } from "../players/player-page";
 import { sortByPosition } from "../../character/util";
 import { getX, getY, Starter } from "../../character/formation";
 import pImg from "../../asset/player.svg";
@@ -41,10 +41,10 @@ class TeamPage extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           ${teamMain(window.$game.state?.userTeam ?? "")}
         </sff-game-page>
       `,

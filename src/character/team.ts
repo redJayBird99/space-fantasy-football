@@ -17,14 +17,14 @@ const MAX_SCOUTING_OFFSET = 0.2;
 type GsTm = { gs: GameState; t: Team }; // eslint-disable-line no-use-before-define
 type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
 type Affordable = (wage: number) => boolean;
-type fanBase = "huge" | "big" | "medium" | "small" | "verySmall";
+type fanBase = "huge" | "big" | "medium" | "small" | "very small";
 
-const fanBaseScore: Readonly<Record<fanBase, number>> = {
+export const fanBaseScore: Readonly<Record<fanBase, number>> = {
   huge: 4,
   big: 3,
   medium: 2,
   small: 1,
-  verySmall: 0,
+  "very small": 0,
 };
 
 function initMoneyAmount(fb: fanBase, min: number): number {
@@ -59,7 +59,7 @@ class Contract {
 
 interface Finances {
   budget: number;
-  revenue: number;
+  revenue: number; // monthly
   // monthly expenses
   health: number;
   scouting: number;
@@ -78,7 +78,7 @@ class Team {
 
   constructor(name: string) {
     this.name = name;
-    this.fanBase = teams[name] ? teams[name].fanBase : "verySmall";
+    this.fanBase = teams[name] ? teams[name].fanBase : "very small";
     this.scoutOffset = initScoutOffset(this);
     this.finances = {
       budget: initMoneyAmount(this.fanBase, 10 * SALARY_CAP),
@@ -157,12 +157,12 @@ class Team {
     });
   }
 
-  // returns the wages sum of every not expiring team player
+  /** returns the wages sum of every not expiring team player */
   static getWagesAmount({ gs, t }: GsTm): number {
     return sumWages(gs, Team.getNotExpiringPlayers({ gs, t }));
   }
 
-  // returns the sum of all the monthly expenses wages and luxuryTax included
+  /** returns the sum of all the monthly expenses wages and luxuryTax included */
   static getMonthlyExpenses({ gs, t }: GsTm): number {
     const { health: hth, facilities: fts, scouting: sct } = t.finances;
     const ws = Team.getWagesAmount({ gs, t });
@@ -402,6 +402,7 @@ export {
   GsTmPl,
   MAX_SCOUTING_OFFSET,
   Contract,
+  Finances,
   Team,
   RatingAreaByNeed,
   renewalProbability,

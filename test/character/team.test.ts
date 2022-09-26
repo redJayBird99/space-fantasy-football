@@ -367,7 +367,7 @@ describe("initMoneyAmount()", () => {
 
   test("should never return a value less than min", () => {
     Array.from({ length: 10 }, () =>
-      _t.initMoneyAmount("verySmall", min)
+      _t.initMoneyAmount("very small", min)
     ).forEach((amount) => {
       expect(amount).toBeGreaterThanOrEqual(min);
     });
@@ -375,7 +375,7 @@ describe("initMoneyAmount()", () => {
 
   test("should return a larger amount for a small fanBase respect to a very small one", () => {
     expect(_t.initMoneyAmount("small", min)).toBeGreaterThan(
-      _t.initMoneyAmount("verySmall", min)
+      _t.initMoneyAmount("very small", min)
     );
   });
 
@@ -702,7 +702,7 @@ describe("Team.calcAppeal()", () => {
   });
 
   test("should return 0 points when rank last in every metric", () => {
-    last.fanBase = "verySmall";
+    last.fanBase = "very small";
     expect(_t.Team.calcAppeal(last, teams, teams)).toBeCloseTo(0);
   });
 
@@ -712,14 +712,14 @@ describe("Team.calcAppeal()", () => {
   });
 
   test("facilityRanking should worth 1 point at most", () => {
-    last.fanBase = "verySmall";
+    last.fanBase = "very small";
     const cp = teams.slice();
     swap(cp, 0, cp.length - 1);
     expect(_t.Team.calcAppeal(last, teams, cp)).toBeCloseTo(1);
   });
 
   test("ranking should worth 3 point at most", () => {
-    last.fanBase = "verySmall";
+    last.fanBase = "very small";
     const cp = teams.slice();
     swap(cp, 0, cp.length - 1);
     expect(_t.Team.calcAppeal(last, cp, teams)).toBeCloseTo(3);

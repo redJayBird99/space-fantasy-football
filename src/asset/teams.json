@@ -6,7 +6,7 @@
     "fanBase": "huge"
   },
   "Mercury": {
-    "fanBase": "verySmall"
+    "fanBase": "very small"
   },
   "Venus": {
     "fanBase": "small"
@@ -51,12 +51,12 @@
     "fanBase": "medium"
   },
   "Oberon": {
-    "fanBase": "verySmall"
+    "fanBase": "very small"
   },
   "Ariel": {
-    "fanBase": "verySmall"
+    "fanBase": "very small"
   },
   "Deimos": {
-    "fanBase": "verySmall"
+    "fanBase": "very small"
   }
 }

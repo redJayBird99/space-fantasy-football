@@ -13,10 +13,10 @@ class InboxPage extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           <sff-inbox slot="in-main"></sff-inbox>
         </sff-game-page>
       `,

@@ -5,7 +5,7 @@ import { Player, Skill } from "../../character/player";
 import * as _ps from "../util/props-state";
 import { goLink } from "../util/go-link";
 import "../util/router.ts";
-import style from "./players.css";
+import style from "./players-page.css";
 import { sortByInfo, sortBySkill, SorterBy } from "../../character/util";
 
 class Players extends HTMLElement {
@@ -18,10 +18,10 @@ class Players extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           <players-table slot="in-main"></players-table>
         </sff-game-page>
       `,

@@ -7,7 +7,7 @@ import {
   MAX_SKILL,
 } from "../../character/player";
 import { getImprovability } from "../../character/user";
-import style from "./player.css";
+import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
 
 class PlayerPage extends HTMLElement {
@@ -20,10 +20,10 @@ class PlayerPage extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           <player-info slot="in-main"></player-info>
         </sff-game-page>
       `,

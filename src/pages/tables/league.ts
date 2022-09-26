@@ -25,10 +25,10 @@ class LeaguePage extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           <league-table
             slot="in-main"
             data-mode=${this.tableMode}

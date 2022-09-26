@@ -17,10 +17,10 @@ class Dashboard extends HTMLElement {
   render(): void {
     render(
       html`
+        <style>
+          ${style}
+        </style>
         <sff-game-page>
-          <style>
-            ${style}
-          </style>
           <dashboard-main slot="in-main"></dashboard-main>
         </sff-game-page>
       `,

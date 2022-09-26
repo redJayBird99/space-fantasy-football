@@ -115,6 +115,34 @@ export function sortByPosition(pls: _p.Player[], ascending: boolean): void {
   );
 }
 
+/** sort the teams according to the given team property, the properties supported are:
+ * appeal
+ */
+export function sortTeamsBy(
+  ts: _t.Team[],
+  k: keyof _t.Team,
+  ascending = true
+): _t.Team[] {
+  if (k !== "appeal") {
+    return ts;
+  }
+
+  return ts.sort((t1, t2) => (ascending ? t1[k] - t2[k] : t2[k] - t1[k]));
+}
+
+/** sort the teams according their given finance key  */
+export function sortByFinances(
+  ts: _t.Team[],
+  k: keyof _t.Finances,
+  ascending = true
+): _t.Team[] {
+  return ts.sort((t1, t2) =>
+    ascending
+      ? t1.finances[k] - t2.finances[k]
+      : t2.finances[k] - t1.finances[k]
+  );
+}
+
 export const exportedForTesting = {
   GOOD_STAT,
   BAD_STAT,

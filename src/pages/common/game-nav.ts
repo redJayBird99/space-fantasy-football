@@ -28,6 +28,7 @@ class GameNav extends HTMLElement {
           <li>${goLink(`${window.$PUBLIC_PATH}league`, "league")}</li>
           <li>${goLink(`${window.$PUBLIC_PATH}inbox`, "inbox")}</li>
           <li>${goLink(`${window.$PUBLIC_PATH}team`, "team")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}finances`, "finances")}</li>
         </ul>
       `,
       this.shadowRoot!
