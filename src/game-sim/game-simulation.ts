@@ -2,6 +2,7 @@ import {
   // GameStateHandle,
   GameState,
   createPlayers,
+  toTradeRecord,
 } from "../game-state/game-state";
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
@@ -284,7 +285,10 @@ function handleDraft(gs: GameState): boolean {
  */
 function handleTrade(gs: GameState): boolean {
   if (gs.flags.openTradeWindow) {
-    makeTrades(gs);
+    makeTrades(gs).forEach((t) => {
+      console.log("90%");
+      gs.trades.push(toTradeRecord(gs, t, gs.date));
+    });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
 

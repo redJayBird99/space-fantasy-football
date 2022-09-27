@@ -4,8 +4,9 @@ import { GameState } from "../game-state/game-state";
 import { shuffle } from "../util/generator";
 import { dist } from "../util/math";
 
+/** the content is what the team is giving */
 type TradeSide = { by: Team; content: Player[] };
-type Trade = { side1: TradeSide; side2: TradeSide };
+export type Trade = { side1: TradeSide; side2: TradeSide };
 
 const MAX_EXCHANGE_SIZE = 3; // only for the non user teams, it makes the findOffer faster and the exchange smaller
 const MIN_TEAM_SIZE = 18;
@@ -76,7 +77,7 @@ function offerAppeal({ gs, t }: GsTm, plsScores: number[]): number {
 
   const { meanScore: mean, standardDev: stdDev } = gs.popStats;
   // reminder: the step size in scoreAppeal is very influential on the balance
-  // betweeen the mean and player scores, with a smaller step the mean get more influential
+  // between the mean and player scores, with a smaller step the mean get more influential
   return (
     scoreAppeal(mean, stdDev, skewMean(plsScores)) +
     plsScores.reduce((a, v) => a + scoreAppeal(mean, stdDev, v), 0)
@@ -122,17 +123,17 @@ function acceptable({ gs, t }: GsTm, get: Player[], give: Player[]): boolean {
  * returns a closely matching offer to the getting one by the team
  * the returned offer respects salary cap and team size requirements for the
  * given team (no check for the other team)
- * the function is indeterministic
+ * the function is undeterministic
  * @param get what the team get in exchange
  * @returns a empty array when no offer was found
  */
 function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
-  // TOFIX: this is the subset sum problem we uses a brute force solution (find combinations)
-  // shuffle to make it indeterministic and slice for performance
-  const plrs = shuffle(Team.getNotExpiringPlayers({ gs, t })).slice(0, 20);
+  // ToFIX: this is the subset sum problem we uses a brute force solution (find combinations)
+  // shuffle to make it undeterministic and slice for performance
+  const pls = shuffle(Team.getNotExpiringPlayers({ gs, t })).slice(0, 20);
   const _affordable = affordable({ gs, t });
-  const plrsAppeal = new Map<Player, number>();
-  plrs.forEach((p) => plrsAppeal.set(p, Team.evaluatePlayer({ gs, t, p })));
+  const plsAppeal = new Map<Player, number>();
+  pls.forEach((p) => plsAppeal.set(p, Team.evaluatePlayer({ gs, t, p })));
   const getAppeal = offerAppeal(
     { gs, t },
     get.map((p) => Team.evaluatePlayer({ gs, t, p }))
@@ -149,7 +150,7 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
     if (stack.length > 0 && !rst[stack.length - 1]) {
       const giveAppeal = offerAppeal(
         { gs, t },
-        stack.map((p) => plrsAppeal.get(p)!)
+        stack.map((p) => plsAppeal.get(p)!)
       );
 
       if (areClose(giveAppeal, getAppeal) && _affordable(get, stack)) {
@@ -157,8 +158,8 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
       }
     }
 
-    for (let j = i; j < plrs.length; j++) {
-      stack.push(plrs[i]);
+    for (let j = i; j < pls.length; j++) {
+      stack.push(pls[i]);
       search(stack, j + 1);
       stack.pop();
     }
@@ -174,8 +175,8 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
  * because team can't often agree on the players value a trade is somehow rare
  * @param other the team trading with
  */
-function seachTrade({ gs, t }: GsTm, other: Team): Trade | void {
-  // TOFIX it is a temp solution
+function searchTrade({ gs, t }: GsTm, other: Team): Trade | void {
+  // ToFIX it is a temp solution
   const get = shuffle(Team.getNotExpiringPlayers({ gs, t: other })).slice(
     0,
     Math.floor(MAX_EXCHANGE_SIZE * Math.random()) + 1
@@ -209,7 +210,7 @@ function makeTrades(gs: GameState): Trade[] {
   const teams = shuffle(Object.values(gs.teams));
 
   for (let i = 1; i <= teams.length / 2; i += 2) {
-    const trade = seachTrade({ gs, t: teams[i] }, teams[i - 1]);
+    const trade = searchTrade({ gs, t: teams[i] }, teams[i - 1]);
 
     if (trade) {
       transferPlayers(gs, trade.side1.content, trade.side2.by);
@@ -236,6 +237,6 @@ export {
   affordable,
   acceptable,
   findOffer,
-  seachTrade,
+  searchTrade,
   makeTrades,
 };

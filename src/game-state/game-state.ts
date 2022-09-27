@@ -12,11 +12,16 @@ import teamsJson from "../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
 import { sendSyncUpdatedGame } from "./game-sync";
+import { Trade } from "../game-sim/trade";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
 const INIT_HOUR = 10;
 type ScheduleRound = { date: Date; matchIds: string[] };
+/** the plIds is what the team is giving */
+type TradeSideRecord = { team: string; plIds: string[] };
+/** when is the a dateString */
+export type TradeRecord = { when: string; sides: TradeSideRecord[] };
 
 // instances of this interface are saved as JSON on the user machine, this is
 // the game save
@@ -31,6 +36,7 @@ class GameState {
   schedules: { [year: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
+  trades: TradeRecord[] = []; // sorted from the least recent to most recent
   userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {
@@ -170,6 +176,17 @@ class GameState {
   static getSeasonMatches(s: GameState, season: string): Match[] {
     return GameState.getSeasonRounds(s, season)?.flat() ?? [];
   }
+}
+
+/** convert the given trade to a tradeRecord */
+export function toTradeRecord(s: GameState, t: Trade, when: Date): TradeRecord {
+  return {
+    when: when.toDateString(),
+    sides: [
+      { team: t.side1.by.name, plIds: t.side1.content.map((p) => p.id) },
+      { team: t.side2.by.name, plIds: t.side2.content.map((p) => p.id) },
+    ],
+  };
 }
 
 interface GameStateObserver {

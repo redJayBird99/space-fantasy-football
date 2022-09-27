@@ -9,6 +9,7 @@ import "./pages/tables/league.ts";
 import "./pages/inbox/inbox-page.ts";
 import "./pages/team/team-page.ts";
 import "./pages/finances/finances-page.ts";
+import "./pages/transactions/transactions.ts";
 import style from "./index.css";
 
 declare global {
@@ -57,6 +58,10 @@ new Router(document.body, "<div>404 page no found</div>")
     {
       path: `${window.$PUBLIC_PATH}finances`,
       page: "<sff-team-finances></sff-team-finances>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}transactions`,
+      page: "<sff-transactions></sff-transactions>",
     },
   ])
   .renderPage();
