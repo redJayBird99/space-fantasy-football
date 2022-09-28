@@ -92,7 +92,7 @@ class PlaySim extends HTMLElement {
     this.render();
   };
 
-  /** update the visual sim proprs with the given gs */
+  /** update the visual sim props with the given gs */
   handleSimTick = (gs: Readonly<GameState>) => {
     _ps.setState(() => {
       _ps.setProps(() => Object.assign(this.state.childProps, { gs }));
@@ -234,7 +234,7 @@ class SimOptions extends HTMLElement {
   };
 
   /** check if the value is a current setted simOption */
-  ckeckIfSelected(value: unknown): boolean {
+  checkIfSelected(value: unknown): boolean {
     return (
       value === window.$appState.simOptions.duration ||
       value === window.$appState.simOptions.speed
@@ -243,7 +243,7 @@ class SimOptions extends HTMLElement {
 
   renderOptions(entries: [string, number][]): TemplateResult[] {
     return entries.map((e) =>
-      this.ckeckIfSelected(e[1])
+      this.checkIfSelected(e[1])
         ? html`<option selected value=${e[1]}>(current) ${e[0]}</option>`
         : html`<option value=${e[1]}>${e[0]}</option>`
     );

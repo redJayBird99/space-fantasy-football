@@ -286,7 +286,6 @@ function handleDraft(gs: GameState): boolean {
 function handleTrade(gs: GameState): boolean {
   if (gs.flags.openTradeWindow) {
     makeTrades(gs).forEach((t) => {
-      console.log("90%");
       gs.trades.push(toTradeRecord(gs, t, gs.date));
     });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
@@ -446,6 +445,8 @@ function teamsSignFreeAgents(gs: GameState): void {
 
     if (signed) {
       free = free.filter((p) => p !== signed);
+      const when = gs.date.toDateString();
+      gs.signings.push({ when, plId: signed.id, team: team.name });
     }
   });
 }

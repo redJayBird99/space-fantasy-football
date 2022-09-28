@@ -52,18 +52,18 @@ class TeamFinances extends HTMLElement {
 }
 
 function main(team: string): TemplateResult {
-  const gs = window.$game.state as GameState; // it doesn't get mutated though
-  const t = gs?.teams[team];
+  const t = window.$game.state?.teams[team];
 
   return html`
     <article slot="in-main">
-      ${contractsTable(gs, t)} ${teamFinances(gs, t)}
+      ${t && contractsTable(t)} ${t && teamFinances(t)}
     </article>
   `;
 }
 
 /** collect all team financial information and some general info of the given team */
-function teamFinances(gs: GameState, t: Team): TemplateResult {
+function teamFinances(t: Team): TemplateResult {
+  const gs = window.$game.state!; // in game we always have a state
   const ts = { all: Object.values(gs.teams), t };
   const mExpenses = t ? Team.getMonthlyExpenses({ gs, t }) : 0;
   const wages = t ? Team.getWagesAmount({ gs, t }) : 0;
@@ -199,7 +199,8 @@ function teamGeneralInfo(ts: Teams): TemplateResult {
 }
 
 /** table with all team players wages */
-function contractsTable(gs: GameState, t: Team): TemplateResult {
+function contractsTable(t: Team): TemplateResult {
+  const gs = window.$game.state!;
   const years = Array.from(
     { length: SEASONS },
     (_, i) => gs.date.getFullYear() + i
@@ -214,13 +215,14 @@ function contractsTable(gs: GameState, t: Team): TemplateResult {
         <th>name</th>
         ${years.map((y) => html`<th aria-label="year wage">${y}</th>`)}
       </tr>
-      ${pls.map((p) => plWageRow(gs, p))} ${wagesSummary(gs, pls)}
+      ${pls.map((p) => plWageRow(p))} ${wagesSummary(pls)}
     </table>
   `;
 }
 
 /** get the player row about its yearly wages table */
-function plWageRow(gs: GameState, p: Player): TemplateResult {
+function plWageRow(p: Player): TemplateResult {
+  const gs = window.$game.state!;
   const c = GameState.getContract(gs, p);
   const yWages = Array.from({ length: SEASONS }, (_, i) =>
     (c?.duration ?? 0) - i > 0 ? c?.wage : ""
@@ -234,7 +236,8 @@ function plWageRow(gs: GameState, p: Player): TemplateResult {
 }
 
 /** the summary rows about the wages expenses for the given players and the salary cap space */
-function wagesSummary(gs: GameState, pls: Player[]): TemplateResult {
+function wagesSummary(pls: Player[]): TemplateResult {
+  const gs = window.$game.state!;
   const cs = pls.map((p) => GameState.getContract(gs, p));
   const yearWage = (y: number, c: Contract | void) =>
     c && c.duration - y > 0 ? c.wage : 0;

@@ -22,6 +22,7 @@ type ScheduleRound = { date: Date; matchIds: string[] };
 type TradeSideRecord = { team: string; plIds: string[] };
 /** when is the a dateString */
 export type TradeRecord = { when: string; sides: TradeSideRecord[] };
+export type SigningRecord = { when: string; plId: string; team: string };
 
 // instances of this interface are saved as JSON on the user machine, this is
 // the game save
@@ -37,6 +38,7 @@ class GameState {
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
   trades: TradeRecord[] = []; // sorted from the least recent to most recent
+  signings: SigningRecord[] = []; // sorted from the least recent to most recent
   userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {

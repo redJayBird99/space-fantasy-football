@@ -1,41 +1,74 @@
+sff-transactions {
+  display: block;
+}
+
 [slot="in-main"] {
   display: flex;
+  gap: 10px;
   justify-content: center;
 }
 
-.trades {
-  max-width: 55rem;
+[slot="in-main"] > * {
+  flex-grow: 1;
 }
 
-.trade > h3 {
+@media screen and (max-width: 60rem) {
+  [slot="in-main"] {
+    flex-wrap: wrap;
+  }
+}
+
+.trades,
+.signings {
+  max-width: 28rem;
+}
+
+@media screen and (min-width: 54rem) {
+  .signings {
+    flex-shrink: 0.1;
+  }
+
+  .trades {
+    max-width: 56rem;
+  }
+
+  .trades .transaction-info:nth-of-type(2) {
+    min-width: 20rem;
+  }
+}
+
+.transaction > h3 {
   background-color: var(--dk-primary-color, var(--lt-primary-color));
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
   margin: 6px 0 0 0;
   padding: 0.15rem 1rem;
 }
 
-.trade-summary:nth-of-type(odd) {
+.transaction-summary {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
-}
-
-.trade-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   justify-content: space-between;
   margin: 3px 0;
-  padding: 1rem 2rem;
+  padding: 1rem;
 }
 
-.trade-summary > * {
+[slot="in-main"] > *,
+.transaction-summary > *,
+.transaction-info > * {
+  min-width: 0;
+}
+
+.transaction-info {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .team-log {
   background-color: var(--dk-bg-color-500, var(--lt-bg-color-300));
-  height: 100px;
-  width: 100px;
+  height: 70px;
+  width: 70px;
 }
 
 .team-name {
@@ -47,12 +80,13 @@
   padding-left: 15px;
 }
 
-.traded-pls > li {
-  align-items: center;
-  display: flex;
-  gap: 6px;
+.cnt-pl-info {
   list-style-type: none;
   margin: 3px 0;
+}
+
+.signed-pl {
+  padding-left: 15px;
 }
 
 abbr[title] {
@@ -71,22 +105,14 @@ abbr[title] {
   padding: 0.05rem 0;
   text-align: center;
   text-transform: uppercase;
+  vertical-align: text-top;
   width: 1.4rem;
 }
 
-.traded-pls > li > * {
+.cnt-pl-info > * {
   white-space: nowrap;
-}
-
-sff-go {
-  overflow-x: hidden;
-  text-overflow: ellipsis;
 }
 
 a {
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
-}
-
-.trade-summary > :last-child .traded-pls {
-  min-width: 15rem;
 }
