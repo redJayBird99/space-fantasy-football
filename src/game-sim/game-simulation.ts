@@ -358,8 +358,11 @@ function updateContracts(gs: GameState): void {
 
 // every team try to resign most expiring players according to their needs
 function renewExpiringContracts(gs: GameState): void {
+  const when = gs.date.toDateString();
   Object.values(gs.teams).forEach((t) => {
-    Team.renewExpiringContracts({ gs, t });
+    Team.renewExpiringContracts({ gs, t }).forEach((p) =>
+      gs.renewals.push({ team: t.name, plId: p.id, when })
+    );
   });
 }
 

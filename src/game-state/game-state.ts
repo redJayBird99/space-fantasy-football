@@ -39,6 +39,7 @@ class GameState {
   mails: Mail[] = [];
   trades: TradeRecord[] = []; // sorted from the least recent to most recent
   signings: SigningRecord[] = []; // sorted from the least recent to most recent
+  renewals: SigningRecord[] = []; // sorted from the least recent to most recent
   userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {

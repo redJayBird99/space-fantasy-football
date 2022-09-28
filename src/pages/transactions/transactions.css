@@ -12,7 +12,7 @@ sff-transactions {
   flex-grow: 1;
 }
 
-@media screen and (max-width: 60rem) {
+@media screen and (max-width: 70rem) {
   [slot="in-main"] {
     flex-wrap: wrap;
   }
@@ -25,7 +25,7 @@ sff-transactions {
 
 @media screen and (min-width: 54rem) {
   .signings {
-    flex-shrink: 0.1;
+    flex-shrink: 0.2;
   }
 
   .trades {
@@ -66,9 +66,9 @@ sff-transactions {
 }
 
 .team-log {
+  align-self: start;
   background-color: var(--dk-bg-color-500, var(--lt-bg-color-300));
-  height: 70px;
-  width: 70px;
+  font-size: 24px;
 }
 
 .team-name {
@@ -77,7 +77,7 @@ sff-transactions {
 
 .traded-pls {
   margin: 4px 0;
-  padding-left: 15px;
+  padding-left: 10px;
 }
 
 .cnt-pl-info {
@@ -86,7 +86,7 @@ sff-transactions {
 }
 
 .signed-pl {
-  padding-left: 15px;
+  padding-left: 10px;
 }
 
 abbr[title] {
@@ -95,18 +95,18 @@ abbr[title] {
 
 .plr-pos {
   background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
+  background-clip: padding-box;
   border-radius: 5px;
   box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 0.1);
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-style: italic;
   font-weight: bold;
-  padding: 0.05rem 0;
   text-align: center;
   text-transform: uppercase;
-  vertical-align: text-top;
-  width: 1.4rem;
+  vertical-align: middle;
+  width: 1.3rem;
 }
 
 .cnt-pl-info > * {

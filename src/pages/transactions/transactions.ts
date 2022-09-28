@@ -36,7 +36,9 @@ class Transactions extends HTMLElement {
 }
 
 function main(): TemplateResult {
-  return html`<div slot="in-main">${signings()} ${trades()}</div>`;
+  return html`<div slot="in-main">
+    ${signings()} ${renewals()} ${trades()}
+  </div>`;
 }
 
 /**
@@ -60,7 +62,7 @@ function transaction(when: string, content: TemplateResult): TemplateResult {
 function transactionElement(content: TemplateResult): TemplateResult {
   return html`
     <div class="transaction-info">
-      <div class="team-log">LOGO</div>
+      <div class="team-log">🪐</div>
       <div>${content}</div>
     </div>
   `;
@@ -141,6 +143,16 @@ function signing(r: SigningRecord): TemplateResult {
       </div>
     `)
   );
+}
+
+function renewals(): TemplateResult {
+  const signingsRecord = window.$game.state?.renewals ?? [];
+  return html`
+    <section class="signings">
+      <h2>Re-signings:</h2>
+      ${signingsRecord.map((r) => signing(r))}
+    </section>
+  `;
 }
 
 if (!customElements.get("sff-transactions")) {

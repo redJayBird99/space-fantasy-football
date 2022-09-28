@@ -132,7 +132,8 @@ class Team {
   }
 
   // try to resign the expiring players according to the team needs and player scores
-  static renewExpiringContracts({ gs, t }: GsTm): void {
+  static renewExpiringContracts({ gs, t }: GsTm): Player[] {
+    const renewed: Player[] = [];
     const notExpiring = Team.getNotExpiringPlayers({ gs, t });
     let rtgs = new RatingAreaByNeed(notExpiring);
     let affordable = Team.canAfford({ gs, t });
@@ -150,11 +151,14 @@ class Team {
         Team.shouldRenew({ gs, t, p }, rtgs, notExpiring.length)
       ) {
         Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, p, t }));
+        renewed.push(p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
         affordable = Team.canAfford({ gs, t });
       }
     });
+
+    return renewed;
   }
 
   /** returns the wages sum of every not expiring team player */
