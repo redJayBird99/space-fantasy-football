@@ -5,7 +5,7 @@
     "navB main side"
     ".... main side"
     "foot foot foot";
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0px, auto) minmax(0px, 1fr) minmax(0px, auto);
 }
 
 * {
@@ -20,7 +20,7 @@
       ".... main"
       ".... side"
       "foot foot";
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
   }
 }
 
@@ -38,7 +38,7 @@ nav {
       "main"
       "side"
       "foot";
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0px, 1fr);
   }
 
   nav {

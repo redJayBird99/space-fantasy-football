@@ -11,6 +11,7 @@ sff-team-finances {
 
 [slot="in-main"] > * {
   flex-grow: 1;
+  min-width: 0;
 }
 
 .cnt-fin > *,
@@ -24,6 +25,12 @@ table {
   border-collapse: collapse;
   table-layout: fixed;
   text-align: center;
+}
+
+@media screen and (max-width: 34rem) {
+  table {
+    width: 100%;
+  }
 }
 
 caption > h2,
