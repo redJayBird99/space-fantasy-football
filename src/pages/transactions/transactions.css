@@ -32,13 +32,22 @@ sff-transactions {
     max-width: 56rem;
   }
 
-  .trades .transaction-info:nth-of-type(2) {
+  .trade-summary > :nth-of-type(2) {
     min-width: 20rem;
   }
 }
 
-.transaction > h3 {
+.trades > h2,
+.signings > h2 {
+  border-bottom: 2px solid var(--dk-on-bg-color);
+  border-top: 2px solid var(--dk-on-bg-color);
+  margin: 0;
+  padding: 0.4rem;
+}
+
+.transactions > h3 {
   background-color: var(--dk-primary-color, var(--lt-primary-color));
+  box-shadow: 0px 1px 4px 0px hsla(0deg, 0%, 8%, 0.15);
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
   margin: 6px 0 0 0;
   padding: 0.15rem 1rem;
@@ -46,23 +55,36 @@ sff-transactions {
 
 .transaction-summary {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 0.1);
+  margin: 3px 0;
+  padding: 0.6rem 1rem;
+}
+
+.transaction-summary:nth-of-type(even) {
+  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
+}
+
+.trade-summary {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: space-between;
-  margin: 3px 0;
-  padding: 1rem;
 }
 
 [slot="in-main"] > *,
-.transaction-summary > *,
-.transaction-info > * {
+.trade-summary > *,
+.transaction-content > * {
   min-width: 0;
 }
 
-.transaction-info {
+.transaction-title {
+  margin: 4px 0;
+}
+
+.transaction-content {
+  align-items: flex-start;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .team-log {
@@ -71,22 +93,13 @@ sff-transactions {
   font-size: 24px;
 }
 
-.team-name {
-  font-weight: bold;
-}
-
 .traded-pls {
-  margin: 4px 0;
-  padding-left: 10px;
+  margin: 0;
+  padding-left: 0;
 }
 
 .cnt-pl-info {
   list-style-type: none;
-  margin: 3px 0;
-}
-
-.signed-pl {
-  padding-left: 10px;
 }
 
 abbr[title] {

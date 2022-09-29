@@ -1,4 +1,5 @@
 import { render, html, TemplateResult } from "lit-html";
+import { groupBy } from "lodash-es";
 import style from "./transactions.css";
 import "../common/game-page.ts";
 import { SigningRecord, TradeRecord } from "../../game-state/game-state";
@@ -37,46 +38,61 @@ class Transactions extends HTMLElement {
 
 function main(): TemplateResult {
   return html`<div slot="in-main">
-    ${signings()} ${renewals()} ${trades()}
+    ${trades()} ${signings()} ${renewals()}
   </div>`;
 }
 
 /**
- * returns a reusable container for any type of transaction
- * @param when a dataString
- * @param content the specific transaction content
+ * returns a reusable transactions container of any type
+ * @param when a dateString
+ * @param trans a collection of transactions happened at the given date
  */
-function transaction(when: string, content: TemplateResult): TemplateResult {
+function transactions(when: string, trans: TemplateResult[]): TemplateResult {
   return html`
-    <article class="transaction">
+    <article class="transactions">
       <h3><time>${when}</time></h3>
-      <div class="transaction-summary">${content}</div>
+      ${trans}
     </article>
   `;
 }
 
 /**
- * returns a reusable container for any type of transaction information element
+ * returns a reusable container for any type of transaction
+ * @param title the introductory title of the transaction
  * @param content the specific content of the transaction
  */
-function transactionElement(content: TemplateResult): TemplateResult {
+function transaction(title: string, content: TemplateResult): TemplateResult {
   return html`
-    <div class="transaction-info">
-      <div class="team-log">🪐</div>
-      <div>${content}</div>
+    <div>
+      <h4 class="transaction-title">${title}</h4>
+      <div class="transaction-content">
+        <div class="team-log">🪐</div>
+        ${content}
+      </div>
     </div>
   `;
 }
 
-/** list all the trades recorded */
+/** list all trades recorded */
 function trades() {
-  const tradesRecord = window.$game.state?.trades ?? [];
+  const tradesRecord = groupBy(
+    (window.$game.state?.trades ?? []).reverse(),
+    (e) => e.when
+  );
   return html`
     <section class="trades">
-      <h2>Trades:</h2>
-      ${tradesRecord.map((t) => trade(t))}
+      <h2>🔄 Trades:</h2>
+      ${Object.values(tradesRecord).map((ts) => tradesBlocks(ts))}
     </section>
   `;
+}
+
+/** returns a collection of trades block from the given ones */
+function tradesBlocks(ts: TradeRecord[]): TemplateResult {
+  return transactions(
+    ts[0].when,
+    ts.map((t) => trade(t))
+  );
 }
 
 /** returns informations about the given trade */
@@ -85,26 +101,28 @@ function trade(t: TradeRecord): TemplateResult {
   const s2 = t.sides[1];
   const was = new Date(t.when);
 
-  return transaction(
-    t.when,
-    html`
-      ${tradeSide(s1.team, s2.plIds, was)} ${tradeSide(s2.team, s1.plIds, was)}
-    `
-  );
+  return html`<div class="transaction-summary trade-summary">
+    ${tradeSide(s1.team, s2.plIds, was)} ${tradeSide(s2.team, s1.plIds, was)}
+  </div>`;
 }
 
 /** returns informations about the given trade side */
 function tradeSide(team: string, getPls: string[], was: Date): TemplateResult {
-  const gs = window.$game.state!; // it always defined hen in this page
-  return transactionElement(html`
-    <span class="team-name">${team}</span> acquires:
-    <ul class="traded-pls">
-      ${getPls.map(
-        (id) =>
-          html`<li class="cnt-pl-info">${playerInfo(gs.players[id], was)}</li>`
-      )}
-    </ul>
-  `);
+  const gs = window.$game.state!; // it always defined when in this page
+  const title = `${team} acquires:`;
+  return transaction(
+    title,
+    html`
+      <ul class="traded-pls">
+        ${getPls.map(
+          (id) =>
+            html`<li class="cnt-pl-info">
+              ${playerInfo(gs.players[id], was)}
+            </li>`
+        )}
+      </ul>
+    `
+  );
 }
 
 /** returns informations about the given  player at the given time */
@@ -122,35 +140,52 @@ function playerInfo(p: Player, was: Date): TemplateResult {
   `;
 }
 
+/** list all signings recorded */
 function signings(): TemplateResult {
-  const signingsRecord = window.$game.state?.signings ?? [];
+  const signsRec = groupBy(
+    (window.$game.state?.signings ?? []).reverse(),
+    (e) => e.when
+  );
   return html`
     <section class="signings">
-      <h2>New Signings:</h2>
-      ${signingsRecord.map((r) => signing(r))}
+      <h2>📝 New Signings:</h2>
+      ${Object.values(signsRec).map((sr) => signingsBlock(sr))}
     </section>
   `;
 }
 
-function signing(r: SigningRecord): TemplateResult {
-  const gs = window.$game.state!;
-  return transaction(
-    r.when,
-    transactionElement(html`
-      <span class="team-name">${r.team}</span> signed:
-      <div class="cnt-pl-info signed-pl">
-        ${playerInfo(gs.players[r.plId], new Date(r.when))}
-      </div>
-    `)
+/** returns a collection of signings block from the given ones */
+function signingsBlock(sr: SigningRecord[]): TemplateResult {
+  return transactions(
+    sr[0].when,
+    sr.map((r) => html`<div class="transaction-summary">${signing(r)}</div>`)
   );
 }
 
+/** returns informations about the given signed player */
+function signing(r: SigningRecord): TemplateResult {
+  const gs = window.$game.state!;
+  const title = `${r.team} signed:`;
+  return transaction(
+    title,
+    html`
+      <div class="cnt-pl-info">
+        ${playerInfo(gs.players[r.plId], new Date(r.when))}
+      </div>
+    `
+  );
+}
+
+/** list all renewals recorded */
 function renewals(): TemplateResult {
-  const signingsRecord = window.$game.state?.renewals ?? [];
+  const signsRec = groupBy(
+    (window.$game.state?.renewals ?? []).reverse(),
+    (e) => e.when
+  );
   return html`
     <section class="signings">
-      <h2>Re-signings:</h2>
-      ${signingsRecord.map((r) => signing(r))}
+      <h2>🗃 Re-signings:</h2>
+      ${Object.values(signsRec).map((sr) => signingsBlock(sr))}
     </section>
   `;
 }
