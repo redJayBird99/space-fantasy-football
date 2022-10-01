@@ -1,3 +1,4 @@
+import script from "./util/script";
 import { GameStateHandle } from "./game-state/game-state";
 import { appState } from "./app-state/app-state";
 import { Router } from "./pages/util/router";
@@ -18,12 +19,14 @@ declare global {
     $game: GameStateHandle;
     $appState: typeof appState;
     $PUBLIC_PATH: string;
+    $script: any; // utils for testing (and cheating)
   }
 }
 
 window.$appState = appState;
 window.$game = new GameStateHandle();
 window.$PUBLIC_PATH = "/github/";
+window.$script = script;
 
 document.documentElement.classList.add("dark");
 document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);

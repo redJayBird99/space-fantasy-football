@@ -45,6 +45,16 @@ export type SimRound = { round: number };
 type DateOffset = { years?: number; months?: number; days?: number };
 type PBool = Promise<boolean>;
 
+// TODO use it in the sim options
+/** list which event when occurs should end the simulation */
+export const endSimEvent: Partial<Record<GameEventTypes, boolean>> = {
+  skillUpdate: true,
+  seasonEnd: true,
+  seasonStart: true,
+  retiring: true,
+  draft: true,
+};
+
 export interface GameEvent {
   date: Date;
   type: GameEventTypes;
@@ -184,14 +194,14 @@ async function handleSimRound(gs: GameState, r: SimRound): PBool {
   await updateFormations(gs);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
-  return false;
+  return endSimEvent.simRound ?? false;
 }
 
 function handleSkillUpdate(gs: GameState): boolean {
   updateSkills(gs);
   enqueueSkillUpdateEvent(gs);
   gs.popStats = getPopStats(Object.values(gs.players));
-  return true;
+  return endSimEvent.skillUpdate ?? false;
 }
 
 function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
@@ -199,14 +209,15 @@ function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
   updateTeamsScouting(gs);
-  return true;
+  return endSimEvent.seasonEnd ?? false;
 }
 
 // TODO: testing the setNewFormation part
 /** prepare the season events and the team formations */
 async function handleSeasonStart(gs: GameState): PBool {
   prepareSeasonStart(gs);
-  return await setNewFormations(gs);
+  await setNewFormations(gs);
+  return endSimEvent.seasonStart ?? false;
 }
 
 /**
@@ -230,13 +241,13 @@ function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
   updateContracts(gs);
   renewExpiringContracts(gs);
   removeExpiredContracts(gs);
-  return false;
+  return endSimEvent.updateContract ?? false;
 }
 
 function handleUpdateFinances(gs: GameState): boolean {
   Object.values(gs.teams).forEach((t) => Team.updateFinances({ gs, t }));
   enqueueUpdateFinancesEvent(gs);
-  return false;
+  return endSimEvent.updateFinances ?? false;
 }
 
 /**
@@ -251,7 +262,7 @@ function handleSignings(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "signings", { days });
   }
 
-  return false;
+  return endSimEvent.signings ?? false;
 }
 
 // retires some old players and remove it from the game
@@ -265,7 +276,7 @@ function handleRetiring(gs: GameState): boolean {
       delete gs.players[p.id];
     });
 
-  return true;
+  return endSimEvent.retiring ?? false;
 }
 
 // differently from the nba only one player get drafted
@@ -277,7 +288,7 @@ function handleDraft(gs: GameState): boolean {
     players = players.filter((p) => plr !== p);
   });
 
-  return true;
+  return endSimEvent.draft ?? false;
 }
 
 /**  when the trade window is open try to do some trade between teams */
@@ -289,36 +300,35 @@ function handleTrade(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
 
-  return false;
+  return endSimEvent.trade ?? false;
 }
 
 /** open the trade window and enqueue a trade event */
 function handleOpenTradeWindow(gs: GameState): boolean {
   gs.flags.openTradeWindow = true;
   enqueueEventFor(gs, gs.date, "trade", { days: 1 });
-  return false;
+  return endSimEvent.openTradeWindow ?? false;
 }
 
 /** open the free signing window setting the gameState flag to false and enqueue a signings event */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
-  return false;
+  return endSimEvent.openFreeSigningWindow ?? false;
 }
 
 /** close the free signing window setting the gameState flag to false */
 function handleCloseFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = false;
-  return false;
+  return endSimEvent.closeFreeSigningWindow ?? false;
 }
 
 /** find a new formation for each team asynchronously and make the sim wait until they are setted */
-export async function setNewFormations(gs: GameState): PBool {
+export async function setNewFormations(gs: GameState) {
   simWait = true;
   const forms = await fetchNewFormations({ gs, teams: Object.keys(gs.teams) });
   forms.forEach((res) => setFormation(gs.teams[res.team], res.f)); // set the given formation to each team in the gs
   simWait = false;
-  return true;
 }
 
 /** update (swapping and filling spots) the current formations or set new ones
