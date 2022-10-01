@@ -283,15 +283,26 @@ describe("enqueueSkillUpdateEvent()", () => {
 });
 
 describe("storeEndedSeasonSchedule()", () => {
-  test("should save the ended schedule on the gameState.schedules with key the season years", () => {
-    const s = [
-      { date: startD, matchIds: [] },
-      { date: endD, matchIds: [] },
-    ];
+  const s = [
+    { date: startD, matchIds: [] },
+    { date: endD, matchIds: [] },
+  ];
+
+  test("should save gameState.schedules.now as gameState.schedules.now[ended season years]", () => {
     st.schedules.now = s;
-    _sm.storeEndedSeasonSchedule(st);
+    _sm.storeEndedSeason(st);
     const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
     expect(st.schedules[seasonYears]).toEqual(s);
+  });
+
+  test("should save gameState.transactions.now as gameState.transactions[ended season years]", () => {
+    st.schedules.now = s;
+    st.transactions.now = { trades: [], signings: [], renewals: [] };
+    const ts = st.transactions.now;
+    _sm.storeEndedSeason(st);
+    const seasonYears = `${startD.getFullYear()}-${endD.getFullYear()}`;
+    expect(st.transactions[seasonYears]).toBe(ts);
+    expect(st.transactions.now).not.toBe(ts);
   });
 });
 

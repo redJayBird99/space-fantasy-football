@@ -23,6 +23,16 @@ type TradeSideRecord = { team: string; plIds: string[] };
 /** when is the a dateString */
 export type TradeRecord = { when: string; sides: TradeSideRecord[] };
 export type SigningRecord = { when: string; plId: string; team: string };
+export type TransRecord = {
+  // are all sorted from the least recent to most recent
+  trades: TradeRecord[];
+  signings: SigningRecord[];
+  renewals: SigningRecord[];
+};
+/** the current season key is "now", for any other season key: {startYear}-{endYear} */
+type Transactions = {
+  [season: string]: TransRecord;
+};
 
 // instances of this interface are saved as JSON on the user machine, this is
 // the game save
@@ -34,12 +44,10 @@ class GameState {
   players: { [id: string]: Player } = {};
   teams: { [name: string]: Team } = {};
   contracts: { [playerId: string]: Contract } = {};
-  schedules: { [year: string]: ScheduleRound[] } = {};
+  /** the current season key is "now", for any other season key: {startYear}-{endYear} */
+  schedules: { [season: string]: ScheduleRound[] } = {};
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
-  trades: TradeRecord[] = []; // sorted from the least recent to most recent
-  signings: SigningRecord[] = []; // sorted from the least recent to most recent
-  renewals: SigningRecord[] = []; // sorted from the least recent to most recent
   userTeam: string;
   flags = { openTradeWindow: false, openFreeSigningWindow: true };
   popStats: PopStats = {
@@ -51,6 +59,10 @@ class GameState {
     lowestScore: 45,
     highestScore: 75,
     standardDev: 5.6,
+  };
+
+  transactions: Transactions = {
+    now: { trades: [], signings: [], renewals: [] },
   };
 
   constructor(date: Date, userTeam = "", name = "") {
@@ -218,11 +230,7 @@ class GameStateHandle {
 
   /** send the state to the other open tabs */
   private sendState(): void {
-    try {
-      this.state && sendSyncUpdatedGame(this.state);
-    } catch (e: any) {
-      // only to make jest shut up
-    }
+    this.state && sendSyncUpdatedGame(this.state);
   }
 
   /**
@@ -268,13 +276,14 @@ class GameStateHandle {
    * the returned JSON doesn't contain some not essential data from the game state
    * (like formations expect the userTeam one)
    */
-  getJSONSave(): string {
+  private getJSONSave(): string {
     const gs = this._state;
+
     function remover(this: any, k: string, v: unknown) {
       return k === "formation" && gs?.userTeam !== this.name ? undefined : v;
     }
 
-    return JSON.stringify(this._state, remover);
+    return JSON.stringify(gs, remover);
   }
 
   /** init a new gameSate and try to save it on the db */

@@ -195,7 +195,7 @@ function handleSkillUpdate(gs: GameState): boolean {
 }
 
 function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
-  storeEndedSeasonSchedule(gs);
+  storeEndedSeason(gs);
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
   updateTeamsScouting(gs);
@@ -280,13 +280,11 @@ function handleDraft(gs: GameState): boolean {
   return true;
 }
 
-/**
- * when the trade window is open try to do some trade between teams
- */
+/**  when the trade window is open try to do some trade between teams */
 function handleTrade(gs: GameState): boolean {
   if (gs.flags.openTradeWindow) {
     makeTrades(gs).forEach((t) => {
-      gs.trades.push(toTradeRecord(gs, t, gs.date));
+      gs.transactions.now.trades.push(toTradeRecord(gs, t, gs.date));
     });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
@@ -294,35 +292,27 @@ function handleTrade(gs: GameState): boolean {
   return false;
 }
 
-/**
- * open the trade window and enqueue a trade event
- */
+/** open the trade window and enqueue a trade event */
 function handleOpenTradeWindow(gs: GameState): boolean {
   gs.flags.openTradeWindow = true;
   enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   return false;
 }
 
-/**
- * open the free signing window setting the gameState flag to false and enqueue a signings event
- */
+/** open the free signing window setting the gameState flag to false and enqueue a signings event */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
   return false;
 }
 
-/**
- * close the free signing window setting the gameState flag to false
- */
+/** close the free signing window setting the gameState flag to false */
 function handleCloseFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = false;
   return false;
 }
 
-/**
- * find a new formation for each team asynchronously and make the sim wait until they are setted,
- */
+/** find a new formation for each team asynchronously and make the sim wait until they are setted */
 export async function setNewFormations(gs: GameState): PBool {
   simWait = true;
   const forms = await fetchNewFormations({ gs, teams: Object.keys(gs.teams) });
@@ -361,7 +351,7 @@ function renewExpiringContracts(gs: GameState): void {
   const when = gs.date.toDateString();
   Object.values(gs.teams).forEach((t) => {
     Team.renewExpiringContracts({ gs, t }).forEach((p) =>
-      gs.renewals.push({ team: t.name, plId: p.id, when })
+      gs.transactions.now.renewals.push({ team: t.name, plId: p.id, when })
     );
   });
 }
@@ -449,7 +439,8 @@ function teamsSignFreeAgents(gs: GameState): void {
     if (signed) {
       free = free.filter((p) => p !== signed);
       const when = gs.date.toDateString();
-      gs.signings.push({ when, plId: signed.id, team: team.name });
+      const record = { when, plId: signed.id, team: team.name };
+      gs.transactions.now.signings.push(record);
     }
   });
 }
@@ -532,15 +523,19 @@ function newSeasonSchedule(gs: GameState, teams: string[]): void {
   GameState.saveSchedule(gs, new Schedule(teams, start), "now");
 }
 
-// store the current season on the gameState.schedules with key {startYear}-{endYear}
-// only if the current season (as gs.schedules.now) exists
-function storeEndedSeasonSchedule(gs: GameState): void {
+/**
+ * store season history, both the current season schedule and transactions
+ * are moved to key {startYear}-{endYear}, a new current season transactions is inited
+ */
+function storeEndedSeason(gs: GameState): void {
   const scd = gs.schedules.now;
 
   if (scd) {
     const startY = scd[0].date.getFullYear();
     const endY = scd[scd.length - 1].date.getFullYear();
     gs.schedules[`${startY}-${endY}`] = gs.schedules.now;
+    gs.transactions[`${startY}-${endY}`] = gs.transactions.now;
+    gs.transactions.now = { trades: [], signings: [], renewals: [] };
   }
 }
 
@@ -584,6 +579,6 @@ export const exportedForTesting = {
   enqueueSeasonStartEvent,
   enqueueUpdateFinancesEvent,
   enqueueEventFor,
-  storeEndedSeasonSchedule,
+  storeEndedSeason,
   newSeasonSchedule,
 };

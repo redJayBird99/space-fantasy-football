@@ -2,18 +2,26 @@ sff-transactions {
   display: block;
 }
 
-[slot="in-main"] {
+.cnt-season-sel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.ctn-transactions {
   display: flex;
   gap: 10px;
   justify-content: center;
 }
 
-[slot="in-main"] > * {
+.ctn-transactions > * {
   flex-grow: 1;
 }
 
 @media screen and (max-width: 70rem) {
-  [slot="in-main"] {
+  .ctn-transactions {
     flex-wrap: wrap;
   }
 }
@@ -71,7 +79,7 @@ sff-transactions {
   justify-content: space-between;
 }
 
-[slot="in-main"] > *,
+.ctn-transactions > *,
 .trade-summary > *,
 .transaction-content > * {
   min-width: 0;
