@@ -45,7 +45,7 @@ class Transactions extends HTMLElement {
         <select id="season" @change=${this.onSeasonChange}>
           ${Object.keys(window.$game.state!.transactions).map(
             (k) =>
-              html`<option ?selected=${k === this.season}>
+              html`<option ?selected=${k === this.season} value=${k}>
                 ${k === "now" ? "current" : k}
               </option>`
           )}

@@ -1,0 +1,73 @@
+.cnt-season-sel {
+  margin: 0.5rem 0;
+}
+
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+  width: 100%;
+  max-width: 50rem;
+}
+
+tr:nth-of-type(even) {
+  background-color: var(--dk-bg-color-700, var(--lt-dg-color-100));
+}
+
+td,
+th {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.impv-symbol {
+  border-bottom: 2px solid;
+  display: inline-block;
+  width: 1.5rem;
+}
+
+td:nth-of-type(1) {
+  height: 2rem;
+}
+
+.small-col {
+  width: 3.4rem;
+}
+
+th:last-child {
+  width: 7rem;
+}
+
+@media screen and (max-width: 30rem) {
+  .small-col {
+    width: 12%;
+  }
+
+  th:last-child {
+    width: 20%;
+  }
+}
+
+th:nth-of-type(2),
+td:nth-of-type(2) {
+  text-align: start;
+}
+
+td:last-child {
+  font-weight: bold;
+}
+
+.pick-n {
+  background-color: var(--dk-primary-color-300, var(--dk-primary-color-300));
+  border-radius: 8px;
+  color: var(--dk-on-primary-color);
+  display: inline-block;
+  font-weight: bold;
+  margin: 2px 0;
+  width: 1.8rem;
+}
+
+a {
+  color: white;
+}

@@ -282,12 +282,17 @@ function handleRetiring(gs: GameState): boolean {
 // differently from the nba only one player get drafted
 function handleDraft(gs: GameState): boolean {
   let players = createDraftPlayers(gs);
+  gs.drafts.now = { when: gs.date.toDateString(), picks: [] };
 
-  shuffle(Object.values(gs.teams)).forEach((t) => {
+  shuffle(Object.values(gs.teams)).forEach((t, i) => {
     const plr = Team.pickDraftPlayer({ gs, t }, players);
+    gs.drafts.now.picks.push({ team: t.name, plId: plr.id, n: i + 1 });
     players = players.filter((p) => plr !== p);
   });
 
+  players.forEach((p) =>
+    gs.drafts.now.picks.push({ team: "", n: NaN, plId: p.id })
+  );
   return endSimEvent.draft ?? false;
 }
 
@@ -534,8 +539,8 @@ function newSeasonSchedule(gs: GameState, teams: string[]): void {
 }
 
 /**
- * store season history, both the current season schedule and transactions
- * are moved to key {startYear}-{endYear}, a new current season transactions is inited
+ * store season history, both the current season schedule, transactions and drafts
+ * are moved to key {startYear}-{endYear}, new entries for transactions and drafts are inited
  */
 function storeEndedSeason(gs: GameState): void {
   const scd = gs.schedules.now;
@@ -546,6 +551,8 @@ function storeEndedSeason(gs: GameState): void {
     gs.schedules[`${startY}-${endY}`] = gs.schedules.now;
     gs.transactions[`${startY}-${endY}`] = gs.transactions.now;
     gs.transactions.now = { trades: [], signings: [], renewals: [] };
+    gs.drafts[`${startY}-${endY}`] = gs.drafts.now;
+    gs.drafts.now = { when: "", picks: [] };
   }
 }
 

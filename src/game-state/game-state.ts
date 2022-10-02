@@ -18,6 +18,9 @@ const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
 const INIT_HOUR = 10;
 type ScheduleRound = { date: Date; matchIds: string[] };
+/** team is an empty string when not picked and n NaN */
+export type DraftPickRecord = { team: string; plId: string; n: number };
+export type DraftRecord = { when: string; picks: DraftPickRecord[] };
 /** the plIds is what the team is giving */
 type TradeSideRecord = { team: string; plIds: string[] };
 /** when is the a dateString */
@@ -60,6 +63,10 @@ class GameState {
     highestScore: 75,
     standardDev: 5.6,
   };
+
+  /** current season key is "now", any other season key: {startYear}-{endYear},
+   * in ascending order by pick number,  the actual date is setted when the draft happens */
+  drafts: { [season: string]: DraftRecord } = { now: { when: "", picks: [] } };
 
   transactions: Transactions = {
     now: { trades: [], signings: [], renewals: [] },
