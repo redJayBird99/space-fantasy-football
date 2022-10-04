@@ -2,12 +2,25 @@
   margin: 0.5rem 0;
 }
 
+.cnt-draft-info {
+  display: flex;
+  justify-content: center;
+}
+
+.cnt-draft-players {
+  flex-grow: 1;
+  max-width: 50rem;
+}
+
 table {
   border-collapse: collapse;
   table-layout: fixed;
   text-align: center;
   width: 100%;
-  max-width: 50rem;
+}
+
+.cnt-lottery {
+  padding: 0 1rem;
 }
 
 tr:nth-of-type(even) {
@@ -29,23 +42,49 @@ th {
 
 td:nth-of-type(1) {
   height: 2rem;
+  padding: 2px 0;
 }
 
-.small-col {
-  width: 3.4rem;
+th:nth-of-type(3),
+th:nth-of-type(4),
+th:nth-of-type(5),
+td:nth-of-type(3),
+td:nth-of-type(4),
+td:nth-of-type(5) {
+  width: 2.2rem;
+  font-size: 0.85rem;
 }
 
-th:last-child {
+th:nth-of-type(1) {
+  width: 3rem;
+}
+
+th:nth-of-type(7) {
+  width: 4.2rem;
+}
+
+th:nth-of-type(6) {
   width: 7rem;
 }
 
-@media screen and (max-width: 30rem) {
-  .small-col {
-    width: 12%;
+@media screen and (max-width: 52rem) {
+  th:nth-of-type(1) {
+    width: 10%;
   }
 
-  th:last-child {
-    width: 20%;
+  th:nth-of-type(3),
+  th:nth-of-type(4),
+  th:nth-of-type(5) {
+    width: 8%;
+  }
+
+  th:nth-of-type(6),
+  th:nth-of-type(7) {
+    width: 15%;
+  }
+
+  .cnt-draft-info {
+    flex-wrap: wrap;
   }
 }
 
@@ -54,20 +93,45 @@ td:nth-of-type(2) {
   text-align: start;
 }
 
-td:last-child {
-  font-weight: bold;
-}
-
 .pick-n {
   background-color: var(--dk-primary-color-300, var(--dk-primary-color-300));
   border-radius: 8px;
   color: var(--dk-on-primary-color);
   display: inline-block;
   font-weight: bold;
-  margin: 2px 0;
   width: 1.8rem;
 }
 
 a {
   color: white;
+}
+
+.cnt-lottery > h2 {
+  margin: 0 0 5px 0;
+}
+
+.cnt-lottery > ol {
+  margin: 0;
+  padding: 0;
+}
+
+.lottery > li {
+  padding: 0.4rem 1rem;
+  list-style-position: inside;
+  white-space: nowrap;
+}
+
+.lottery > li:nth-of-type(odd) {
+  background-color: var(--dk-bg-color-700, var(--lt-dg-color-100));
+}
+
+[data-user] {
+  font-weight: bold;
+}
+
+.lottery > [data-user][data-user] {
+  background-color: var(--dk-primary-color-300, var(--dk-primary-color-300));
+  color: var(--dk-on-primary-color);
+  font-weight: bold;
+  margin: 3px 0;
 }

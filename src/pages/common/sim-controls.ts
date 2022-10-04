@@ -7,6 +7,7 @@ import {
   isSimulating,
   setTickInterval,
   DEFAULT_TICK_INTERVAL,
+  isSimDisabled,
 } from "../../game-sim/game-simulation";
 import style from "./sim-controls.css";
 
@@ -77,8 +78,17 @@ class PlaySim extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
+  }
+
+  gameStateUpdated(): void {
+    this.render();
   }
 
   handleCloseModal = () => {
@@ -102,7 +112,7 @@ class PlaySim extends HTMLElement {
 
   /** only play a simulation at the time */
   handlePlayClick = () => {
-    if (isSimulating()) {
+    if (isSimulating() || isSimDisabled(window.$game.state!)) {
       return;
     }
 
@@ -133,6 +143,7 @@ class PlaySim extends HTMLElement {
       html`
         <button
           @click=${this.handlePlayClick}
+          ?disabled=${isSimDisabled(window.$game.state!)}
           class="btn btn--acc"
           aria-label="play the simulation"
         >

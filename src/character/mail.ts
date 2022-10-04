@@ -35,3 +35,7 @@ export function welcome(team: string, send: Date): Mail {
     send
   );
 }
+
+export function mustDraft(send: Date): Mail {
+  return newMail(mails["must-draft"], send);
+}

@@ -1,5 +1,4 @@
 import {
-  // GameStateHandle,
   GameState,
   createPlayers,
   toTradeRecord,
@@ -16,6 +15,7 @@ import {
   fetchNewFormations,
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
+import { mustDraft } from "../character/mail";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -68,6 +68,12 @@ let simWait = false;
 /** when true stop the current simulation */
 let simCtrl = { stop: false };
 
+/** check if the gs has flags that prevent the simulation from running,
+ * usually used when waiting for some user action */
+export function isSimDisabled(gs: GameState) {
+  return gs.flags.userDrafting;
+}
+
 export function setTickInterval(v: number) {
   tickInterval = v;
 }
@@ -103,6 +109,10 @@ export function simulate(
   onEnd: (gs: Readonly<GameState>) => unknown,
   duration?: number
 ): () => void {
+  if (isSimDisabled(gs)) {
+    return () => {};
+  }
+
   const thisSimCtrl = simCtrl; // bind a new reference to the lexical environment
   const stop = () => (thisSimCtrl.stop = true);
 
@@ -163,7 +173,7 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
   } else if (evt.type === "skillUpdate") {
     return handleSkillUpdate(gs);
   } else if (evt.type === "seasonEnd") {
-    return handleSeasonEnd(gs, evt);
+    return handleSeasonEnd(gs);
   } else if (evt.type === "seasonStart") {
     return await handleSeasonStart(gs);
   } else if (evt.type === "updateContract") {
@@ -204,7 +214,7 @@ function handleSkillUpdate(gs: GameState): boolean {
   return endSimEvent.skillUpdate ?? false;
 }
 
-function handleSeasonEnd(gs: GameState, e: GameEvent): boolean {
+function handleSeasonEnd(gs: GameState): boolean {
   storeEndedSeason(gs);
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
@@ -235,6 +245,7 @@ export function prepareSeasonStart(gs: GameState): void {
   enqueueEventFor(gs, endDate, "draft", { days: 3 });
   enqueueEventFor(gs, endDate, "openTradeWindow", { days: 4 });
   enqueueEventFor(gs, endDate, "openFreeSigningWindow", { days: 4 });
+  prepareDraft(gs);
 }
 
 function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
@@ -279,20 +290,20 @@ function handleRetiring(gs: GameState): boolean {
   return endSimEvent.retiring ?? false;
 }
 
-// differently from the nba only one player get drafted
+/** differently from the nba only one player get drafted, it stops on the user turn */
 function handleDraft(gs: GameState): boolean {
-  let players = createDraftPlayers(gs);
-  gs.drafts.now = { when: gs.date.toDateString(), picks: [] };
+  // a clone because the lottery get mutated by draftPlayer
+  for (const team of gs.drafts.now.lottery.slice()) {
+    if (team === gs.userTeam) {
+      gs.flags.userDrafting = true;
+      gs.mails.unshift(mustDraft(gs.date));
+      GameState.enqueueGameEvent(gs, { date: gs.date, type: "draft" });
+      break;
+    }
 
-  shuffle(Object.values(gs.teams)).forEach((t, i) => {
-    const plr = Team.pickDraftPlayer({ gs, t }, players);
-    gs.drafts.now.picks.push({ team: t.name, plId: plr.id, n: i + 1 });
-    players = players.filter((p) => plr !== p);
-  });
+    draftPlayer(gs);
+  }
 
-  players.forEach((p) =>
-    gs.drafts.now.picks.push({ team: "", n: NaN, plId: p.id })
-  );
   return endSimEvent.draft ?? false;
 }
 
@@ -539,8 +550,8 @@ function newSeasonSchedule(gs: GameState, teams: string[]): void {
 }
 
 /**
- * store season history, both the current season schedule, transactions and drafts
- * are moved to key {startYear}-{endYear}, new entries for transactions and drafts are inited
+ * store season history, both the current season schedule, transactions
+ * are moved to key {startYear}-{endYear}, a new entry for transactions are inited
  */
 function storeEndedSeason(gs: GameState): void {
   const scd = gs.schedules.now;
@@ -551,9 +562,51 @@ function storeEndedSeason(gs: GameState): void {
     gs.schedules[`${startY}-${endY}`] = gs.schedules.now;
     gs.transactions[`${startY}-${endY}`] = gs.transactions.now;
     gs.transactions.now = { trades: [], signings: [], renewals: [] };
-    gs.drafts[`${startY}-${endY}`] = gs.drafts.now;
-    gs.drafts.now = { when: "", picks: [] };
   }
+}
+
+/** creates a new draft and draftable players and store the old one when it exists,
+ * only if a draft event was enqueued on the game state */
+function prepareDraft(gs: GameState): void {
+  if (gs.drafts.now) {
+    gs.drafts[`${new Date(gs.drafts.now.when).getFullYear()}`] = gs.drafts.now;
+  }
+
+  const date = gs.eventQueue.find((e) => e.type === "draft")?.date;
+
+  if (date) {
+    gs.drafts.now = {
+      when: date?.toDateString(),
+      lottery: shuffle(Object.keys(gs.teams)), // show the lottery only before the draft day
+      picks: createDraftPlayers(gs).map((p) => ({
+        team: "",
+        plId: p.id,
+        n: NaN,
+      })),
+      picked: [],
+    };
+  }
+}
+
+/**
+ * the next team in lottery pick one available player and update the game state draft,
+ * the picked player get moved to the picked list and the team removed from the lottery
+ * @param pick specify the player to pick for the next team in the lottery, it is assumed to be in draftable
+ */
+export function draftPlayer(gs: GameState, pick?: Player): void {
+  if (gs.drafts.now.lottery.length === 0) {
+    return;
+  }
+
+  const players = pick
+    ? [pick]
+    : gs.drafts.now.picks.map((p) => gs.players[p.plId]);
+  const n = gs.drafts.now.picked.length + 1;
+  const tName = gs.drafts.now.lottery.shift()!;
+  const plr = Team.pickDraftPlayer({ gs, t: gs.teams[tName] }, players);
+  const iPick = gs.drafts.now.picks.findIndex((p) => p.plId === plr.id);
+  gs.drafts.now.picks.splice(iPick, 1);
+  gs.drafts.now.picked.push({ team: tName, n, plId: plr.id });
 }
 
 export const exportedForTesting = {
@@ -598,4 +651,5 @@ export const exportedForTesting = {
   enqueueEventFor,
   storeEndedSeason,
   newSeasonSchedule,
+  prepareDraft,
 };

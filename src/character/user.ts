@@ -6,7 +6,7 @@ import { Player, getImprovabilityRating } from "./player";
 
 /**
  * estimate the player improvability rating according the user team scouting
- * @returs a value between 0 and 10
+ * @Returns a value between 0 and 10
  */
 export function getImprovability(p: Player, gs: GameState): number {
   const uTeam = gs.teams[gs.userTeam];

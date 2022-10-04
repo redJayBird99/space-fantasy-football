@@ -103,9 +103,9 @@ class PlayersTable extends HTMLElement {
    */
   headBtn(value: string, child: string | TemplateResult): TemplateResult {
     const ord = this.sortOrder(value);
-    const lbel = ord === "ascending" || ord === "" ? "descending" : "ascending";
+    const lbl = ord === "ascending" || ord === "" ? "descending" : "ascending";
     return html`
-      <button class="btn-txt ${ord}" value=${value} aria-label="sort ${lbel}">
+      <button class="btn-txt ${ord}" value=${value} aria-label="sort ${lbl}">
         ${child}
       </button>
     `;

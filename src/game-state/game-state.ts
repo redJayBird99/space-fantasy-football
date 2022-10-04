@@ -20,7 +20,13 @@ const INIT_HOUR = 10;
 type ScheduleRound = { date: Date; matchIds: string[] };
 /** team is an empty string when not picked and n NaN */
 export type DraftPickRecord = { team: string; plId: string; n: number };
-export type DraftRecord = { when: string; picks: DraftPickRecord[] };
+/** lottery is the teams' picking order  */
+export type DraftRecord = {
+  when: string;
+  picks: DraftPickRecord[]; // the available players
+  picked: DraftPickRecord[]; // the picked players removed from the picks
+  lottery: string[];
+};
 /** the plIds is what the team is giving */
 type TradeSideRecord = { team: string; plIds: string[] };
 /** when is the a dateString */
@@ -52,7 +58,12 @@ class GameState {
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
   userTeam: string;
-  flags = { openTradeWindow: false, openFreeSigningWindow: true };
+  flags = {
+    openTradeWindow: false,
+    openFreeSigningWindow: true,
+    userDrafting: false, // true when it is the user turn to pick
+  };
+
   popStats: PopStats = {
     // it uses default stats (manual testing) until they don't get inited
     // when the skills get modified this default should change too
@@ -64,10 +75,9 @@ class GameState {
     standardDev: 5.6,
   };
 
-  /** current season key is "now", any other season key: {startYear}-{endYear},
-   * in ascending order by pick number,  the actual date is setted when the draft happens */
-  drafts: { [season: string]: DraftRecord } = { now: { when: "", picks: [] } };
-
+  /** current season key is "now", any other season key: {draft-year},
+   *the draft is created at the season start */
+  drafts: { [season: string]: DraftRecord } = {};
   transactions: Transactions = {
     now: { trades: [], signings: [], renewals: [] },
   };

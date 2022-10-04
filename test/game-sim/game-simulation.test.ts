@@ -1,6 +1,7 @@
 import "../../src/game-sim/sim-worker-interface";
 import "../mock/broadcast-channel.mock";
 import {
+  draftPlayer,
   exportedForTesting as _sm,
   GameEvent,
   prepareSeasonStart,
@@ -435,7 +436,7 @@ describe("handleSeasonEnd()", () => {
   test("should enqueue a seasonStart GameEvent", () => {
     const date = new Date(startD);
     date.setFullYear(endD.getFullYear());
-    _sm.handleSeasonEnd(st, { date: endD, type: "seasonEnd" });
+    _sm.handleSeasonEnd(st);
     expect(st.eventQueue).toContainEqual({ date, type: "seasonStart" });
   });
 
@@ -545,14 +546,27 @@ describe("handleRetiring()", () => {
 });
 
 describe("handleDraft()", () => {
+  const mockSt = _gs.GameState.parse(JSON.stringify(st));
+  _gs.initTeams(mockSt, ["a", "b", "c", "d"]);
+  mockSt.eventQueue = [{ date: endD, type: "draft" }];
+
   test("every team should sign one players", () => {
-    _gs.initTeams(st, ["a", "b", "c", "d"]);
-    const teams = Object.values(st.teams);
+    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    const teams = Object.values(gs.teams);
     const cp = JSON.parse(JSON.stringify(teams));
-    _sm.handleDraft(st);
+    _sm.prepareDraft(gs); // we need to create the players
+    _sm.handleDraft(gs);
     teams.forEach((t, i) =>
       expect(t.playerIds.length).toBe(cp[i].playerIds.length + 1)
     );
+  });
+
+  test("should stop on the user team when one exists", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    _sm.prepareDraft(gs); // we need to create the players
+    const user = (gs.userTeam = gs.drafts.now.lottery[2]);
+    _sm.handleDraft(gs);
+    expect(gs.drafts.now.lottery[0]).toBe(user);
   });
 });
 
@@ -946,5 +960,53 @@ describe("simulate()", () => {
 
     // the simulation wasn't stopped
     expect(gs.date.getTime()).toBeGreaterThan(start);
+  });
+});
+
+describe("prepareDraft()", () => {
+  const mocksSt = _gs.GameState.parse(JSON.stringify(st));
+  mocksSt.drafts = { now: { when: "", picks: [], picked: [], lottery: [] } };
+  _gs.initTeams(mocksSt, ["a", "b", "c", "d"]);
+
+  test("should fill the draft properties when a draft event is enqueued", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    gs.eventQueue.push({ date: endD, type: "draft" });
+    _sm.prepareDraft(gs);
+    expect(gs.drafts.now.picks.length).toBeGreaterThan(0);
+    expect(gs.drafts.now.when).not.toBe("");
+    expect(gs.drafts.now.lottery).toHaveLength(Object.values(gs.teams).length);
+  });
+
+  test("should not modify the draft property if a draft event isn't enqueued", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    delete gs.drafts.now;
+    _sm.prepareDraft(gs);
+    expect(gs.drafts.now).toBeUndefined();
+  });
+});
+
+describe("draftPlayer()", () => {
+  const mocksSt = _gs.GameState.parse(JSON.stringify(st));
+  mocksSt.drafts = { now: { when: "", picks: [], picked: [], lottery: [] } };
+  mocksSt.eventQueue.push({ date: endD, type: "draft" });
+  _gs.initTeams(mocksSt, ["a", "b", "c", "d"]);
+
+  test("the first of the lottery should pick one draftable player and be removed", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    _sm.prepareDraft(gs);
+    const first = gs.drafts.now.lottery[0];
+    draftPlayer(gs);
+    expect(gs.drafts.now.picked).toHaveLength(1);
+    expect(gs.drafts.now.lottery).toEqual(expect.not.arrayContaining([first]));
+    expect(gs.drafts.now.picked[0].team).toBe(first);
+  });
+
+  test("when a pick is given that one should be drafted and removed from the picks", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    _sm.prepareDraft(gs);
+    const p = gs.players[gs.drafts.now.picks[0].plId];
+    draftPlayer(gs, p);
+    expect(gs.drafts.now.picked[0].plId).toBe(p.id);
+    expect(gs.drafts.now.picks.find((r) => r.plId === p.id)).toBeUndefined();
   });
 });
