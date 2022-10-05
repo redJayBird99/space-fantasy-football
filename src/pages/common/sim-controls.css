@@ -16,16 +16,11 @@
   box-sizing: border-box;
 }
 
-visual-sim,
-sim-options {
-  display: block;
-}
-
-visual-sim {
+.visual-sim {
   min-width: 20rem;
 }
 
-game-date {
+.game-date {
   background-color: var(--dk-bg-color-700, var(--lk-bg-color-100));
   border: 2px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
   border-radius: 20px / 35px 0 0 15px;
@@ -60,7 +55,7 @@ btn-sim-options > .btn {
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }
 
-sim-options {
+.sim-options {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
   border-radius: 5px;
   box-shadow: 0px 2px 4px 0px hsla(0deg, 0%, 8%, 0.25);
@@ -73,7 +68,7 @@ sim-options {
   top: calc(100% + 1px);
 }
 
-sim-options > label {
+.sim-options > label {
   position: absolute;
   top: -100%;
 }

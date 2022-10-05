@@ -1,3 +1,4 @@
+import "../mock/app-state.mock";
 import "../../src/game-sim/sim-worker-interface";
 import "../mock/broadcast-channel.mock";
 import {
@@ -869,7 +870,6 @@ describe("timeout()()", () => {
 
 describe("simulate()", () => {
   const teams = ["a", "b", "c", "d"];
-  _sm.setTickInterval(10);
 
   test("should run until an event stop it", () => {
     const st = _gs.GameState.init(teams);

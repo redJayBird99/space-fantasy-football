@@ -5,8 +5,6 @@ import * as _ps from "../util/props-state";
 import {
   simulate,
   isSimulating,
-  setTickInterval,
-  DEFAULT_TICK_INTERVAL,
   isSimDisabled,
 } from "../../game-sim/game-simulation";
 import style from "./sim-controls.css";
@@ -19,12 +17,17 @@ class SimControls extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.render();
     }
   }
 
   gameStateUpdated(): void {
     this.render();
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
   }
 
   render(): void {
@@ -33,7 +36,7 @@ class SimControls extends HTMLElement {
         <style>
           ${style}
         </style>
-        <game-date></game-date>
+        ${gameDate()}
         <play-sim></play-sim>
         <btn-sim-options></btn-sim-options>
       `,
@@ -42,38 +45,23 @@ class SimControls extends HTMLElement {
   }
 }
 
-class GameDate extends HTMLElement {
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
+/** display the current game date, but not the time (it isn't used in game) */
+function gameDate(): TemplateResult {
+  const date =
+    window.$game.state?.date.toLocaleDateString("en-GB", {
+      dateStyle: "medium",
+    }) ?? "";
 
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.render();
-  }
-
-  render(): void {
-    const date =
-      window.$game.state?.date.toLocaleDateString("en-GB", {
-        dateStyle: "medium",
-      }) ?? "";
-
-    render(html`<span>Date</span><time>${date}</time>`, this);
-  }
+  return html`<div class="game-date">
+    <span>Date</span><time>${date}</time>
+  </div>`;
 }
 
 /** the play button to start the game simulation and customizable options */
 class PlaySim extends HTMLElement {
   private simCloser: ReturnType<typeof simulate> | undefined;
-  private state = _ps.newState(
-    { childProps: _ps.newProps({} as { gs?: Readonly<GameState> }) },
-    () => this.render()
+  private state = _ps.newState({} as { simGs?: Readonly<GameState> }, () =>
+    this.render()
   );
 
   connectedCallback() {
@@ -102,12 +90,9 @@ class PlaySim extends HTMLElement {
     this.render();
   };
 
-  /** update the visual sim props with the given gs */
-  handleSimTick = (gs: Readonly<GameState>) => {
-    _ps.setState(() => {
-      _ps.setProps(() => Object.assign(this.state.childProps, { gs }));
-      return this.state;
-    });
+  /** update the sim game state */
+  handleSimTick = (simGs: Readonly<GameState>) => {
+    _ps.setState(() => Object.assign(this.state, { simGs }));
   };
 
   /** only play a simulation at the time */
@@ -130,10 +115,7 @@ class PlaySim extends HTMLElement {
   renderSim(): TemplateResult {
     return html`
       <sff-modal .closeHandler=${this.handleCloseModal}>
-        <visual-sim
-          data-modf=${this.state.childProps[_ps.MODF]}
-          .props=${this.state.childProps}
-        ></visual-sim>
+        ${visualSim(this.state.simGs)}
       </sff-modal>
     `;
   }
@@ -162,13 +144,8 @@ class BtnSimOptions extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      this.addEventListener("simOptionChanged", this.handleOptionsClick);
       this.render();
     }
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener("simOptionChanged", this.handleOptionsClick);
   }
 
   handleOptionsClick = () => {
@@ -186,7 +163,7 @@ class BtnSimOptions extends HTMLElement {
         >
           ⚙
         </button>
-        ${this.open ? html`<sim-options></sim-options>` : nothing}
+        ${this.open ? simOptions(this.handleOptionsClick) : nothing}
       `,
       this
     );
@@ -194,97 +171,55 @@ class BtnSimOptions extends HTMLElement {
 }
 
 /** show the current state of the simulation */
-class VisualSim extends HTMLElement {
-  private props?: Readonly<_ps.Props & { gs?: Readonly<GameState> }>;
-
-  connectedCallback() {
-    if (this.isConnected) {
-      this.render();
-    }
-  }
-
-  static get observedAttributes() {
-    return ["data-modf"];
-  }
-
-  attributeChangedCallback(name: string, old: string | null) {
-    // the first render is left to connectedCallback
-    if (name === "data-modf" && old !== null) {
-      this.render();
-    }
-  }
-
-  render(): void {
-    this.setAttribute("aria-live", "polite");
-    this.textContent =
-      this.props?.gs?.date.toLocaleDateString("en-GB", {
-        dateStyle: "full",
-      }) ?? "";
-  }
+function visualSim(gs?: Readonly<GameState>): TemplateResult {
+  const d = gs?.date.toLocaleDateString("en-GB", { dateStyle: "full" }) ?? "";
+  return html`<div class="visual-sim" aria-live="polite">${d}</div>`;
 }
 
 /**
- * a simulation options menu for user customization,
- * it fires a simOptionChanged event on user change
+ * a simulation options menu for user customization
+ * @param onApply called when the apply btn is clicked
  */
-class SimOptions extends HTMLElement {
-  connectedCallback() {
-    if (this.isConnected) {
-      this.render();
-    }
-  }
-
-  /** update the state of the simOptions with what the user chooses */
-  handleClickApply = () => {
-    const dur = this.querySelector("#js-sim-duration") as HTMLSelectElement;
-    const speed = this.querySelector("#js-sim-speed") as HTMLSelectElement;
+function simOptions(onApply: () => void): TemplateResult {
+  /** update the simOptions with what the user chooses and call the onApply */
+  const handleClickApply = (e: Event) => {
+    const cnt = (e.target as HTMLElement).parentElement!;
+    const dur = cnt.querySelector("#js-sim-duration") as HTMLSelectElement;
+    const speed = cnt.querySelector("#js-sim-speed") as HTMLSelectElement;
     window.$appState.simOptions.duration = Number(dur.value);
-    window.$appState.simOptions.speed = Number(speed.value);
-    setTickInterval(DEFAULT_TICK_INTERVAL / window.$appState.simOptions.speed);
-    this.dispatchEvent(new CustomEvent("simOptionChanged", { bubbles: true }));
+    window.$appState.simOptions.tickInterval = Number(speed.value);
+    onApply();
   };
 
-  /** check if the value is a current setted simOption */
-  checkIfSelected(value: unknown): boolean {
-    return (
-      value === window.$appState.simOptions.duration ||
-      value === window.$appState.simOptions.speed
-    );
-  }
+  return html`
+    <section class="sim-options">
+      <label for="js-sim-duration">choose a simulation duration</label>
+      <select id="js-sim-duration">
+        ${simSelectOptions(Object.entries(simOps.duration))}
+      </select>
+      <label for="js-sim-speed">choose a simulation speed</label>
+      <select selected id="js-sim-speed">
+        ${simSelectOptions(Object.entries(simOps.speed))}
+      </select>
+      <button class="btn btn--acc" @click=${handleClickApply}>apply</button>
+    </section>
+  `;
+}
 
-  renderOptions(entries: [string, number][]): TemplateResult[] {
-    return entries.map((e) =>
-      this.checkIfSelected(e[1])
-        ? html`<option selected value=${e[1]}>(current) ${e[0]}</option>`
-        : html`<option value=${e[1]}>${e[0]}</option>`
-    );
-  }
+/** render the selectable sim option  */
+function simSelectOptions(options: [string, number][]): TemplateResult[] {
+  const ops = window.$appState.simOptions;
+  const selected = (v: unknown) => v === ops.duration || v === ops.tickInterval;
 
-  render(): void {
-    render(
-      html`
-        <label for="js-sim-duration">choose a simulation duration</label>
-        <select id="js-sim-duration">
-          ${this.renderOptions(Object.entries(simOps.duration))}
-        </select>
-        <label for="js-sim-speed">choose a simulation speed</label>
-        <select selected id="js-sim-speed">
-          ${this.renderOptions(Object.entries(simOps.speed))}
-        </select>
-        <button class="btn btn--acc" @click=${this.handleClickApply}>
-          apply
-        </button>
-      `,
-      this
-    );
-  }
+  return options.map((e) =>
+    selected(e[1])
+      ? html`<option selected value=${e[1]}>(current) ${e[0]}</option>`
+      : html`<option value=${e[1]}>${e[0]}</option>`
+  );
 }
 
 if (!customElements.get("sim-controls")) {
   customElements.define("sim-controls", SimControls);
   customElements.define("play-sim", PlaySim);
-  customElements.define("visual-sim", VisualSim);
-  customElements.define("sim-options", SimOptions);
-  customElements.define("game-date", GameDate);
   customElements.define("btn-sim-options", BtnSimOptions);
 }

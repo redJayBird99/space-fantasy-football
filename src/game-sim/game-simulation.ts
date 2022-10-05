@@ -19,8 +19,6 @@ import { mustDraft } from "../character/mail";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
-export const DEFAULT_TICK_INTERVAL = 500; // two ticks per second
-export let tickInterval = DEFAULT_TICK_INTERVAL; // TODO: the user should be able to customize it
 
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;
@@ -74,10 +72,6 @@ export function isSimDisabled(gs: GameState) {
   return gs.flags.userDrafting;
 }
 
-export function setTickInterval(v: number) {
-  tickInterval = v;
-}
-
 /** check if the previous called simulate() function is still simulating */
 export function isSimulating(): boolean {
   return simOn;
@@ -125,7 +119,7 @@ export function simulate(
 
   setTimeout(async function run() {
     if (simWait) {
-      setTimeout(run, tickInterval);
+      setTimeout(run, window.$appState.simOptions.tickInterval ?? 0);
     } else if (
       simCtrl.stop ||
       timeUp(gs.date.getTime()) ||
@@ -136,7 +130,7 @@ export function simulate(
       onEnd(gs);
     } else {
       onTick(gs);
-      setTimeout(run, tickInterval);
+      setTimeout(run, window.$appState.simOptions.tickInterval ?? 0);
     }
   });
 
@@ -616,7 +610,6 @@ export const exportedForTesting = {
   SEASON_END_MONTH,
   SEASON_END_DATE,
   timeout,
-  setTickInterval,
   isSimulating,
   simulate,
   process,

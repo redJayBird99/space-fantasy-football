@@ -1,6 +1,6 @@
+import appState from "./app-state/app-state";
 import script from "./util/script";
 import { GameStateHandle } from "./game-state/game-state";
-import { appState } from "./app-state/app-state";
 import { Router } from "./pages/util/router";
 import "./pages/home/home.ts";
 import "./pages/dashboard/dashboard.ts";
