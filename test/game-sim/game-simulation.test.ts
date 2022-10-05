@@ -754,80 +754,23 @@ describe("handleTrade", () => {
 });
 
 describe("handleGameEvent()", () => {
-  describe("handle simRound GameEvent", () => {
+  describe("for every true event in endSimOnEvent", () => {
+    test("should return true", async () => {
+      for (const type in _sm.endSimOnEvent) {
+        const e = {
+          date: startD,
+          type,
+          detail: type === "simRound" ? { round: 0 } : undefined,
+        };
+        expect(await _sm.handleGameEvent(st, e as GameEvent)).toBe(true);
+      }
+    });
+  });
+
+  describe("for events not defined in endSimOnEvent", () => {
     test("should return false", async () => {
-      const e = { date: startD, type: "simRound", detail: { round: 0 } };
+      const e = { date: startD, type: "updateContract" };
       expect(await _sm.handleGameEvent(st, e as GameEvent)).toBe(false);
-    });
-  });
-
-  describe("handle skillUpdate GameEvent", () => {
-    test("should return true", async () => {
-      const e: GameEvent = { date: startD, type: "skillUpdate" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(true);
-    });
-  });
-
-  describe("handle seasonEnd GameEvent", () => {
-    test("should return true for a seasonEnd type GameEvent", async () => {
-      const e: GameEvent = { date: startD, type: "seasonEnd" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(true);
-    });
-  });
-
-  describe("handle seasonStart GameEvent", () => {
-    test("should return true", async () => {
-      const e: GameEvent = { date: startD, type: "seasonStart" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(true);
-    });
-  });
-
-  describe("handle updateContract GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: startD, type: "updateContract" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle updateFinances GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: startD, type: "updateFinances" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle signings GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: startD, type: "signings" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle openTradeWindow GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: endD, type: "openTradeWindow" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle trade GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: endD, type: "trade" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle openFreeSigningWindow GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: endD, type: "openFreeSigningWindow" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
-    });
-  });
-
-  describe("handle closeFreeSigningWindow GameEvent", () => {
-    test("should return false", async () => {
-      const e: GameEvent = { date: endD, type: "closeFreeSigningWindow" };
-      expect(await _sm.handleGameEvent(st, e)).toBe(false);
     });
   });
 });
@@ -895,23 +838,21 @@ describe("simulate()", () => {
     }).then(() => expect(_sm.isSimulating()).toBe(false));
   });
 
-  test("should not elapse more than the duration with a small margin", () => {
+  test("should not elapse more than the given until", () => {
     const st = _gs.GameState.init(teams);
     const start = st.date.getTime();
-    const firstEvtTime = st.eventQueue[0].date.getTime();
-    const duration = (firstEvtTime - start) / 2;
 
     return new Promise<_gs.GameState>((resolve) => {
       _sm.simulate(
         st,
         () => {},
         (gs) => resolve(gs),
-        duration
+        "oneDay"
       );
     }).then((gs) => {
-      const margin = _sm.MAX_SIM_TIME_PER_TICK * 60 * 60 * 1000;
+      const oneDayMargin = 24 * 60 * 60 * 1000 + 1000;
       expect(gs.date.getTime()).toBeGreaterThan(start);
-      expect(gs.date.getTime()).toBeLessThan(start + duration + margin);
+      expect(gs.date.getTime()).toBeLessThan(start + oneDayMargin);
     });
   });
 
@@ -934,7 +875,6 @@ describe("simulate()", () => {
 
   test("an ended simulation returned function should not be able to stop a new simulation", async () => {
     const st = _gs.GameState.init(teams);
-    const duration = _sm.MAX_SIM_TIME_PER_TICK * 60 * 60 * 1000;
     let stop: ReturnType<typeof _sm.simulate> | undefined;
 
     let gs = await new Promise<_gs.GameState>((resolve) => {
@@ -942,7 +882,7 @@ describe("simulate()", () => {
         st,
         () => {},
         (s) => resolve(s),
-        duration
+        "seasonEnd"
       );
     });
 
@@ -953,7 +893,7 @@ describe("simulate()", () => {
         gs,
         () => {},
         (s) => resolve(s),
-        duration
+        "seasonStart"
       );
       stop?.(); // try to stop it with an old controller
     });

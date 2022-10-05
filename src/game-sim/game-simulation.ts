@@ -42,16 +42,36 @@ type GameEventTypes =
 export type SimRound = { round: number };
 type DateOffset = { years?: number; months?: number; days?: number };
 type PBool = Promise<boolean>;
+export type SimEndEvent = "oneDay" | GameEventTypes;
 
-// TODO use it in the sim options
-/** list which event when occurs should end the simulation */
-export const endSimEvent: Partial<Record<GameEventTypes, boolean>> = {
-  skillUpdate: true,
+/** the default events where the simulation end */
+const DEFAULT_END_SIM_ON_EVENT = {
   seasonEnd: true,
   seasonStart: true,
   retiring: true,
   draft: true,
-};
+  openFreeSigningWindow: true,
+  openTradeWindow: true,
+  simRound: true,
+} as const;
+
+/** customizable list of which events end the simulation */
+export let endSimOnEvent: Partial<Record<SimEndEvent, boolean>> =
+  DEFAULT_END_SIM_ON_EVENT;
+
+/** set the endSimOnEvent ending event:
+ * - when until in undefined reset to the default
+ * - when until is oneDay add it to the default
+ * - any other event overrides the default with the given one  */
+function setEndSimOnEvent(until?: SimEndEvent): void {
+  if (until && until === "oneDay") {
+    endSimOnEvent = { ...DEFAULT_END_SIM_ON_EVENT, oneDay: true };
+  } else if (until) {
+    endSimOnEvent = { [until]: true };
+  } else {
+    endSimOnEvent = DEFAULT_END_SIM_ON_EVENT;
+  }
+}
 
 export interface GameEvent {
   date: Date;
@@ -88,20 +108,21 @@ function timeout(start: number, duration?: number): (now: number) => boolean {
 
 // make sure to prevent any external mutation to the gs until the simulation end
 /**
- * it runs a single simulation asynchronously at time until some event happens,
- * the duration is reached or is ended by calling the returned function.
+ * it runs a single simulation asynchronously at time, until some endSimOnEvent happens,
+ * or it is ended by calling the returned function.
  * when a simulation is already running a new one is not created
  * @param onTick get called when the simulation handled an event or every MAX_SIM_TIME_PER_TICK
  * @param onEnd get called when the simulation end
- * @param duration game time threshold in milliseconds, it could be exceeded a little (MAX_SIM_TIME_PER_TICK amount)
+ * @param until run the sim until the given event is reached (with some
+ * exceptions like oneDay, it doesn't prevent the default from stopping the sim)
  * @returns a function that when called end the created simulation,
- * if the simulation was already ended or is a new one has no effect
+ * if the simulation was already ended or it is a new one it hasn't any effect
  */
 export function simulate(
   gs: GameState,
   onTick: (gs: Readonly<GameState>) => unknown,
   onEnd: (gs: Readonly<GameState>) => unknown,
-  duration?: number
+  until?: SimEndEvent
 ): () => void {
   if (isSimDisabled(gs)) {
     return () => {};
@@ -114,17 +135,13 @@ export function simulate(
     return stop;
   }
 
-  const timeUp = timeout(gs.date.getTime(), duration);
+  setEndSimOnEvent(until);
   simOn = true;
 
   setTimeout(async function run() {
     if (simWait) {
       setTimeout(run, window.$appState.simOptions.tickInterval ?? 0);
-    } else if (
-      simCtrl.stop ||
-      timeUp(gs.date.getTime()) ||
-      (await process(gs))
-    ) {
+    } else if (simCtrl.stop || (await process(gs))) {
       simOn = false;
       simCtrl = { stop: false }; // now thisSimCtrl can't stop the next sim
       onEnd(gs);
@@ -157,7 +174,7 @@ async function process(gs: GameState): PBool {
     t += SIM_TIME_SLICE;
   }
 
-  return gs.eventQueue.length === 0;
+  return gs.eventQueue.length === 0 || Boolean(endSimOnEvent.oneDay);
 }
 
 // returns true when a particular event handling require to momentarily stop the simulation
@@ -198,14 +215,14 @@ async function handleSimRound(gs: GameState, r: SimRound): PBool {
   await updateFormations(gs);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
-  return endSimEvent.simRound ?? false;
+  return endSimOnEvent.simRound ?? false;
 }
 
 function handleSkillUpdate(gs: GameState): boolean {
   updateSkills(gs);
   enqueueSkillUpdateEvent(gs);
   gs.popStats = getPopStats(Object.values(gs.players));
-  return endSimEvent.skillUpdate ?? false;
+  return endSimOnEvent.skillUpdate ?? false;
 }
 
 function handleSeasonEnd(gs: GameState): boolean {
@@ -213,7 +230,7 @@ function handleSeasonEnd(gs: GameState): boolean {
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
   updateTeamsScouting(gs);
-  return endSimEvent.seasonEnd ?? false;
+  return endSimOnEvent.seasonEnd ?? false;
 }
 
 // TODO: testing the setNewFormation part
@@ -221,7 +238,7 @@ function handleSeasonEnd(gs: GameState): boolean {
 async function handleSeasonStart(gs: GameState): PBool {
   prepareSeasonStart(gs);
   await setNewFormations(gs);
-  return endSimEvent.seasonStart ?? false;
+  return endSimOnEvent.seasonStart ?? false;
 }
 
 /**
@@ -246,13 +263,13 @@ function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
   updateContracts(gs);
   renewExpiringContracts(gs);
   removeExpiredContracts(gs);
-  return endSimEvent.updateContract ?? false;
+  return endSimOnEvent.updateContract ?? false;
 }
 
 function handleUpdateFinances(gs: GameState): boolean {
   Object.values(gs.teams).forEach((t) => Team.updateFinances({ gs, t }));
   enqueueUpdateFinancesEvent(gs);
-  return endSimEvent.updateFinances ?? false;
+  return endSimOnEvent.updateFinances ?? false;
 }
 
 /**
@@ -267,7 +284,7 @@ function handleSignings(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "signings", { days });
   }
 
-  return endSimEvent.signings ?? false;
+  return endSimOnEvent.signings ?? false;
 }
 
 // retires some old players and remove it from the game
@@ -281,7 +298,7 @@ function handleRetiring(gs: GameState): boolean {
       delete gs.players[p.id];
     });
 
-  return endSimEvent.retiring ?? false;
+  return endSimOnEvent.retiring ?? false;
 }
 
 /** differently from the nba only one player get drafted, it stops on the user turn */
@@ -292,13 +309,13 @@ function handleDraft(gs: GameState): boolean {
       gs.flags.userDrafting = true;
       gs.mails.unshift(mustDraft(gs.date));
       GameState.enqueueGameEvent(gs, { date: gs.date, type: "draft" });
-      break;
+      return true; // TODO: when we add the auto draft change with break
     }
 
     draftPlayer(gs);
   }
 
-  return endSimEvent.draft ?? false;
+  return endSimOnEvent.draft ?? false;
 }
 
 /**  when the trade window is open try to do some trade between teams */
@@ -310,27 +327,27 @@ function handleTrade(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
 
-  return endSimEvent.trade ?? false;
+  return endSimOnEvent.trade ?? false;
 }
 
 /** open the trade window and enqueue a trade event */
 function handleOpenTradeWindow(gs: GameState): boolean {
   gs.flags.openTradeWindow = true;
   enqueueEventFor(gs, gs.date, "trade", { days: 1 });
-  return endSimEvent.openTradeWindow ?? false;
+  return endSimOnEvent.openTradeWindow ?? false;
 }
 
 /** open the free signing window setting the gameState flag to false and enqueue a signings event */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
-  return endSimEvent.openFreeSigningWindow ?? false;
+  return endSimOnEvent.openFreeSigningWindow ?? false;
 }
 
 /** close the free signing window setting the gameState flag to false */
 function handleCloseFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = false;
-  return endSimEvent.closeFreeSigningWindow ?? false;
+  return endSimOnEvent.closeFreeSigningWindow ?? false;
 }
 
 /** find a new formation for each team asynchronously and make the sim wait until they are setted */
@@ -609,6 +626,7 @@ export const exportedForTesting = {
   SEASON_START_DATE,
   SEASON_END_MONTH,
   SEASON_END_DATE,
+  endSimOnEvent,
   timeout,
   isSimulating,
   simulate,

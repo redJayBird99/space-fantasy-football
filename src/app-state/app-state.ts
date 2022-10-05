@@ -1,6 +1,6 @@
 export default {
   simOptions: {
     tickInterval: 500, // milliseconds interval, control the sim speed
-    duration: 0, // in milliseconds, when 0 use the default (no timeout)
+    duration: "simRound" as string | undefined, // simulate until the given SimEndEvent happen
   },
 };

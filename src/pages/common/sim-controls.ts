@@ -1,11 +1,13 @@
 import { TemplateResult, render, html, nothing } from "lit-html";
 import { GameState } from "../../game-state/game-state";
 import simOps from "../../app-state/sim-options.json";
+import { daysBetween } from "../../util/math";
 import * as _ps from "../util/props-state";
 import {
   simulate,
   isSimulating,
   isSimDisabled,
+  SimEndEvent,
 } from "../../game-sim/game-simulation";
 import style from "./sim-controls.css";
 
@@ -101,14 +103,14 @@ class PlaySim extends HTMLElement {
       return;
     }
 
-    const duration = window.$appState.simOptions.duration;
     this.simCloser = simulate(
       structuredClone(window.$game.state!),
       this.handleSimTick,
       this.handleSimEnd,
-      duration === 0 ? undefined : duration
+      window.$appState.simOptions.duration as SimEndEvent | undefined
     );
 
+    window.$appState.simOptions.duration = undefined; // clean after the usage, return to the default
     this.render();
   };
 
@@ -186,7 +188,7 @@ function simOptions(onApply: () => void): TemplateResult {
     const cnt = (e.target as HTMLElement).parentElement!;
     const dur = cnt.querySelector("#js-sim-duration") as HTMLSelectElement;
     const speed = cnt.querySelector("#js-sim-speed") as HTMLSelectElement;
-    window.$appState.simOptions.duration = Number(dur.value);
+    window.$appState.simOptions.duration = dur.value;
     window.$appState.simOptions.tickInterval = Number(speed.value);
     onApply();
   };
@@ -195,7 +197,7 @@ function simOptions(onApply: () => void): TemplateResult {
     <section class="sim-options">
       <label for="js-sim-duration">choose a simulation duration</label>
       <select id="js-sim-duration">
-        ${simSelectOptions(Object.entries(simOps.duration))}
+        ${simSelectOptions(simDurationOptions())}
       </select>
       <label for="js-sim-speed">choose a simulation speed</label>
       <select selected id="js-sim-speed">
@@ -207,15 +209,70 @@ function simOptions(onApply: () => void): TemplateResult {
 }
 
 /** render the selectable sim option  */
-function simSelectOptions(options: [string, number][]): TemplateResult[] {
+function simSelectOptions(options: [string, any][]): TemplateResult[] {
   const ops = window.$appState.simOptions;
   const selected = (v: unknown) => v === ops.duration || v === ops.tickInterval;
 
   return options.map((e) =>
     selected(e[1])
-      ? html`<option selected value=${e[1]}>(current) ${e[0]}</option>`
+      ? html`<option selected value=${e[1]}>${e[0]}</option>`
       : html`<option value=${e[1]}>${e[0]}</option>`
   );
+}
+
+type durOps = [string, SimEndEvent][];
+
+/** find some sim duration options, usually are:
+ * - oneDay
+ * - one between seasonEnd or seasonStart (which one was found in the eventQueue)
+ * - and the next closest event between: draft, openFreeSigningWindow, openTradeWindow, simRound and retiring
+ */
+function simDurationOptions(): durOps {
+  // TODO this code needs refactoring
+  const eQueue = window.$game.state!.eventQueue;
+  const hasEvent = (e: SimEndEvent) => eQueue.some((evt) => evt.type === e);
+  const immediate: durOps = [
+    ["until draft", "draft"],
+    ["until free signings", "openFreeSigningWindow"],
+    ["until open trades", "openTradeWindow"],
+    ["until next match", "simRound"],
+    ["until retiring", "retiring"],
+  ];
+  const qEvt = eQueue.find((e) => immediate.find((n) => n[1] === e.type));
+  const nextEvent = immediate.find((e) => e[1] === qEvt?.type);
+
+  const defaults: durOps = [
+    ["until season end", "seasonEnd"],
+    ["until season start", "seasonStart"],
+  ];
+
+  const rst: durOps = [
+    ["one day", "oneDay"],
+    ...defaults.filter((e) => hasEvent(e[1])),
+  ];
+  nextEvent && rst.push(nextEvent);
+  return sortSimDurationOps(rst);
+}
+
+/** sort the given option by time closeness and add the missing days to
+ * reach the target ( expect for oneDay) */
+function sortSimDurationOps(ops: durOps): durOps {
+  // TODO this code needs refactoring
+  const now = window.$game.state!.date;
+  const eQueue = window.$game.state!.eventQueue;
+  const sortOps = ops
+    .map((o) => ({
+      days: daysBetween(now, eQueue.find((e) => e.type === o[1])?.date ?? now),
+      op: o,
+    }))
+    .sort((a, b) => a.days - b.days);
+  sortOps.forEach((o) => {
+    if (o.op[1] !== "oneDay") {
+      o.op[0] += o.days === 1 ? " (1 day)" : ` (${o.days} days)`;
+    }
+  });
+
+  return sortOps.map((o) => o.op);
 }
 
 if (!customElements.get("sim-controls")) {

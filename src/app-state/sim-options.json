@@ -1,10 +1,4 @@
 {
-  "duration": {
-    "until season end": 0,
-    "one month": 2592000000,
-    "one week": 604800000,
-    "one day": 86400000
-  },
   "speed": {
     "0.5x": 1000,
     "1x": 500,
