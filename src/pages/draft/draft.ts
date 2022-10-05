@@ -41,18 +41,6 @@ class Draft extends HTMLElement {
     this.render();
   };
 
-  /** when the user try to pick a player, it is assumed that the clicked player is draftable */
-  onPickClick = (e: Event): void => {
-    const gs = window.$game.state as GameState;
-    const plId = (e.target as HTMLSelectElement).value;
-
-    if (gs.flags.userDrafting) {
-      draftPlayer(gs, gs.players[plId]);
-      gs.flags.userDrafting = false;
-      window.$game.state = gs; // mutation notification
-    }
-  };
-
   renderSeasonSelector(): TemplateResult {
     return html`
       <div class="cnt-season-sel">
@@ -81,7 +69,7 @@ class Draft extends HTMLElement {
           <div slot="in-main">
             ${this.renderSeasonSelector()}
             <div class="cnt-draft-info">
-              ${draftTable(draft, this.onPickClick)} ${lottery(draft.lottery)}
+              ${draftTable(draft)} ${lottery(draft.lottery)}
             </div>
           </div>
         </sff-game-page>
@@ -91,7 +79,20 @@ class Draft extends HTMLElement {
   }
 }
 
-function draftTable(dft: DraftRecord, onPick: onEvt): TemplateResult {
+/** handle the user drafting a player, it is assumed that the clicked draft btn
+ * contain the id of a draftable */
+function onDraftClick(e: Event): void {
+  const gs = window.$game.state as GameState;
+  const plId = (e.target as HTMLButtonElement).value;
+
+  if (gs.flags.userDrafting) {
+    draftPlayer(gs, gs.players[plId]);
+    gs.flags.userDrafting = false;
+    window.$game.state = gs; // mutation notification
+  }
+}
+
+function draftTable(dft: DraftRecord): TemplateResult {
   return html`
     <div class="cnt-draft-players">
       <table>
@@ -105,7 +106,7 @@ function draftTable(dft: DraftRecord, onPick: onEvt): TemplateResult {
           <th>draft</th>
         </tr>
         ${dft.picked.map((d) => plrRow(d, new Date(dft.when)))}
-        ${dft.picks.map((d) => plrRow(d, new Date(dft.when), onPick))}
+        ${dft.picks.map((d) => plrRow(d, new Date(dft.when), onDraftClick))}
       </table>
     </div>
   `;
@@ -141,6 +142,7 @@ function plrRow(
           ?disabled=${!p || !onPick || !gs.flags.userDrafting}
           @click=${onPick}
           aria-label="draft player"
+          value=${rec.plId}
         >
           Draft
         </button>
