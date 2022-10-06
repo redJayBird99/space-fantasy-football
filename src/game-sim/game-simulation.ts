@@ -25,7 +25,7 @@ const SEASON_START_DATE = 1;
 const SEASON_END_MONTH = 5; // june, the distance is enough for 38 games every week from the start of the season
 const SEASON_END_DATE = 1;
 
-type GameEventTypes =
+export type GameEventTypes =
   | "simRound" // sim all the round matches
   | "skillUpdate" // increase or decrease the ability of a player
   | "seasonEnd" // end the current season, enqueue the next one and update results
@@ -166,9 +166,12 @@ async function process(gs: GameState): PBool {
 
   while (t < MAX_SIM_TIME_PER_TICK && gs.eventQueue.length !== 0) {
     if (gs.date.getTime() >= gs.eventQueue[0]?.date.getTime()) {
-      return await handleGameEvent(gs, gs.eventQueue.shift()!);
+      const gEvt = gs.eventQueue.shift()!;
+      gs.flags.onGameEvent = gEvt.type;
+      return await handleGameEvent(gs, gEvt);
     } else {
       gs.date.setHours(gs.date.getHours() + SIM_TIME_SLICE);
+      gs.flags.onGameEvent = undefined;
     }
 
     t += SIM_TIME_SLICE;

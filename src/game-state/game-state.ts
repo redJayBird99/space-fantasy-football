@@ -6,6 +6,7 @@ import {
   enqueueSkillUpdateEvent,
   setNewFormations,
   prepareSeasonStart,
+  GameEventTypes,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
@@ -62,6 +63,7 @@ class GameState {
     openTradeWindow: false,
     openFreeSigningWindow: true,
     userDrafting: false, // true when it is the user turn to pick
+    onGameEvent: undefined as GameEventTypes | undefined, // on which event the game is currently at (only for the user relevant events)
   };
 
   popStats: PopStats = {

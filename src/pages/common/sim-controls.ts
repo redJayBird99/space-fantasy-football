@@ -54,9 +54,34 @@ function gameDate(): TemplateResult {
       dateStyle: "medium",
     }) ?? "";
 
-  return html`<div class="game-date">
-    <span>Date</span><time>${date}</time>
-  </div>`;
+  return html`
+    <div class="game-date">
+      <div><span>Date</span> <time>${date}</time></div>
+      <div>${dateEventInfo()}</div>
+    </div>
+  `;
+}
+
+/** return some textual information on the current game date */
+function dateEventInfo(): string {
+  switch (window.$game.state!.flags.onGameEvent) {
+    case "draft":
+      return "Draft day";
+    case "retiring":
+      return "retiring day";
+    case "simRound":
+      return "Post-match";
+    case "openTradeWindow":
+      return "Trades are opened";
+    case "openFreeSigningWindow":
+      return "Free signing are opened";
+    case "seasonEnd":
+      return "The season is ended";
+    case "seasonStart":
+      return "The season is started";
+    default:
+      return "";
+  }
 }
 
 /** the play button to start the game simulation and customizable options */
@@ -122,17 +147,28 @@ class PlaySim extends HTMLElement {
     `;
   }
 
+  renderDisabledDescription(): TemplateResult {
+    // for now only for drafting in the future for all condition
+    return html`<p id="play-disabled-desc">
+      disabled until you draft a player
+    </p>`;
+  }
+
   render(): void {
+    const dis = isSimDisabled(window.$game.state!);
+
     render(
       html`
         <button
           @click=${this.handlePlayClick}
-          ?disabled=${isSimDisabled(window.$game.state!)}
+          ?disabled=${dis}
           class="btn btn--acc"
           aria-label="play the simulation"
+          aria-describedby=${dis ? "play-disabled-desc" : nothing}
         >
           play
         </button>
+        ${dis ? this.renderDisabledDescription() : nothing}
         ${isSimulating() ? this.renderSim() : nothing}
       `,
       this
