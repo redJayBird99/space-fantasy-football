@@ -1,4 +1,4 @@
-import { render, html, TemplateResult } from "lit-html";
+import { render, html, TemplateResult, nothing } from "lit-html";
 import style from "./draft.css";
 import "../common/game-page.ts";
 import {
@@ -10,8 +10,6 @@ import { goLink } from "../util/go-link";
 import { Player } from "../../character/player";
 import { getImprovability } from "../../character/user";
 import { draftPlayer } from "../../game-sim/game-simulation";
-
-type onEvt = (e: Event) => unknown;
 
 /** the page where all drafts are collected */
 class Draft extends HTMLElement {
@@ -80,7 +78,7 @@ class Draft extends HTMLElement {
 }
 
 /** handle the user drafting a player, it is assumed that the clicked draft btn
- * contain the id of a draftable */
+ * contain the id of a draftable player */
 function onDraftClick(e: Event): void {
   const gs = window.$game.state as GameState;
   const plId = (e.target as HTMLButtonElement).value;
@@ -106,7 +104,7 @@ function draftTable(dft: DraftRecord): TemplateResult {
           <th>draft</th>
         </tr>
         ${dft.picked.map((d) => plrRow(d, new Date(dft.when)))}
-        ${dft.picks.map((d) => plrRow(d, new Date(dft.when), onDraftClick))}
+        ${dft.picks.map((d) => plrRow(d, new Date(dft.when)))}
       </table>
     </div>
   `;
@@ -116,17 +114,13 @@ function draftTable(dft: DraftRecord): TemplateResult {
  * a table row about the given draftable player
  * @param rec
  * @param when the date of the draft
- * @param onPick if the player is draftable on click call this function
  * @returns
  */
-function plrRow(
-  rec: DraftPickRecord,
-  when: Date,
-  onPick?: onEvt
-): TemplateResult {
+function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[rec.plId];
   const link = `${window.$PUBLIC_PATH}players/player?id=${rec.plId}`;
+  const canDraft = p && gs.flags.userDrafting && p.team === "draft";
 
   // the player could be retired
   return html`
@@ -139,8 +133,8 @@ function plrRow(
       <td ?data-user=${rec.team === gs.userTeam}>${rec.team}</td>
       <td>
         <button
-          ?disabled=${!p || !onPick || !gs.flags.userDrafting}
-          @click=${onPick}
+          ?disabled=${!canDraft}
+          @click=${canDraft ? onDraftClick : nothing}
           aria-label="draft player"
           value=${rec.plId}
         >

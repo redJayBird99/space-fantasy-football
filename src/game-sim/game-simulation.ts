@@ -313,7 +313,9 @@ function handleDraftStart(gs: GameState): boolean {
   return endSimOnEvent.draftStart ?? false;
 }
 
-/** differently from the nba only one player get drafted, it stops on the user turn */
+/** differently from the nba only one player get drafted, it stops on the user turn
+ * when the draft ends all not picked player become free agents
+ */
 function handleDraft(gs: GameState): boolean {
   // a clone because the lottery get mutated by draftPlayer
   for (const team of gs.drafts.now.lottery.slice()) {
@@ -325,6 +327,12 @@ function handleDraft(gs: GameState): boolean {
     }
 
     draftPlayer(gs);
+  }
+
+  if (gs.drafts.now.lottery.length === 0) {
+    gs.drafts.now.picks.forEach(
+      (p) => (gs.players[p.plId].team = "free agent")
+    );
   }
 
   return endSimOnEvent.draft ?? false;
@@ -383,12 +391,14 @@ async function updateFormations(gs: GameState): Promise<void> {
 // add 52 new teens Players in every position area to the game and return them
 function createDraftPlayers(gs: GameState): Player[] {
   const genTeens = () => MIN_AGE + Math.floor(Math.random() * (20 - MIN_AGE));
-  return [
+  const rst = [
     ...createPlayers(gs, "goalkeeper", 6, genTeens),
     ...createPlayers(gs, "defender", 17, genTeens),
     ...createPlayers(gs, "midfielder", 17, genTeens),
     ...createPlayers(gs, "forward", 12, genTeens),
   ];
+  rst.forEach((p) => (p.team = "draft"));
+  return rst;
 }
 
 function updateContracts(gs: GameState): void {

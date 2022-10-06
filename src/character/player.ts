@@ -259,6 +259,7 @@ class Player {
 
   constructor(pos: Position, now: Date, age?: number) {
     this.name = createName();
+    /** can be a "team name" | "free agent" | "draft" */
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(age ?? createAge(), now);

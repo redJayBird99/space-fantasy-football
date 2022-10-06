@@ -42,7 +42,9 @@ class PlayersTable extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
       window.$game.addObserver(this);
-      this.players = Object.values(this.gs?.players ?? {});
+      this.players = Object.values(this.gs?.players ?? {}).filter(
+        (p) => p.team !== "draft"
+      );
       this.skillsKeys = Object.keys(this.players[0]?.skills ?? {}) as Skill[];
       this.addEventListener("click", this.onHeadClick);
       this.render();

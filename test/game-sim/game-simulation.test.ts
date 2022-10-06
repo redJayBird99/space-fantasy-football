@@ -569,6 +569,14 @@ describe("handleDraft()", () => {
     _sm.handleDraft(gs);
     expect(gs.drafts.now.lottery[0]).toBe(user);
   });
+
+  test("after the draft no picks should draftable anymore", () => {
+    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    _sm.prepareDraft(gs); // we need to create the players
+    const picks = gs.drafts.now.picks.map(p => gs.players[p.plId]);
+    _sm.handleDraft(gs);
+    expect(picks.some(p => p.team === "draft")).toBe(false);
+  });
 });
 
 describe("handleUpdateContracts()", () => {
