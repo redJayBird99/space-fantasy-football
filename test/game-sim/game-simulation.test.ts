@@ -504,11 +504,11 @@ describe("prepareSeasonStart()", () => {
     expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
   });
 
-  test("should enqueue a draft GameEvent three day after the end of the season", () => {
+  test("should enqueue a draftStart GameEvent three day after the end of the season", () => {
     prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 3);
-    expect(st.eventQueue).toContainEqual({ date, type: "draft" });
+    expect(st.eventQueue).toContainEqual({ date, type: "draftStart" });
   });
 
   test("should enqueue a openTradeWindow GameEvent four day after the end of the season", () => {
@@ -549,7 +549,7 @@ describe("handleRetiring()", () => {
 describe("handleDraft()", () => {
   const mockSt = _gs.GameState.parse(JSON.stringify(st));
   _gs.initTeams(mockSt, ["a", "b", "c", "d"]);
-  mockSt.eventQueue = [{ date: endD, type: "draft" }];
+  mockSt.eventQueue = [{ date: endD, type: "draftStart" }];
 
   test("every team should sign one players", () => {
     const gs = _gs.GameState.parse(JSON.stringify(mockSt));
@@ -910,7 +910,7 @@ describe("prepareDraft()", () => {
 
   test("should fill the draft properties when a draft event is enqueued", () => {
     const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
-    gs.eventQueue.push({ date: endD, type: "draft" });
+    gs.eventQueue.push({ date: endD, type: "draftStart" });
     _sm.prepareDraft(gs);
     expect(gs.drafts.now.picks.length).toBeGreaterThan(0);
     expect(gs.drafts.now.when).not.toBe("");
@@ -928,7 +928,7 @@ describe("prepareDraft()", () => {
 describe("draftPlayer()", () => {
   const mocksSt = _gs.GameState.parse(JSON.stringify(st));
   mocksSt.drafts = { now: { when: "", picks: [], picked: [], lottery: [] } };
-  mocksSt.eventQueue.push({ date: endD, type: "draft" });
+  mocksSt.eventQueue.push({ date: endD, type: "draftStart" });
   _gs.initTeams(mocksSt, ["a", "b", "c", "d"]);
 
   test("the first of the lottery should pick one draftable player and be removed", () => {

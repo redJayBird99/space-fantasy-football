@@ -46,11 +46,6 @@
   padding: 0.5rem 0.85rem;
 }
 
-.game-date > :last-child {
-  height: 1rem;
-  width: 100%;
-}
-
 :where(btn-sim-options, play-sim) > .btn {
   border-radius: 0;
   box-shadow: none;

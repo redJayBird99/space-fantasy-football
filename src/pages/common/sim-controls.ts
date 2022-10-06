@@ -65,22 +65,24 @@ function gameDate(): TemplateResult {
 /** return some textual information on the current game date */
 function dateEventInfo(): string {
   switch (window.$game.state!.flags.onGameEvent) {
-    case "draft":
+    case "draftStart":
       return "Draft day";
+    case "draft":
+      return "Drafting";
     case "retiring":
-      return "retiring day";
+      return "Retiring day";
     case "simRound":
       return "Post-match";
     case "openTradeWindow":
-      return "Trades are opened";
+      return "transfer window start";
     case "openFreeSigningWindow":
-      return "Free signing are opened";
+      return "free agency start";
     case "seasonEnd":
-      return "The season is ended";
+      return "End of season";
     case "seasonStart":
-      return "The season is started";
+      return "Start of season";
     default:
-      return "";
+      return "Idle";
   }
 }
 
@@ -150,7 +152,7 @@ class PlaySim extends HTMLElement {
   renderDisabledDescription(): TemplateResult {
     // for now only for drafting in the future for all condition
     return html`<p id="play-disabled-desc">
-      disabled until you draft a player
+      ⚠ disabled until you draft a player
     </p>`;
   }
 
@@ -265,12 +267,15 @@ type durOps = [string, SimEndEvent][];
  */
 function simDurationOptions(): durOps {
   // TODO this code needs refactoring
-  const eQueue = window.$game.state!.eventQueue;
+  const gs = window.$game.state!;
+  const userDrafted = !gs.drafts.now.lottery.some((t) => t === gs.userTeam);
+  const eQueue = gs.eventQueue;
   const hasEvent = (e: SimEndEvent) => eQueue.some((evt) => evt.type === e);
   const immediate: durOps = [
-    ["until draft", "draft"],
-    ["until free signings", "openFreeSigningWindow"],
-    ["until open trades", "openTradeWindow"],
+    ["until draft", "draftStart"],
+    [userDrafted ? "until end of draft" : "until your pick", "draft"],
+    ["until free agency", "openFreeSigningWindow"],
+    ["until transfer window", "openTradeWindow"],
     ["until next match", "simRound"],
     ["until retiring", "retiring"],
   ];
@@ -278,8 +283,8 @@ function simDurationOptions(): durOps {
   const nextEvent = immediate.find((e) => e[1] === qEvt?.type);
 
   const defaults: durOps = [
-    ["until season end", "seasonEnd"],
-    ["until season start", "seasonStart"],
+    ["until end of season", "seasonEnd"],
+    ["until start of season", "seasonStart"],
   ];
 
   const rst: durOps = [

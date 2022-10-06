@@ -33,6 +33,7 @@ export type GameEventTypes =
   | "updateContract" // update the duration, renewal and expiring of players contracts
   | "updateFinances" // update the team finances
   | "signings" // sim signing free players
+  | "draftStart" // enqueue the draft event
   | "draft" // sim the drafting of young players
   | "retiring" // remove retiring players
   | "trade" // sim trading player between teams
@@ -49,6 +50,7 @@ const DEFAULT_END_SIM_ON_EVENT = {
   seasonEnd: true,
   seasonStart: true,
   retiring: true,
+  draftStart: true,
   draft: true,
   openFreeSigningWindow: true,
   openTradeWindow: true,
@@ -198,6 +200,8 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
     return handleSignings(gs);
   } else if (evt.type === "retiring") {
     return handleRetiring(gs);
+  } else if (evt.type === "draftStart") {
+    return handleDraftStart(gs);
   } else if (evt.type === "draft") {
     return handleDraft(gs);
   } else if (evt.type === "trade") {
@@ -256,7 +260,7 @@ export function prepareSeasonStart(gs: GameState): void {
   enqueueEventFor(gs, endDate, "closeFreeSigningWindow", { months: -1 });
   enqueueEventFor(gs, endDate, "retiring", { days: 1 });
   enqueueEventFor(gs, endDate, "updateContract", { days: 2 });
-  enqueueEventFor(gs, endDate, "draft", { days: 3 });
+  enqueueEventFor(gs, endDate, "draftStart", { days: 3 });
   enqueueEventFor(gs, endDate, "openTradeWindow", { days: 4 });
   enqueueEventFor(gs, endDate, "openFreeSigningWindow", { days: 4 });
   prepareDraft(gs);
@@ -302,6 +306,11 @@ function handleRetiring(gs: GameState): boolean {
     });
 
   return endSimOnEvent.retiring ?? false;
+}
+
+function handleDraftStart(gs: GameState): boolean {
+  GameState.enqueueGameEvent(gs, { date: gs.date, type: "draft" });
+  return endSimOnEvent.draftStart ?? false;
 }
 
 /** differently from the nba only one player get drafted, it stops on the user turn */
@@ -586,7 +595,7 @@ function prepareDraft(gs: GameState): void {
     gs.drafts[`${new Date(gs.drafts.now.when).getFullYear()}`] = gs.drafts.now;
   }
 
-  const date = gs.eventQueue.find((e) => e.type === "draft")?.date;
+  const date = gs.eventQueue.find((e) => e.type === "draftStart")?.date;
 
   if (date) {
     gs.drafts.now = {
