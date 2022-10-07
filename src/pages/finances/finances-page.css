@@ -2,14 +2,14 @@ sff-team-finances {
   display: block;
 }
 
-[slot="in-main"] {
+.cnt-tb-fin {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   text-transform: capitalize;
 }
 
-[slot="in-main"] > * {
+.cnt-tb-fin > * {
   flex-grow: 1;
   min-width: 0;
 }

@@ -89,8 +89,7 @@ class Team {
     };
   }
 
-  // add the player to the team and the signed contract to the gameState
-  // returns the signed Contract
+  /** add the player to the team and the signed contract to the gameState, returns the signed Contract */
   static signPlayer(g: GsTmPl, wage: number, duration?: number): Contract {
     const { gs, t, p } = g;
     duration = duration ?? Math.floor(Math.random() * 4) + 1;

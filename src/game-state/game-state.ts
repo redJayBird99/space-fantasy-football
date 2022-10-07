@@ -43,6 +43,8 @@ export type TransRecord = {
 type Transactions = {
   [season: string]: TransRecord;
 };
+/** a player request to sign for the user team (used when re-signing players) */
+export type SignRequest = { plId: string; wage: number; seasons: number };
 
 // instances of this interface are saved as JSON on the user machine, this is
 // the game save
@@ -59,6 +61,8 @@ class GameState {
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
   userTeam: string;
+  /** requests to sign for the user team (only on the re-signing day) */
+  reSigning?: SignRequest[];
   flags = {
     openTradeWindow: false,
     openFreeSigningWindow: true,

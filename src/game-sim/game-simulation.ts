@@ -30,7 +30,8 @@ export type GameEventTypes =
   | "skillUpdate" // increase or decrease the ability of a player
   | "seasonEnd" // end the current season, enqueue the next one and update results
   | "seasonStart" // prepare the new season and enqueue most of the seasons events (like draft etc.)
-  | "updateContract" // update the duration, renewal and expiring of players contracts
+  | "updateContracts" // update the contract duration, the user start to re-sign players
+  | "renewals" // players contracts get re-signed and expired
   | "updateFinances" // update the team finances
   | "signings" // sim signing free players
   | "draftStart" // enqueue the draft event
@@ -46,7 +47,9 @@ type PBool = Promise<boolean>;
 export type SimEndEvent = "oneDay" | GameEventTypes;
 
 /** the default events where the simulation end */
-const DEFAULT_END_SIM_ON_EVENT = {
+const DEFAULT_END_SIM_ON_EVENT: Readonly<
+  Partial<Record<SimEndEvent, boolean>>
+> = {
   seasonEnd: true,
   seasonStart: true,
   retiring: true,
@@ -55,7 +58,8 @@ const DEFAULT_END_SIM_ON_EVENT = {
   openFreeSigningWindow: true,
   openTradeWindow: true,
   simRound: true,
-} as const;
+  updateContracts: true,
+};
 
 /** customizable list of which events end the simulation */
 export let endSimOnEvent: Partial<Record<SimEndEvent, boolean>> =
@@ -192,8 +196,10 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
     return handleSeasonEnd(gs);
   } else if (evt.type === "seasonStart") {
     return await handleSeasonStart(gs);
-  } else if (evt.type === "updateContract") {
-    return handleUpdateContracts(gs, evt);
+  } else if (evt.type === "updateContracts") {
+    return handleUpdateContracts(gs);
+  } else if (evt.type === "renewals") {
+    return handleRenewals(gs);
   } else if (evt.type === "updateFinances") {
     return handleUpdateFinances(gs);
   } else if (evt.type === "signings") {
@@ -259,18 +265,29 @@ export function prepareSeasonStart(gs: GameState): void {
   const endDate = enqueueSeasonEndEvent(gs).date;
   enqueueEventFor(gs, endDate, "closeFreeSigningWindow", { months: -1 });
   enqueueEventFor(gs, endDate, "retiring", { days: 1 });
-  enqueueEventFor(gs, endDate, "updateContract", { days: 2 });
+  enqueueEventFor(gs, endDate, "updateContracts", { days: 2 });
   enqueueEventFor(gs, endDate, "draftStart", { days: 3 });
   enqueueEventFor(gs, endDate, "openTradeWindow", { days: 4 });
   enqueueEventFor(gs, endDate, "openFreeSigningWindow", { days: 4 });
   prepareDraft(gs);
 }
 
-function handleUpdateContracts(gs: GameState, e: GameEvent): boolean {
+/** update the contracts length and add re-signing requests for the user team */
+function handleUpdateContracts(gs: GameState): boolean {
   updateContracts(gs);
-  renewExpiringContracts(gs);
+  addRenewalRequests(gs);
+  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "renewals" });
+  // return endSimOnEvent.updateContracts ?? false;
+  return true; // TODO: until auto re-sign flags is done we need always to stop here
+}
+
+/** re-sign some expiring contract and expire all others */
+function handleRenewals(gs: GameState): boolean {
+  // TODO: check the auto re-sign option instead of a bool
+  renewExpiringContracts(gs, true);
   removeExpiredContracts(gs);
-  return endSimOnEvent.updateContract ?? false;
+  gs.reSigning = undefined;
+  return endSimOnEvent.renewals ?? false;
 }
 
 function handleUpdateFinances(gs: GameState): boolean {
@@ -309,7 +326,7 @@ function handleRetiring(gs: GameState): boolean {
 }
 
 function handleDraftStart(gs: GameState): boolean {
-  GameState.enqueueGameEvent(gs, { date: gs.date, type: "draft" });
+  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "draft" });
   return endSimOnEvent.draftStart ?? false;
 }
 
@@ -322,7 +339,10 @@ function handleDraft(gs: GameState): boolean {
     if (team === gs.userTeam) {
       gs.flags.userDrafting = true;
       gs.mails.unshift(mustDraft(gs.date));
-      GameState.enqueueGameEvent(gs, { date: gs.date, type: "draft" });
+      GameState.enqueueGameEvent(gs, {
+        date: new Date(gs.date),
+        type: "draft",
+      });
       return true; // TODO: when we add the auto draft change with break
     }
 
@@ -405,13 +425,18 @@ function updateContracts(gs: GameState): void {
   Object.values(gs.contracts).forEach((c) => c.duration--);
 }
 
-// every team try to resign most expiring players according to their needs
-function renewExpiringContracts(gs: GameState): void {
+/**
+ * every team try to re-sign expiring players according to their needs
+ * @param skipUser when true the user team is skipped
+ */
+function renewExpiringContracts(gs: GameState, skipUser = false): void {
   const when = gs.date.toDateString();
   Object.values(gs.teams).forEach((t) => {
-    Team.renewExpiringContracts({ gs, t }).forEach((p) =>
-      gs.transactions.now.renewals.push({ team: t.name, plId: p.id, when })
-    );
+    if (!skipUser || t.name !== gs.userTeam) {
+      Team.renewExpiringContracts({ gs, t }).forEach((p) =>
+        gs.transactions.now.renewals.push({ team: t.name, plId: p.id, when })
+      );
+    }
   });
 }
 
@@ -642,6 +667,19 @@ export function draftPlayer(gs: GameState, pick?: Player): void {
   gs.drafts.now.picked.push({ team: tName, n, plId: plr.id });
 }
 
+/** add to the game state the renewal requests for all expiring contracts of the user team */
+function addRenewalRequests(gs: GameState): void {
+  const t = gs.teams[gs.userTeam];
+
+  if (t) {
+    gs.reSigning = Team.getExpiringPlayers({ gs, t }).map((p) => ({
+      plId: p.id,
+      wage: Player.wageRequest({ gs, t, p }),
+      seasons: Math.floor(Math.random() * 4) + 1,
+    }));
+  }
+}
+
 export const exportedForTesting = {
   MAX_SIM_TIME_PER_TICK,
   SEASON_START_MONTH,
@@ -667,6 +705,7 @@ export const exportedForTesting = {
   handleOpenTradeWindow,
   handleOpenFreeSigningWindow,
   handleCloseFreeSigningWindow,
+  handleRenewals,
   createDraftPlayers,
   simulateRound,
   updateSkills,

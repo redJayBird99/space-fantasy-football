@@ -143,6 +143,18 @@ describe("renewExpiringContracts()", () => {
     const expiring = cts.filter((c) => c.duration === 0);
     expect(renewed.length).toBeLessThan(expiring.length);
   });
+
+  test("should should skip the userTeam when skip is true", () => {
+    _gs.initTeams(st, ["Martians", "insert name"]);
+    st.userTeam = "insert name";
+    const cts = Object.values(st.contracts);
+    cts.forEach((c) => (c.duration = 0));
+    _sm.renewExpiringContracts(st, true);
+    const userContracts = Object.values(st.contracts).filter(
+      (c) => c.teamName === st.userTeam
+    );
+    expect(userContracts.some((c) => c.duration > 0)).toBe(false);
+  });
 });
 
 describe("removeExpiredContracts()", () => {
@@ -343,34 +355,34 @@ describe("enqueueSeasonStartEvent()", () => {
 describe("enqueueEventFor()", () => {
   test("should enqueue a gameEvent on the gameState for next day", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContract", { days: 1 });
+    _sm.enqueueEventFor(st, endD, "updateContracts", { days: 1 });
     const date = new Date(endD);
     date.setDate(date.getDate() + 1);
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
   });
 
   test("should enqueue a gameEvent on the gameState for next month", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContract", { months: 1 });
+    _sm.enqueueEventFor(st, endD, "updateContracts", { months: 1 });
     const date = new Date(endD);
     date.setMonth(date.getMonth() + 1);
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
   });
 
   test("should enqueue an event on the gameState for the previous day", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContract", { days: -1 });
+    _sm.enqueueEventFor(st, endD, "updateContracts", { days: -1 });
     const date = new Date(endD);
     date.setDate(date.getDate() - 1);
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
   });
 
   test("should not enqueue an event for the previous day when the date is passed", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, startD, "updateContract", { days: -1 });
+    _sm.enqueueEventFor(st, startD, "updateContracts", { days: -1 });
     const date = new Date(startD);
     date.setDate(date.getDate() - 1);
-    expect(st.eventQueue).not.toContainEqual({ date, type: "updateContract" });
+    expect(st.eventQueue).not.toContainEqual({ date, type: "updateContracts" });
   });
 });
 
@@ -497,11 +509,11 @@ describe("prepareSeasonStart()", () => {
     expect(st.eventQueue).toContainEqual({ date, type: "retiring" });
   });
 
-  test("should enqueue a updateContract GameEvent two day after the end of the season", () => {
+  test("should enqueue a updateContracts GameEvent two day after the end of the season", () => {
     prepareSeasonStart(st);
     const date = new Date(endD);
     date.setDate(date.getDate() + 2);
-    expect(st.eventQueue).toContainEqual({ date, type: "updateContract" });
+    expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
   });
 
   test("should enqueue a draftStart GameEvent three day after the end of the season", () => {
@@ -573,25 +585,47 @@ describe("handleDraft()", () => {
   test("after the draft no picks should draftable anymore", () => {
     const gs = _gs.GameState.parse(JSON.stringify(mockSt));
     _sm.prepareDraft(gs); // we need to create the players
-    const picks = gs.drafts.now.picks.map(p => gs.players[p.plId]);
+    const picks = gs.drafts.now.picks.map((p) => gs.players[p.plId]);
     _sm.handleDraft(gs);
-    expect(picks.some(p => p.team === "draft")).toBe(false);
+    expect(picks.some((p) => p.team === "draft")).toBe(false);
   });
 });
 
 describe("handleUpdateContracts()", () => {
+  const st = _gs.GameState.init("ab".split(""));
+  const cts = JSON.parse(JSON.stringify(st.contracts));
+  st.userTeam = "a";
+  _sm.handleUpdateContracts(st);
+  const ctsKeys = Object.keys(cts);
+
+  test("should update the contract length", () => {
+    ctsKeys.forEach((k) =>
+      expect(cts[k].duration).toBe(st.contracts[k].duration + 1)
+    );
+  });
+
+  test("should add all user expiring contract in gs.reSigning", () => {
+    ctsKeys
+      .filter((k) => cts[k] === st.userTeam && cts[k].duration === 0)
+      .forEach((c) => {
+        expect(st.reSigning?.some((r) => cts[r.plId])).toBe(true);
+      });
+  });
+});
+
+describe("handleRenewals()", () => {
   const st = _gs.GameState.init("abcd".split(""));
-  Object.values(st.contracts).forEach((c) => (c.duration = 1));
-  const expiring = Object.values(st.contracts).filter((c) => c.duration === 1);
-  _sm.handleUpdateContracts(st, { date: endD, type: "updateContract" });
+  const cts = Object.values(st.contracts);
+  cts.forEach((c) => (c.duration = 0));
+  _sm.handleRenewals(st);
   const renewed = Object.values(st.contracts);
 
-  test("should renew some contracts", () => {
+  test("should renew some expiring contracts", () => {
     expect(renewed.length).toBeGreaterThan(0);
   });
 
-  test("should remove some contracts", () => {
-    expect(expiring.length).toBeGreaterThan(renewed.length);
+  test("should remove some expiring contracts", () => {
+    expect(cts.length).toBeGreaterThan(renewed.length);
   });
 });
 

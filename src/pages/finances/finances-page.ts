@@ -1,4 +1,4 @@
-import { render, html, TemplateResult } from "lit-html";
+import { render, html, TemplateResult, nothing } from "lit-html";
 import { MIN_SALARY_CAP, Player, SALARY_CAP } from "../../character/player";
 import {
   Contract,
@@ -10,6 +10,7 @@ import {
 } from "../../character/team";
 import { sortByFinances, sortTeamsBy } from "../../character/util";
 import { GameState } from "../../game-state/game-state";
+import "./re-sign.ts";
 import "../common/game-page";
 import style from "./finances-page.css";
 
@@ -52,12 +53,18 @@ class TeamFinances extends HTMLElement {
 }
 
 function main(team: string): TemplateResult {
-  const t = window.$game.state?.teams[team];
+  const gs = window.$game.state;
+  const t = gs?.teams[team];
 
   return html`
-    <article slot="in-main">
-      ${t && contractsTable(t)} ${t && teamFinances(t)}
-    </article>
+    <div slot="in-main">
+      ${gs?.flags.onGameEvent === "updateContracts"
+        ? html`<re-sign></re-sign>`
+        : nothing}
+      <section class="cnt-tb-fin">
+        ${t && contractsTable(t)} ${t && teamFinances(t)}
+      </section>
+    </div>
   `;
 }
 
@@ -201,11 +208,12 @@ function teamGeneralInfo(ts: Teams): TemplateResult {
 /** table with all team players wages */
 function contractsTable(t: Team): TemplateResult {
   const gs = window.$game.state!;
+  const pls = Team.getNotExpiringPlayers({ gs, t });
   const years = Array.from(
     { length: SEASONS },
     (_, i) => gs.date.getFullYear() + i
   );
-  const pls = GameState.getTeamPlayers(gs, t.name);
+
   return html`
     <table>
       <caption>

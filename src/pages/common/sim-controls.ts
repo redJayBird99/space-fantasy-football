@@ -81,6 +81,8 @@ function dateEventInfo(): string {
       return "End of season";
     case "seasonStart":
       return "Start of season";
+    case "updateContracts":
+      return "re-signing";
     default:
       return "Idle";
   }
@@ -126,7 +128,11 @@ class PlaySim extends HTMLElement {
 
   /** only play a simulation at the time */
   handlePlayClick = () => {
-    if (isSimulating() || isSimDisabled(window.$game.state!)) {
+    if (
+      isSimulating() ||
+      isSimDisabled(window.$game.state!) ||
+      !this.askPermissionToProceed()
+    ) {
       return;
     }
 
@@ -154,6 +160,17 @@ class PlaySim extends HTMLElement {
     return html`<p id="play-disabled-desc">
       ⚠ disabled until you draft a player
     </p>`;
+  }
+
+  /** notify the user he could loose the opportunity to re-sign expiring contracts */
+  askPermissionToProceed(): boolean {
+    if (window.$game.state?.flags.onGameEvent === "updateContracts") {
+      return confirm(
+        "your team will lose all not re-signed player, are you sure you want to proceed"
+      );
+    }
+
+    return true;
   }
 
   render(): void {
@@ -263,7 +280,7 @@ type durOps = [string, SimEndEvent][];
 /** find some sim duration options, usually are:
  * - oneDay
  * - one between seasonEnd or seasonStart (which one was found in the eventQueue)
- * - and the next closest event between: draft, openFreeSigningWindow, openTradeWindow, simRound and retiring
+ * - and the next closest event between: updateContract draftStart, draft, openFreeSigningWindow, openTradeWindow, simRound and retiring
  */
 function simDurationOptions(): durOps {
   // TODO this code needs refactoring
@@ -278,6 +295,7 @@ function simDurationOptions(): durOps {
     ["until transfer window", "openTradeWindow"],
     ["until next match", "simRound"],
     ["until retiring", "retiring"],
+    ["until re-sign", "updateContracts"],
   ];
   const qEvt = eQueue.find((e) => immediate.find((n) => n[1] === e.type));
   const nextEvent = immediate.find((e) => e[1] === qEvt?.type);

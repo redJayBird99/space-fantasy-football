@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  margin: 5px 0px 8px;
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+  max-width: 50rem;
+  min-width: 28rem;
+  table-layout: fixed;
+  text-align: center;
+  width: 100%;
+}
+
+caption > h2 {
+  border-bottom: 2px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
+  border-top: 2px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
+  margin: 0;
+  padding: 1rem 0;
+  text-align: left;
+}
+
+tr:nth-of-type(even) {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+}
+
+th {
+  text-transform: capitalize;
+}
+
+td,
+th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+th:nth-of-type(1) {
+  width: 22%;
+}
+
+th:last-child {
+  width: 10%;
+}
+
+th.small-col {
+  width: 5.4%;
+}
+
+@media screen and (max-width: 34rem) {
+  th:nth-of-type(1) {
+    width: 16.5%;
+  }
+}
+
+.small-col {
+  font-size: 0.85rem;
+}
+
+th:nth-of-type(1),
+td:nth-of-type(1) {
+  font-style: italic;
+  padding-left: 0.5rem;
+  text-align: left;
+}
+
+.plr-pos {
+  text-transform: uppercase;
+}
