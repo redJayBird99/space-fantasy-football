@@ -73,7 +73,7 @@ function teamMain(team: string): TemplateResult {
 function teamPlayersTable(pls: Player[], sts: Starter[]): TemplateResult {
   sortByPosition(pls, true);
   const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
-  const starter = (p: Player) => sts.find((s) => s.pl.id === p.id);
+  const starter = (p: Player) => sts.find((s) => s.pl?.id === p.id);
 
   return html`
     <table>
@@ -127,7 +127,7 @@ function playersSkillScore(skill: string, score: number): TemplateResult {
 // TODO the color are temporary
 /** return the background-color style according to how much the player is out of position */
 function starterAtBgColor(s?: Starter): string {
-  switch (s ? getOutOfPositionPenalty(s.pl, s.sp.pos) : -1) {
+  switch (s && s.pl ? getOutOfPositionPenalty(s.pl, s.sp.pos) : -1) {
     case 0.2:
       return "background-color: red";
     case 0.1:
@@ -161,7 +161,7 @@ function starterTag(s: Starter): TemplateResult {
       class="starter-tag"
       aria-label="starting player"
     >
-      <div class="tag-name"><em>${s.pl.name}</em></div>
+      <div class="tag-name"><em>${s.pl?.name ?? "--empty--"}</em></div>
       <div class="tag-info"><span class="tag-pos">${s.sp.pos}</span> TODO</div>
     </div>
   `;

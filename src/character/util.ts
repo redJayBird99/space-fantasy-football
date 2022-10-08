@@ -6,6 +6,26 @@ const GOOD_STAT = 75;
 const BAD_STAT = 35;
 const areas = Object.keys(_p.POSITION_AREA) as _p.PositionArea[];
 
+/** find the best player from pls at the given pos */
+export function bestAtPos(
+  pls: Iterable<_p.Player>,
+  pos: _p.Position
+): _p.Player | void {
+  let bestScore = 0;
+  let bestPlayer: _p.Player | undefined;
+
+  for (const player of pls) {
+    const pScore = _p.Player.getScore(player, pos);
+
+    if (bestScore < pScore) {
+      bestPlayer = player;
+      bestScore = pScore;
+    }
+  }
+
+  return bestPlayer;
+}
+
 function createPlayers(a: _p.PositionArea, n: number): _p.Player[] {
   return Array.from({ length: n }, () =>
     _p.Player.createPlayerAt(new Date(), a)

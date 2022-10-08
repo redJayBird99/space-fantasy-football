@@ -2,7 +2,7 @@ import { Player, Position } from "./player";
 
 /** the player spot in a formation */
 export type Spot = Readonly<{ pos: Position; row: number; col: number }>;
-export type Starter = { pl: Player; sp: Spot }; // TODO find a better name
+export type Starter = { pl?: Player; sp: Spot }; // TODO find a better name
 type Lineup = readonly Spot[];
 export type Side = "home" | "away";
 export const ROWS = 7; // lineup rows

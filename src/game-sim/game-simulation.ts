@@ -316,13 +316,16 @@ function handleSignings(gs: GameState): boolean {
 function handleRetiring(gs: GameState): boolean {
   Object.values(gs.players)
     .filter((p) => Player.retire(p, gs.date))
-    .forEach((p) => {
-      const c = GameState.getContract(gs, p);
-      c && Team.unSignPlayer(gs, c);
-      delete gs.players[p.id];
-    });
+    .forEach((p) => retirePlayer(gs, p));
 
   return endSimOnEvent.retiring ?? false;
+}
+
+function retirePlayer(gs: GameState, p: Player): void {
+  // TODO: save only the name somewhere
+  const c = GameState.getContract(gs, p);
+  c && Team.unSignPlayer(gs, c);
+  delete gs.players[p.id];
 }
 
 function handleDraftStart(gs: GameState): boolean {
@@ -724,4 +727,5 @@ export const exportedForTesting = {
   storeEndedSeason,
   newSeasonSchedule,
   prepareDraft,
+  retirePlayer,
 };

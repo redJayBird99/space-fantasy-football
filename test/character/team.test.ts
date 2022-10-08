@@ -3,9 +3,11 @@ import "../../src/game-sim/sim-worker-interface";
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
+import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { swap } from "../../src/util/generator";
 import { mean } from "../../src/util/math";
+const _tt = _t.exportedForTesting;
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 let st = _gs.GameState.init("abcd".split(""));
@@ -830,5 +832,41 @@ describe("sumWages()", () => {
 
   test("should count as 0 the players without contract", () => {
     expect(_t.sumWages(st, pls)).toBeCloseTo(0);
+  });
+});
+
+describe("subLineupDepartures()", () => {
+  const sp = { pos: "cm", row: 3, col: 8 } as const;
+  const pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+  const retired = pls[0];
+  const traded = pls[1].id;
+  team.formation = {
+    name: "3-4-3",
+    lineup: [
+      { plID: "", sp },
+      { plID: retired.id, sp },
+      { plID: traded, sp },
+      { plID: pls[2].id, sp },
+    ],
+  };
+  _sm.retirePlayer(st, retired);
+  _t.Team.unSignPlayer(st, st.contracts[traded]);
+  _tt.subLineupDepartures({ gs: st, t: team });
+  const cpTeam = JSON.parse(JSON.stringify(team));
+
+  test("should substitute retired players", () => {
+    expect(cpTeam.formation?.lineup[1].plID).not.toBe(retired.id);
+  });
+
+  test("should substitute traded players", () => {
+    expect(cpTeam.formation?.lineup[2].plID).not.toBe(traded);
+  });
+
+  test("should substitute empty position", () => {
+    expect(cpTeam.formation?.lineup[0].plID).not.toBe("");
+  });
+
+  test("should preserve all already filled position", () => {
+    expect(cpTeam.formation?.lineup[3].plID).toBe(pls[2].id);
   });
 });

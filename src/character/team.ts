@@ -11,6 +11,7 @@ import teamsJson from "../asset/teams.json";
 import { hash } from "../util/generator";
 import { within } from "../util/math";
 import { Formation, Formations, Spot } from "./formation";
+import { bestAtPos } from "./util";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 
@@ -74,7 +75,7 @@ class Team {
   fanBase: fanBase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
-  formation?: { name: Formations; lineup: { plID: string; sp: Spot }[] }; // this will only get saved (in the JSON file) for the userTeam
+  formation?: { name: Formations; lineup: { plID?: string; sp: Spot }[] }; // this will only get saved (in the JSON file) for the userTeam
 
   constructor(name: string) {
     this.name = name;
@@ -285,22 +286,54 @@ class Team {
   }
 }
 
+/** update the team lineup substituting all players not in the team anymore
+ * (retired, traded and ect), this function does a simple substitution and
+ * doesn't add new spots when missing.
+ * updateFormations instead does a complete overhaul of the lineup so it is usually preferable
+ *
+ * motivation: before every match the formation is guaranteed to be complete
+ * (the sim updateFormations is called), but in between matches changes can happen
+ */
+function subLineupDepartures({ gs, t }: GsTm): void {
+  if (!t.formation) {
+    return;
+  }
+
+  const ln = t.formation.lineup;
+  const exclude = new Set(ln.map((s) => s.plID ?? ""));
+  const bench = new Set(
+    Team.getNotExpiringPlayers({ gs, t }).filter((p) => !exclude.has(p.id))
+  );
+  const emptyPos = ln.filter(
+    ({ plID: id }) => !id || !gs.players[id] || gs.players[id].team !== t.name
+  );
+  emptyPos.forEach((s) => {
+    const sub = bestAtPos(bench, s.sp.pos);
+
+    if (sub?.id) {
+      s.plID = sub.id;
+      bench.delete(sub);
+    }
+  });
+}
+
 /** set the team formation property to the given formation */
 export function setFormation(t: Team, fm: Formation): void {
   t.formation = {
     name: fm.name,
-    lineup: fm.lineup.map(({ pl, sp }) => ({ sp, plID: pl.id })),
+    lineup: fm.lineup.map(({ pl, sp }) => ({ sp, plID: pl?.id })),
   };
 }
 
 /** get the formation of the given team if any exist */
 export function getFormation(g: GsTm): Formation | void {
+  subLineupDepartures(g);
   if (g.t.formation) {
     return {
       name: g.t.formation.name,
       lineup:
         g.t.formation?.lineup.map((s) => ({
-          pl: g.gs.players[s.plID],
+          pl: s.plID ? g.gs.players[s.plID] : undefined,
           sp: s.sp,
         })) ?? [],
     };
@@ -400,6 +433,7 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
     .slice(0, n);
 }
 
+// TODO move on exportedForTesting
 export {
   GsTm,
   GsTmPl,
@@ -416,4 +450,8 @@ export {
   pickBest,
   initScoutOffset,
   sumWages,
+};
+
+export const exportedForTesting = {
+  subLineupDepartures,
 };

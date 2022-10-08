@@ -6,11 +6,24 @@ import {
   sortBySkill,
   sortByAge,
   sortByInfo,
+  bestAtPos,
 } from "../../src/character/util";
 import { Player } from "../../src/character/player";
 jest.mock("../../src/game-sim/sim-worker-interface");
 
+Player.getScore = jest.fn();
+const mockPlrGetScore = Player.getScore as jest.Mock;
+
 const sample = _u.createPlayers("forward", 10);
+
+describe("bestAtPos()", () => {
+  test("should select the best player", () => {
+    const d = new Date();
+    const pls = [new Player("am", d), new Player("cb", d), new Player("rb", d)];
+    mockPlrGetScore.mockImplementation((p) => (pls[0] === p ? 90 : 0));
+    expect(bestAtPos(pls, "am")).toBe(pls[0]);
+  });
+});
 
 describe("SortBy", () => {
   test("when by is different to lastSortBy should return false", () => {
