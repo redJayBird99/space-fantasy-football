@@ -438,14 +438,14 @@ describe("Player.approachable()", () => {
     const pr: _pl.Player = JSON.parse(JSON.stringify(plr));
     Object.keys(pr.skills).forEach((s) => (pr.skills[s as _pl.Skill] = 90));
 
-    test("should return true when the appeal is 2.5", () => {
-      team.appeal = 2.5;
-      expect(_pl.Player.approachable({ p: pr, gs, t: team })).toBe(true);
-    });
-
-    test("should return true when the appeal is greater 2.5", () => {
-      team.appeal = 3;
-      expect(_pl.Player.approachable({ p: pr, gs, t: team })).toBe(true);
+    test("should return true most of the time when the appeal is greater 3", () => {
+      team.appeal = 3.1;
+      const sample = Array.from({ length: 5 }, () =>
+        _pl.Player.approachable({ p: pr, gs, t: team })
+      );
+      expect(sample.filter((r) => r).length).toBeGreaterThanOrEqual(
+        sample.filter((r) => !r).length
+      );
     });
 
     describe("for low appeal", () => {

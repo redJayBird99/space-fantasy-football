@@ -161,7 +161,7 @@ function starterTag(s: Starter): TemplateResult {
       class="starter-tag"
       aria-label="starting player"
     >
-      <div class="tag-name"><em>${s.pl?.name ?? "--empty--"}</em></div>
+      <div class="tag-name"><em>${s.pl?.name}</em></div>
       <div class="tag-info"><span class="tag-pos">${s.sp.pos}</span> TODO</div>
     </div>
   `;

@@ -22,8 +22,8 @@ button {
   background-color: var(--dk-positive-color, var(--lt-positive-color));
 }
 
-.btn:hover {
-  background-color: var(--dk-secondary-color, var(--lt-secondary-color));
+.btn:hover:not(:disabled) {
+  filter: brightness(1.2);
 }
 
 .btn-link {
@@ -35,11 +35,6 @@ button {
   text-decoration-line: underline;
 }
 
-.btn-link:disabled {
-  cursor: default;
-  filter: brightness(0.5);
-}
-
 /* only for accessibility */
 .btn-txt {
   background-color: transparent;
@@ -47,4 +42,13 @@ button {
   border-radius: 0;
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   padding: 0;
+}
+
+.btn-link:disabled {
+  cursor: default;
+  filter: brightness(0.5);
+}
+
+.btn:disabled {
+  filter: brightness(0.5);
 }

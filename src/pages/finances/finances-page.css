@@ -3,6 +3,7 @@ sff-team-finances {
 }
 
 .cnt-tb-fin {
+  align-items: start;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -132,4 +133,8 @@ tr.wage-totals > :not(td:first-child) {
   border-radius: 8px / 12px;
   display: inline-block;
   padding: 0rem 0.25rem;
+}
+
+a {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }

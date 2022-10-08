@@ -10,6 +10,7 @@ import {
   SimEndEvent,
 } from "../../game-sim/game-simulation";
 import style from "./sim-controls.css";
+import { goTo } from "../util/router";
 
 class SimControls extends HTMLElement {
   constructor() {
@@ -114,11 +115,27 @@ class PlaySim extends HTMLElement {
     this.simCloser?.();
   };
 
-  /** save the given gameState */
+  /** save the given gameState and sometimes redirect to some page when on some specific game date */
   handleSimEnd = (gs: Readonly<GameState>) => {
-    window.$game.state = gs;
-    window.$game.saveGsOnDB();
-    this.render();
+    const update = () => {
+      window.$game.state = gs;
+      window.$game.saveGsOnDB();
+    };
+    const prepareRedirect = () => {
+      window.$game.clearObservers(); // in case we are going to another page we don't need to update this one
+      update();
+    };
+
+    /** check if should redirect to a specific page when on a specific event */
+    if (gs.flags.onGameEvent === "draftStart") {
+      prepareRedirect();
+      goTo(`${window.$PUBLIC_PATH}draft`);
+    } else if (gs.flags.onGameEvent === "updateContracts") {
+      prepareRedirect();
+      goTo(`${window.$PUBLIC_PATH}finances`);
+    } else {
+      update();
+    }
   };
 
   /** update the sim game state */

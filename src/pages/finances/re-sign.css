@@ -1,3 +1,5 @@
+@import url("../util/button.css");
+
 :host {
   display: block;
   margin: 5px 0px 8px;
@@ -6,7 +8,7 @@
 
 table {
   border-collapse: collapse;
-  max-width: 50rem;
+  max-width: 55rem;
   min-width: 28rem;
   table-layout: fixed;
   text-align: center;
@@ -55,7 +57,7 @@ th.small-col {
 }
 
 .small-col {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
 th:nth-of-type(1),
@@ -67,4 +69,21 @@ td:nth-of-type(1) {
 
 .plr-pos {
   text-transform: uppercase;
+}
+
+.sign-btn {
+  padding: 2px 0.4rem;
+  margin: 2px 0;
+}
+
+.skill-score {
+  border-bottom-style: solid;
+  background-clip: padding-box;
+  border-bottom-width: 1px;
+  display: inline-block;
+  width: 1.3rem;
+}
+
+a {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }

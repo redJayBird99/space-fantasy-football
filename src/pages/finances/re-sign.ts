@@ -1,10 +1,14 @@
-import { render, html, TemplateResult } from "lit-html";
+import { render, html, TemplateResult, nothing } from "lit-html";
 import { Team } from "../../character/team";
 import { MacroSkill, MACRO_SKILLS, Player } from "../../character/player";
 import style from "./re-sign.css";
 import { GameState, SignRequest } from "../../game-state/game-state";
+import { skillData } from "../players/player-page";
+import { goLink } from "../util/go-link";
 
-/** show infos about expiring contracts of the user team and re-signing tools */
+/** show infos about expiring contracts of the user team and re-signing tools,
+ * ( the user can go over the salary cap )
+ */
 class ReSign extends HTMLElement {
   constructor() {
     super();
@@ -68,28 +72,43 @@ function expiringPlayers(): TemplateResult {
   `;
 }
 
-/** show infos about the given request and the player */
+/** show infos about the given request and the player, and the resign button
+ * ( the user can go over the salary cap ) */
 function expiringPlayer(r: SignRequest, sks: MacroSkill[]): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[r.plId];
   const frt = new Intl.NumberFormat("en-GB");
+  const canSign = r.wage !== 0 && r.seasons !== 0;
+  const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
   return html`
     <tr>
-      <td>${p.name}</td>
+      <td>${goLink(playerPath, p.name)}</td>
       <td class="small-col"><span class="plr-pos">${p.position}</span></td>
       <td class="small-col">${Player.age(p, gs.date)}</td>
-      ${sks.map(
-        (sk) =>
-          html`<td class="small-col">
-            ${Math.round(Player.getMacroSkill(p, sk))}
-          </td>`
+      ${sks.map((sk) =>
+        playersSkillScore(Math.round(Player.getMacroSkill(p, sk)))
       )}
-      <td class="small-col">${r.seasons}</td>
-      <td>${`${frt.format(r.wage)}₡`}</td>
-      <td><button @click=${resignPlayer(r)}>sign</button></td>
+      <td class="small-col">${canSign ? r.seasons : "-"}</td>
+      <td>${canSign ? `${frt.format(r.wage)}₡` : "-"}</td>
+      <td>
+        <button
+          class="btn btn--acc sign-btn"
+          ?disabled=${!canSign}
+          @click=${canSign ? resignPlayer(r) : nothing}
+        >
+          sign
+        </button>
+      </td>
     </tr>
   `;
+}
+
+function playersSkillScore(score: number): TemplateResult {
+  const sl = `border-color: ${skillData(score).color}`;
+  return html`<td class="small-col">
+    <span class="skill-score" style=${sl}>${score}</span>
+  </td>`;
 }
 
 /** return a signing function where the user team re-sign the given player request */

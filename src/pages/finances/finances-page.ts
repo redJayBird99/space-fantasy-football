@@ -13,6 +13,7 @@ import { GameState } from "../../game-state/game-state";
 import "./re-sign.ts";
 import "../common/game-page";
 import style from "./finances-page.css";
+import { goLink } from "../util/go-link";
 
 type TeamInfo = { v: string; rank: number };
 type Teams = { all: Team[]; t: Team };
@@ -232,12 +233,13 @@ function contractsTable(t: Team): TemplateResult {
 function plWageRow(p: Player): TemplateResult {
   const gs = window.$game.state!;
   const c = GameState.getContract(gs, p);
+  const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
   const yWages = Array.from({ length: SEASONS }, (_, i) =>
     (c?.duration ?? 0) - i > 0 ? c?.wage : ""
   );
   return html`
     <tr>
-      <td>${p.name}</td>
+      <td>${goLink(playerPath, p.name)}</td>
       ${yWages.map((w) => html`<td>${w ? `${frt.format(w)}₡` : w}</td>`)}
     </tr>
   `;

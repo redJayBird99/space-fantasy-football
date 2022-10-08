@@ -92,6 +92,7 @@ function playerBio(p: Player, gs: Readonly<GameState>): TemplateResult {
         improvability
         <span class="plr-stars">${"🟊".repeat(getImprovability(p, gs))}</span>
       </span>
+      <span> Preferred foot ${p.foot} </span>
     </div>
   `;
 }

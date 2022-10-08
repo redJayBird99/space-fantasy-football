@@ -410,10 +410,16 @@ class Player {
    */
   static approachable({ gs, t, p }: GsTmPl): boolean {
     const step = 0.9 * gs.popStats.standardDev;
-    const highScore = gs.popStats.meanScore + 2 * gs.popStats.standardDev;
+    const highScore = gs.popStats.meanScore + 1.25 * gs.popStats.standardDev;
+
+    if (Math.random() > 0.95) {
+      // TODO  this is  fake player mood
+      return false;
+    }
+
     return (
-      t.appeal > 1.5 ||
-      Math.max(0.2, (highScore - Player.getScore(p)) / step) >= Math.random()
+      t.appeal > 3 ||
+      Math.max(0.25, (highScore - Player.getScore(p)) / step) >= Math.random()
     );
   }
 

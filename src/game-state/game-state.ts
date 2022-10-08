@@ -43,7 +43,6 @@ export type TransRecord = {
 type Transactions = {
   [season: string]: TransRecord;
 };
-/** a player request to sign for the user team (used when re-signing players) */
 export type SignRequest = { plId: string; wage: number; seasons: number };
 
 // instances of this interface are saved as JSON on the user machine, this is
@@ -61,7 +60,8 @@ class GameState {
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
   userTeam: string;
-  /** requests to sign for the user team (only on the re-signing day) */
+  /** player requests to sign for the user team (used only when re-signing players),
+   * when wage or seasons are 0 means that the player is unwilling to sign */
   reSigning?: SignRequest[];
   flags = {
     openTradeWindow: false,
@@ -232,6 +232,8 @@ interface GameStateObserver {
 }
 
 class GameStateHandle {
+  /** HTMLElement observers mostly, it could be cleared,
+   * add another one for more persistent observers if needed */
   private observers: Set<GameStateObserver> = new Set();
   private _state?: GameState;
   private updateScheduled = false;
@@ -271,8 +273,8 @@ class GameStateHandle {
     }
   }
 
-  // if an object depended on the GameState should add itself as an observer
-  // every GameStateObserver will be notified when the gameState change
+  /** mostly for HTMLElement observers, it could be cleared, every
+   * GameStateObserver will be notified when the gameState change */
   addObserver(ob: GameStateObserver): void {
     this.observers.add(ob);
   }
@@ -280,6 +282,8 @@ class GameStateHandle {
   removeObserver(ob: GameStateObserver): void {
     this.observers.delete(ob);
   }
+
+  clearObservers = () => this.observers.clear();
 
   private notifyObservers(): void {
     this.observers.forEach((ob) => ob.gameStateUpdated(this._state));
