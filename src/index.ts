@@ -12,6 +12,7 @@ import "./pages/team/team-page.ts";
 import "./pages/finances/finances-page.ts";
 import "./pages/transactions/transactions.ts";
 import "./pages/draft/draft.ts";
+import "./pages/players/retiring.ts";
 import style from "./index.css";
 
 declare global {
@@ -70,6 +71,10 @@ new Router(document.body, "<div>404 page no found</div>")
     {
       path: `${window.$PUBLIC_PATH}draft`,
       page: "<sff-draft></sff-draft>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}retiring`,
+      page: "<retiring-players></retiring-players>",
     },
   ])
   .renderPage();

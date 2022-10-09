@@ -1,0 +1,7 @@
+table {
+  text-align: center;
+}
+
+a {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+}

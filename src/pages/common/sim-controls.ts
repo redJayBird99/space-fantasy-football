@@ -133,6 +133,9 @@ class PlaySim extends HTMLElement {
     } else if (gs.flags.onGameEvent === "updateContracts") {
       prepareRedirect();
       goTo(`${window.$PUBLIC_PATH}finances`);
+    } else if (gs.flags.onGameEvent === "retiring") {
+      prepareRedirect();
+      goTo(`${window.$PUBLIC_PATH}retiring`);
     } else {
       update();
     }

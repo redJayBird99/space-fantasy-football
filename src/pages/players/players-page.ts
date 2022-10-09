@@ -3,8 +3,9 @@ import { repeat } from "lit-html/directives/repeat.js";
 import { GameState } from "../../game-state/game-state";
 import { Player, Skill } from "../../character/player";
 import * as _ps from "../util/props-state";
-import { goLink } from "../util/go-link";
+import "../common/game-page.ts";
 import "../util/router.ts";
+import { goLink } from "../util/go-link";
 import style from "./players-page.css";
 import { sortByInfo, sortBySkill, SorterBy } from "../../character/util";
 

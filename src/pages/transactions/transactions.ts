@@ -166,7 +166,8 @@ function tradeSide(team: string, getPls: string[], was: Date): TemplateResult {
 /** returns informations about the given player id at the given time */
 function playerInfo(plId: string, was: Date): TemplateResult {
   // when the player is retired doesn't exist, TODO add some record of retired players
-  const p = window.$game.state!.players[plId];
+  const gs = window.$game.state!;
+  const p = gs.players[plId];
   const playerPath = (p: Player) =>
     `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
@@ -181,7 +182,10 @@ function playerInfo(plId: string, was: Date): TemplateResult {
     `;
   }
 
-  return html`a retired player`;
+  return html`
+    <span class="plr-pos" aria-label="position">-</span>
+    ${gs.retirees[plId].name ?? ""} (retired)
+  `;
 }
 
 /** list all signings recorded */

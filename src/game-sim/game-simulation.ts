@@ -36,7 +36,8 @@ export type GameEventTypes =
   | "signings" // sim signing free players
   | "draftStart" // enqueue the draft event
   | "draft" // sim the drafting of young players
-  | "retiring" // remove retiring players
+  | "retiring" // players decide on retirement
+  | "retire" // remove retiring players
   | "trade" // sim trading player between teams
   | "openTradeWindow" // start the exchanging of players period
   | "openFreeSigningWindow" // start the signing free players period
@@ -206,6 +207,8 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
     return handleSignings(gs);
   } else if (evt.type === "retiring") {
     return handleRetiring(gs);
+  } else if (evt.type === "retire") {
+    return handleRetire(gs);
   } else if (evt.type === "draftStart") {
     return handleDraftStart(gs);
   } else if (evt.type === "draft") {
@@ -311,21 +314,27 @@ function handleSignings(gs: GameState): boolean {
   return endSimOnEvent.signings ?? false;
 }
 
-// retires some old players and remove it from the game
-// TODO: save them on the indexedDb
+/** check which players is willing to retire and add them to the gs.retiring */
 function handleRetiring(gs: GameState): boolean {
-  Object.values(gs.players)
+  gs.retiring = Object.values(gs.players)
     .filter((p) => Player.retire(p, gs.date))
-    .forEach((p) => retirePlayer(gs, p));
-
+    .map((p) => p.id);
+  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "retire" });
   return endSimOnEvent.retiring ?? false;
 }
 
+/** retires all players in gs.retiring and add the to the retirees */
+function handleRetire(gs: GameState): boolean {
+  gs.retiring.forEach((id) => retirePlayer(gs, gs.players[id]));
+  gs.retiring = [];
+  return endSimOnEvent.retire ?? false;
+}
+
 function retirePlayer(gs: GameState, p: Player): void {
-  // TODO: save only the name somewhere
   const c = GameState.getContract(gs, p);
   c && Team.unSignPlayer(gs, c);
   delete gs.players[p.id];
+  gs.retirees[p.id] = { name: p.name };
 }
 
 function handleDraftStart(gs: GameState): boolean {
@@ -712,6 +721,7 @@ export const exportedForTesting = {
   handleOpenFreeSigningWindow,
   handleCloseFreeSigningWindow,
   handleRenewals,
+  handleRetire,
   createDraftPlayers,
   simulateRound,
   updateSkills,

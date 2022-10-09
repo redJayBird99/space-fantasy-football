@@ -1,5 +1,5 @@
 import style from "./game-nav.css";
-import { render, html } from "lit-html";
+import { render, html, nothing } from "lit-html";
 import { goLink } from "../util/go-link";
 
 /** the in game nav bar */
@@ -33,6 +33,11 @@ class GameNav extends HTMLElement {
             ${goLink(`${window.$PUBLIC_PATH}transactions`, "transactions")}
           </li>
           <li>${goLink(`${window.$PUBLIC_PATH}draft`, "draft")}</li>
+          ${window.$game.state?.flags.onGameEvent === "retiring"
+            ? html`<li>
+                ${goLink(`${window.$PUBLIC_PATH}retiring`, "retiring")}
+              </li>`
+            : nothing}
         </ul>
       `,
       this.shadowRoot!

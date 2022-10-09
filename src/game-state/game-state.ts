@@ -60,6 +60,9 @@ class GameState {
   matches: { [id: string]: Match } = {};
   mails: Mail[] = [];
   userTeam: string;
+  /** player' ids that are going to retire */
+  retiring: string[] = [];
+  retirees: { [id: string]: { name: string } } = {};
   /** player requests to sign for the user team (used only when re-signing players),
    * when wage or seasons are 0 means that the player is unwilling to sign */
   reSigning?: SignRequest[];

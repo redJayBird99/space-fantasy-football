@@ -542,19 +542,32 @@ describe("prepareSeasonStart()", () => {
 });
 
 describe("handleRetiring()", () => {
-  _gs.initTeams(st, ["a", "b", "c", "d"]);
-  const allPls = Object.values(st.players);
-  _sm.handleRetiring(st);
-  const retirees = allPls.filter((p) => !st.players[p.id]);
+  test("should add some player to the retiring list", () => {
+    _gs.initTeams(st, ["a", "b", "c", "d"]);
+    _sm.handleRetiring(st);
+    expect(st.retiring.length).toBeGreaterThan(0);
+  });
+});
 
-  test("should remove some players from the game", () => {
-    expect(retirees.length).toBeGreaterThan(0);
+describe("handleRetiring()", () => {
+  _gs.initTeams(st, ["a", "b", "c", "d"]);
+  const retiring = Object.values(st.players)
+    .filter((_, i) => i % 3 === 0)
+    .map((p) => p.id);
+  st.retiring = retiring;
+  const gs = _gs.GameState.parse(JSON.stringify(st));
+  _sm.handleRetire(gs);
+
+  test("should remove all retiring players from the game.players", () => {
+    expect(retiring.some((id) => gs.players[id])).toBe(false);
   });
 
-  test("should remove all retirees contracts", () => {
-    retirees.forEach((p) =>
-      expect(_gs.GameState.getContract(st, p)).not.toBeDefined()
-    );
+  test("should remove all retiring players contracts", () => {
+    expect(retiring.some((id) => gs.contracts[id])).toBe(false);
+  });
+
+  test("should add all retiring players to gs.retirees", () => {
+    expect(!retiring.some((id) => !gs.retirees[id])).toBe(true);
   });
 });
 
