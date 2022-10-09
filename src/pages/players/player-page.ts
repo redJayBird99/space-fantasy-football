@@ -6,6 +6,7 @@ import {
   MacroSkill,
   MAX_SKILL,
 } from "../../character/player";
+import "./player-history.ts";
 import { getImprovability } from "../../character/user";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
@@ -70,6 +71,7 @@ class PlayerInfo extends HTMLElement {
         <div class="plr-skills">
           ${this.player && playersMacroSkills(this.player)}
         </div>
+        <player-history data-pl-id=${this.player?.id ?? ""}></player-history>
       `,
       this
     );
