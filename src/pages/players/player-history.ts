@@ -22,7 +22,6 @@ class PlayerHistory extends HTMLElement {
   }
 
   render(): void {
-    console.log(this.dataset.id);
     render(
       html`
         <style>

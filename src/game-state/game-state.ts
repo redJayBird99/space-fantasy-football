@@ -63,6 +63,8 @@ class GameState {
   /** player' ids that are going to retire */
   retiring: string[] = [];
   retirees: { [id: string]: { name: string } } = {};
+  /** rejections by players to sign for the user team (cleared after some time) */
+  rejections: { [id: string]: boolean } = {};
   /** player requests to sign for the user team (used only when re-signing players),
    * when wage or seasons are 0 means that the player is unwilling to sign */
   reSigning?: SignRequest[];
@@ -125,6 +127,7 @@ class GameState {
     s.mails = [welcome(uTeam, s.date)];
     s.popStats = getPopStats(Object.values(s.players));
     setNewFormations(s).then(() => onComplete); // no need to wait for not essential data
+    // NOTE: rejections isn't inited because most of the starting free agent aren't great...
     return s;
   }
 

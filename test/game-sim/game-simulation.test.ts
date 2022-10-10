@@ -1005,3 +1005,24 @@ describe("draftPlayer()", () => {
     expect(gs.drafts.now.picks.find((r) => r.plId === p.id)).toBeUndefined();
   });
 });
+
+describe("updateRejections", () => {
+  const st = _gs.GameState.init(["a", "b", "c", "d"], "a");
+  const fn = _pl.Player.approachable;
+
+  test("some players should be added to the rejections list", () => {
+    // @ts-ignore
+    _pl.Player.approachable = jest.fn((_, i) => i % 2 === 0);
+    _sm.updateRejections(st);
+    expect(Object.keys(st.rejections).length).toBeGreaterThan(0);
+  });
+
+  test("all players in rejections should be free agents", () => {
+    expect(
+      Object.keys(st.rejections).some(
+        (id) => st.players[id].team !== "free agent"
+      )
+    ).toBe(false);
+    _pl.Player.approachable = fn;
+  });
+});

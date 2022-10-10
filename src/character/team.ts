@@ -14,6 +14,7 @@ import { Formation, Formations, Spot } from "./formation";
 import { bestAtPos } from "./util";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
+export const MAX_PLAYERS = 30;
 
 type GsTm = { gs: GameState; t: Team }; // eslint-disable-line no-use-before-define
 type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
@@ -196,7 +197,9 @@ class Team {
     // TODO: take in consideration the quality of the teamPlayers
     const players = Team.getNotExpiringPlayers(g);
     const rgs = new RatingAreaByNeed(players);
-    return players.length < 30 && Object.values(rgs).some((v) => v > 0);
+    return (
+      players.length < MAX_PLAYERS && Object.values(rgs).some((v) => v > 0)
+    );
   }
 
   /**
@@ -207,7 +210,7 @@ class Team {
   static shouldRenew(g: GsTmPl, r: RatingAreaByNeed, players: number): boolean {
     if (players <= 25 || r[getArea(g.p.position)] !== 0) {
       return renewalProbability(g, r) > Math.random();
-    } else if (players < 30) {
+    } else if (players < MAX_PLAYERS) {
       return renewalProbability(g, r) / 3 > Math.random();
     }
 

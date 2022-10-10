@@ -1,4 +1,4 @@
-import { render, html, TemplateResult } from "lit-html";
+import { render, html, TemplateResult, nothing } from "lit-html";
 import { GameState } from "../../game-state/game-state";
 import {
   Player,
@@ -7,9 +7,14 @@ import {
   MAX_SKILL,
 } from "../../character/player";
 import "./player-history.ts";
-import { getImprovability } from "../../character/user";
+import {
+  canSignPlayer,
+  getImprovability,
+  signPlayer,
+} from "../../character/user";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
+import { Team } from "../../character/team";
 
 class PlayerPage extends HTMLElement {
   connectedCallback() {
@@ -34,19 +39,18 @@ class PlayerPage extends HTMLElement {
 }
 
 /** get the searched player from the gameState */
-function getSearchParamPlayer(gs: Readonly<GameState>): Player | undefined {
+function getSearchParamPlayer(): Player | undefined {
   const id = new URLSearchParams(location.search).get("id");
-  return gs.players[id ?? ""];
+  return window.$game.state!.players[id ?? ""];
 }
 
 class PlayerInfo extends HTMLElement {
-  private gs = window.$game.state;
   private player?: Player;
 
   connectedCallback() {
     if (this.isConnected) {
       window.$game.addObserver(this);
-      this.player = getSearchParamPlayer(this.gs!);
+      this.player = getSearchParamPlayer();
       this.render();
     }
   }
@@ -55,8 +59,7 @@ class PlayerInfo extends HTMLElement {
     window.$game.removeObserver(this);
   }
 
-  gameStateUpdated(gs?: Readonly<GameState>): void {
-    this.gs = gs;
+  gameStateUpdated(): void {
     this.render();
   }
 
@@ -65,8 +68,8 @@ class PlayerInfo extends HTMLElement {
       html`
         <section class="plr-info">
           <img class="plr-img" src=${pImg} alt="a football player" />
-          ${this.player && this.gs && playerBio(this.player, this.gs)}
-          ${this.player && this.gs && playerTeam(this.player, this.gs)}
+          ${this.player && playerBio(this.player)}
+          ${this.player && playerTeam(this.player)}
         </section>
         <div class="plr-skills">
           ${this.player && playersMacroSkills(this.player)}
@@ -79,7 +82,9 @@ class PlayerInfo extends HTMLElement {
 }
 
 /** biography informations */
-function playerBio(p: Player, gs: Readonly<GameState>): TemplateResult {
+function playerBio(p: Player): TemplateResult {
+  const gs = window.$game.state!;
+
   // TODO: use half starts for improvability
   return html`
     <div class="plr-bio">
@@ -100,8 +105,8 @@ function playerBio(p: Player, gs: Readonly<GameState>): TemplateResult {
 }
 
 /** contractual informations */
-function playerTeam(p: Player, gs: Readonly<GameState>): TemplateResult {
-  const c = GameState.getContract(gs, p);
+function playerTeam(p: Player): TemplateResult {
+  const c = GameState.getContract(window.$game.state!, p);
   const wage = new Intl.NumberFormat("en-GB").format(c?.wage ?? 0);
   const seasons = c?.duration;
 
@@ -110,7 +115,25 @@ function playerTeam(p: Player, gs: Readonly<GameState>): TemplateResult {
       <span>team: ${p.team}</span>
       <span>wage: ${wage}₡</span>
       <span>contract: ${seasons ? `length ${seasons} seasons` : "free"}</span>
+      ${signBtn(p)}
     </div>
+  `;
+}
+
+/** the button to sign the given player, it is enabled only if signable */
+function signBtn(p: Player): TemplateResult {
+  const gs = window.$game.state!;
+  const uPayroll = Team.getWagesAmount({ gs, t: gs.teams[gs.userTeam] });
+  const signable = canSignPlayer(gs, uPayroll, p);
+
+  return html`
+    <button
+      class="btn btn--acc"
+      ?disabled=${!signable}
+      @click=${signable ? () => signPlayer(p) : nothing}
+    >
+      sign
+    </button>
   `;
 }
 

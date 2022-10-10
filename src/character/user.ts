@@ -5,8 +5,8 @@ import {
   TransRecord,
 } from "../game-state/game-state";
 import { within } from "../util/math";
-import { Player, getImprovabilityRating } from "./player";
-import { Team } from "./team";
+import { Player, getImprovabilityRating, MIN_WAGE, SALARY_CAP } from "./player";
+import { MAX_PLAYERS, Team } from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
@@ -69,4 +69,38 @@ function transactionsHistoryOf(plId: string): TransRecord {
   }
 
   return record;
+}
+
+/**
+ * check if the user team can sign the given player (team size, salary cap, player will and etc)
+ * @param payroll the wages of the user's players
+ */
+export function canSignPlayer(
+  gs: GameState,
+  payroll: number,
+  p: Player
+): boolean {
+  const user = gs.teams[gs.userTeam];
+  const wage = Player.wageRequest({ gs, t: user, p });
+
+  return (
+    p.team === "free agent" &&
+    gs.flags.openFreeSigningWindow &&
+    !gs.rejections[p.id] &&
+    user.playerIds.length < MAX_PLAYERS &&
+    (wage <= MIN_WAGE || wage + payroll <= SALARY_CAP)
+  );
+}
+
+/** the user add the player to his team */
+export function signPlayer(p: Player): void {
+  const gs = window.$game.state!;
+  const t = gs.teams[gs.userTeam];
+  Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
+  gs.transactions.now.signings.push({
+    when: gs.date.toDateString(),
+    plId: p.id,
+    team: t.name,
+  });
+  window.$game.state = gs; // mutation notification
 }

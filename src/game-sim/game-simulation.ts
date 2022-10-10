@@ -184,6 +184,10 @@ async function process(gs: GameState): PBool {
     t += SIM_TIME_SLICE;
   }
 
+  if (t > 0 && gs.flags.openFreeSigningWindow && gs.date.getDay() === 0) {
+    updateRejections(gs); // periodic update not strictly scheduled
+  }
+
   return gs.eventQueue.length === 0 || Boolean(endSimOnEvent.oneDay);
 }
 
@@ -392,6 +396,7 @@ function handleOpenTradeWindow(gs: GameState): boolean {
 /** open the free signing window setting the gameState flag to false and enqueue a signings event */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
+  updateRejections(gs);
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
   return endSimOnEvent.openFreeSigningWindow ?? false;
 }
@@ -695,6 +700,22 @@ function addRenewalRequests(gs: GameState): void {
   }
 }
 
+/** check for each free agent if is willing to sign for the user team if not add to the rejections */
+function updateRejections(gs: GameState): void {
+  const t = gs.teams[gs.userTeam];
+
+  if (!t) {
+    return;
+  }
+
+  gs.rejections = {};
+  Object.values(gs.players).forEach((p) => {
+    if (p.team === "free agent" && !Player.approachable({ gs, t, p })) {
+      gs.rejections[p.id] = true;
+    }
+  });
+}
+
 export const exportedForTesting = {
   MAX_SIM_TIME_PER_TICK,
   SEASON_START_MONTH,
@@ -741,4 +762,5 @@ export const exportedForTesting = {
   newSeasonSchedule,
   prepareDraft,
   retirePlayer,
+  updateRejections,
 };
