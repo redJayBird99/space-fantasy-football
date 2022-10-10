@@ -5,4 +5,10 @@ import { GameState } from "../game-state/game-state";
 export default {
   endSimOnEvent,
   GameState,
+  findPlrBy: (key: any, val: any) => {
+    return Object.values(window.$game.state?.players ?? {}).filter(
+      // @ts-ignore
+      (p) => p[key] === val
+    );
+  },
 };

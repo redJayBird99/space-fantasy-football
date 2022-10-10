@@ -1,10 +1,10 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { Team } from "../../character/team";
 import { MacroSkill, MACRO_SKILLS, Player } from "../../character/player";
 import style from "./re-sign.css";
-import { GameState, SignRequest } from "../../game-state/game-state";
+import { SignRequest } from "../../game-state/game-state";
 import { skillData } from "../players/player-page";
 import { goLink } from "../util/go-link";
+import { resignPlayer } from "../../character/user";
 
 /** show infos about expiring contracts of the user team and re-signing tools,
  * ( the user can go over the salary cap )
@@ -95,7 +95,7 @@ function expiringPlayer(r: SignRequest, sks: MacroSkill[]): TemplateResult {
         <button
           class="btn btn--acc sign-btn"
           ?disabled=${!canSign}
-          @click=${canSign ? resignPlayer(r) : nothing}
+          @click=${canSign ? () => resignPlayer(r) : nothing}
         >
           sign
         </button>
@@ -109,18 +109,6 @@ function playersSkillScore(score: number): TemplateResult {
   return html`<td class="small-col">
     <span class="skill-score" style=${sl}>${score}</span>
   </td>`;
-}
-
-/** return a signing function where the user team re-sign the given player request */
-function resignPlayer(r: SignRequest): () => void {
-  return () => {
-    const gs = window.$game.state! as GameState;
-    const p = gs.players[r.plId];
-    const t = gs.teams[gs.userTeam];
-    Team.signPlayer({ gs, t, p }, r.wage, r.seasons);
-    gs.reSigning = gs.reSigning?.filter((rq) => rq !== r);
-    window.$game.state = gs; // mutation notification
-  };
 }
 
 if (!customElements.get("re-sign")) {

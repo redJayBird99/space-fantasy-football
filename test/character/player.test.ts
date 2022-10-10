@@ -466,10 +466,14 @@ describe("Player.approachable()", () => {
     });
   });
 
-  test("should return true when the appeal is less 2.5 for a mediocre player", () => {
+  test("should return true most of the time when the appeal is less 2.5 for a mediocre player", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
     team.appeal = 1;
-    expect(_pl.Player.approachable({ p: plr, gs, t: team })).toBe(true);
+    const length = 5;
+    const sample = Array.from({ length }, () =>
+      _pl.Player.approachable({ p: plr, gs, t: team })
+    );
+    expect(sample.filter((r) => r).length).toBeGreaterThan(length / 2);
   });
 });
 

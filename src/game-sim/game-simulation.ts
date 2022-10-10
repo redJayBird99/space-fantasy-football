@@ -179,6 +179,7 @@ async function process(gs: GameState): PBool {
     } else {
       gs.date.setHours(gs.date.getHours() + SIM_TIME_SLICE);
       gs.flags.onGameEvent = undefined;
+      gs.flags.signedNewPlayer = false;
     }
 
     t += SIM_TIME_SLICE;
@@ -257,6 +258,7 @@ function handleSeasonEnd(gs: GameState): boolean {
 /** prepare the season events and the team formations */
 async function handleSeasonStart(gs: GameState): PBool {
   prepareSeasonStart(gs);
+  gs.flags.signLimit = false;
   await setNewFormations(gs);
   return endSimOnEvent.seasonStart ?? false;
 }
@@ -309,7 +311,7 @@ function handleUpdateFinances(gs: GameState): boolean {
  */
 function handleSignings(gs: GameState): boolean {
   if (gs.flags.openFreeSigningWindow) {
-    teamsSignFreeAgents(gs);
+    teamsSignFreeAgents(gs, true); // TODO: auto sign option
     // if the season didn't already start try new signings every day
     const days = gs.eventQueue.some((e) => e.type === "seasonStart") ? 1 : 7;
     enqueueEventFor(gs, gs.date, "signings", { days });
@@ -396,6 +398,7 @@ function handleOpenTradeWindow(gs: GameState): boolean {
 /** open the free signing window setting the gameState flag to false and enqueue a signings event */
 function handleOpenFreeSigningWindow(gs: GameState): boolean {
   gs.flags.openFreeSigningWindow = true;
+  gs.flags.signLimit = true;
   updateRejections(gs);
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
   return endSimOnEvent.openFreeSigningWindow ?? false;
@@ -526,11 +529,11 @@ function updateSkills(gs: GameState): void {
   }
 }
 
-// simulate the teams signing new players, sign only one player per team and
-// only if the team needs it
-function teamsSignFreeAgents(gs: GameState): void {
-  const teams = Object.values(gs.teams).filter((t) =>
-    Team.needPlayer({ gs, t })
+/** simulate the teams signing new players, sign only one player per team and
+ * only if the team needs it, when the skipUser is true skip the user */
+function teamsSignFreeAgents(gs: GameState, skipUser = false): void {
+  const teams = Object.values(gs.teams).filter(
+    (t) => (!skipUser || t.name !== gs.userTeam) && Team.needPlayer({ gs, t })
   );
   let free = Object.values(gs.players).filter((p) => p.team === "free agent");
 

@@ -212,6 +212,14 @@ describe("teamsSignFreeAgents()", () => {
     _sm.teamsSignFreeAgents(st);
     expect(getFreeAgents(st).length).toBe(oldFree.length - 2);
   });
+
+  test("when skipUser is true the user team shouldn't sign any player", () => {
+    const st = _gs.GameState.init(["a", "b"]);
+    st.userTeam = "a";
+    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
+    _sm.teamsSignFreeAgents(st, true);
+    expect(st.teams[st.userTeam].playerIds.length).toBe(0);
+  });
 });
 
 describe("updateTeamsAppeal()", () => {
@@ -744,9 +752,10 @@ describe("handleOpenTradeWindow", () => {
 });
 
 describe("handleOpenFreeSigningWindow", () => {
-  test("should set the gameState flag openFreeSigningWindow to true", () => {
+  test("should set the gameState flag openFreeSigningWindow and signLimit to true", () => {
     _sm.handleOpenFreeSigningWindow(st);
     expect(st.flags.openFreeSigningWindow).toBe(true);
+    expect(st.flags.signLimit).toBe(true);
   });
 
   test("should enqueue a signings game event", () => {
@@ -849,6 +858,24 @@ describe("process()", () => {
     st.eventQueue.push(...evts);
     await _sm.process(st);
     expect(st.eventQueue).toEqual([evts[1]]);
+  });
+
+  test("should unset the flags onGameEvent and signedNewPlayer after some time elapsed", async () => {
+    st.eventQueue.push({ date: endD, type: "simRound", detail: { round: 0 } });
+    st.flags.onGameEvent = "draft";
+    st.flags.signedNewPlayer = true;
+    await _sm.process(st);
+    expect(st.flags.signedNewPlayer).toBe(false);
+    expect(st.flags.onGameEvent).toBeUndefined();
+  });
+
+  test("should able to update the Rejections", async () => {
+    st.eventQueue.push({ date: endD, type: "simRound", detail: { round: 0 } });
+    st.date = new Date("2000-12-16");
+    st.flags.openFreeSigningWindow = true;
+    const rjs = JSON.parse(JSON.stringify(st.rejections));
+    await _sm.process(st);
+    expect(st.rejections).toEqual(rjs);
   });
 });
 

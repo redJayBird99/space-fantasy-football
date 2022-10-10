@@ -2,6 +2,7 @@
 import {
   DraftPickRecord,
   GameState,
+  SignRequest,
   TransRecord,
 } from "../game-state/game-state";
 import { within } from "../util/math";
@@ -82,8 +83,10 @@ export function canSignPlayer(
 ): boolean {
   const user = gs.teams[gs.userTeam];
   const wage = Player.wageRequest({ gs, t: user, p });
+  const signLimitReached = gs.flags.signLimit && gs.flags.signedNewPlayer;
 
   return (
+    !signLimitReached &&
     p.team === "free agent" &&
     gs.flags.openFreeSigningWindow &&
     !gs.rejections[p.id] &&
@@ -97,7 +100,23 @@ export function signPlayer(p: Player): void {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
   Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
+  gs.flags.signedNewPlayer = true;
   gs.transactions.now.signings.push({
+    when: gs.date.toDateString(),
+    plId: p.id,
+    team: t.name,
+  });
+  window.$game.state = gs; // mutation notification
+}
+
+/** the user team re-sign the given player request and add it to the transaction history */
+export function resignPlayer(r: SignRequest): void {
+  const gs = window.$game.state! as GameState;
+  const p = gs.players[r.plId];
+  const t = gs.teams[gs.userTeam];
+  Team.signPlayer({ gs, t, p }, r.wage, r.seasons);
+  gs.reSigning = gs.reSigning?.filter((rq) => rq !== r);
+  gs.transactions.now.renewals.push({
     when: gs.date.toDateString(),
     plId: p.id,
     team: t.name,
