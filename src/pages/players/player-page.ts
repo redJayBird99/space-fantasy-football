@@ -45,12 +45,9 @@ function getSearchParamPlayer(): Player | undefined {
 }
 
 class PlayerInfo extends HTMLElement {
-  private player?: Player;
-
   connectedCallback() {
     if (this.isConnected) {
       window.$game.addObserver(this);
-      this.player = getSearchParamPlayer();
       this.render();
     }
   }
@@ -64,17 +61,16 @@ class PlayerInfo extends HTMLElement {
   }
 
   render(): void {
+    const player = getSearchParamPlayer();
+
     render(
       html`
         <section class="plr-info">
           <img class="plr-img" src=${pImg} alt="a football player" />
-          ${this.player && playerBio(this.player)}
-          ${this.player && playerTeam(this.player)}
+          ${player && playerBio(player)} ${player && playerTeam(player)}
         </section>
-        <div class="plr-skills">
-          ${this.player && playersMacroSkills(this.player)}
-        </div>
-        <player-history data-pl-id=${this.player?.id ?? ""}></player-history>
+        <div class="plr-skills">${player && playersMacroSkills(player)}</div>
+        <player-history data-pl-id=${player?.id ?? ""}></player-history>
       `,
       this
     );
