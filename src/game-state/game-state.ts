@@ -72,6 +72,7 @@ class GameState {
     openTradeWindow: false,
     openFreeSigningWindow: true,
     userDrafting: false, // true when it is the user turn to pick
+    underMinTeamSize: false, // true when the user team has less than MIN_PLAYERS (check before a match)
     onGameEvent: undefined as GameEventTypes | undefined, // on which event the game is currently at (only for the user relevant events)
     signLimit: false, // when true the user should be able to sign only one new player per some amount of time
     signedNewPlayer: false, // when true means that the used signed a new player recently

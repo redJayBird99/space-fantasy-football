@@ -1,5 +1,11 @@
 import { Player, SALARY_CAP } from "../character/player";
-import { GsTm, sumWages, Team } from "../character/team";
+import {
+  GsTm,
+  MIN_TEAM_SIZE,
+  MAX_TEAM_SIZE,
+  sumWages,
+  Team,
+} from "../character/team";
 import { GameState } from "../game-state/game-state";
 import { shuffle } from "../util/generator";
 import { dist } from "../util/math";
@@ -9,8 +15,6 @@ type TradeSide = { by: Team; content: Player[] };
 export type Trade = { side1: TradeSide; side2: TradeSide };
 
 const MAX_EXCHANGE_SIZE = 3; // only for the non user teams, it makes the findOffer faster and the exchange smaller
-const MIN_TEAM_SIZE = 18;
-const MAX_TEAM_SIZE = 30;
 
 /**
  * @returns true if after the exchange the team players size is under the requirement

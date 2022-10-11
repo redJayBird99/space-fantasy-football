@@ -7,7 +7,7 @@ import {
 } from "../game-state/game-state";
 import { within } from "../util/math";
 import { Player, getImprovabilityRating, MIN_WAGE, SALARY_CAP } from "./player";
-import { MAX_PLAYERS, Team } from "./team";
+import { MAX_TEAM_SIZE, MIN_TEAM_SIZE, Team } from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
@@ -90,7 +90,7 @@ export function canSignPlayer(
     p.team === "free agent" &&
     gs.flags.openFreeSigningWindow &&
     !gs.rejections[p.id] &&
-    user.playerIds.length < MAX_PLAYERS &&
+    user.playerIds.length < MAX_TEAM_SIZE &&
     (wage <= MIN_WAGE || wage + payroll <= SALARY_CAP)
   );
 }
@@ -100,6 +100,7 @@ export function signPlayer(p: Player): void {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
   Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
+  gs.flags.underMinTeamSize = t?.playerIds.length < MIN_TEAM_SIZE;
   gs.flags.signedNewPlayer = true;
   gs.transactions.now.signings.push({
     when: gs.date.toDateString(),

@@ -6,7 +6,12 @@ import {
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
 import { Player, MIN_AGE } from "../character/player";
-import { Team, MAX_SCOUTING_OFFSET, setFormation } from "../character/team";
+import {
+  Team,
+  MAX_SCOUTING_OFFSET,
+  setFormation,
+  MIN_TEAM_SIZE,
+} from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
@@ -15,7 +20,7 @@ import {
   fetchNewFormations,
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
-import { mustDraft } from "../character/mail";
+import { mustDraft, teamSizeAlert } from "../character/mail";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -96,7 +101,7 @@ let simCtrl = { stop: false };
 /** check if the gs has flags that prevent the simulation from running,
  * usually used when waiting for some user action */
 export function isSimDisabled(gs: GameState) {
-  return gs.flags.userDrafting;
+  return gs.flags.userDrafting || gs.flags.underMinTeamSize;
 }
 
 /** check if the previous called simulate() function is still simulating */
@@ -169,6 +174,10 @@ export function simulate(
  * @returns true when the simulation should momentarily stop
  */
 async function process(gs: GameState): PBool {
+  if (isSimDisabled(gs)) {
+    return true;
+  }
+
   let t = 0;
 
   while (t < MAX_SIM_TIME_PER_TICK && gs.eventQueue.length !== 0) {
@@ -177,7 +186,7 @@ async function process(gs: GameState): PBool {
       gs.flags.onGameEvent = gEvt.type;
       return await handleGameEvent(gs, gEvt);
     } else {
-      gs.date.setHours(gs.date.getHours() + SIM_TIME_SLICE);
+      updateGameDate(gs);
       gs.flags.onGameEvent = undefined;
       gs.flags.signedNewPlayer = false;
     }
@@ -190,6 +199,18 @@ async function process(gs: GameState): PBool {
   }
 
   return gs.eventQueue.length === 0 || Boolean(endSimOnEvent.oneDay);
+}
+
+/** update the game date elapsing some time without going beyond the next event date */
+function updateGameDate(gs: GameState): void {
+  const e = gs.eventQueue[0];
+  const mls = SIM_TIME_SLICE * 60 * 60 * 1000;
+
+  if (e && e.date.getTime() - gs.date.getTime() <= mls) {
+    gs.date = new Date(e.date);
+  } else {
+    gs.date.setHours(gs.date.getHours() + SIM_TIME_SLICE);
+  }
 }
 
 // returns true when a particular event handling require to momentarily stop the simulation
@@ -233,6 +254,17 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
 
 /** before sim all matches updates all formations */
 async function handleSimRound(gs: GameState, r: SimRound): PBool {
+  if (simRoundRequirements(gs)) {
+    gs.mails.unshift(teamSizeAlert(gs.date));
+    // we need to prepend the same event because the process function pop it
+    gs.eventQueue.unshift({
+      date: new Date(gs.date),
+      type: "simRound",
+      detail: r,
+    });
+    return true;
+  }
+
   await updateFormations(gs);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
@@ -719,8 +751,19 @@ function updateRejections(gs: GameState): void {
   });
 }
 
+/** returns true when some user requirements are missing for the simRound event,
+ * and update the related gs flags when necessary (like underMinTeamSize) */
+function simRoundRequirements(gs: GameState): boolean {
+  if (gs.teams[gs.userTeam]?.playerIds.length < MIN_TEAM_SIZE) {
+    return (gs.flags.underMinTeamSize = true);
+  }
+
+  return false;
+}
+
 export const exportedForTesting = {
   MAX_SIM_TIME_PER_TICK,
+  SIM_TIME_SLICE,
   SEASON_START_MONTH,
   SEASON_START_DATE,
   SEASON_END_MONTH,

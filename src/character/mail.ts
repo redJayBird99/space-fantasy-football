@@ -1,6 +1,7 @@
 import { createId } from "../util/generator";
 import { interpolate } from "../util/util";
 import mails from "../asset/mails.json";
+import { MIN_TEAM_SIZE } from "./team";
 
 export interface Mail {
   id: string;
@@ -38,4 +39,15 @@ export function welcome(team: string, send: Date): Mail {
 
 export function mustDraft(send: Date): Mail {
   return newMail(mails["must-draft"], send);
+}
+
+export function teamSizeAlert(send: Date): Mail {
+  return newMail(
+    {
+      sender: "Coach Assistant",
+      subject: "we have too few players",
+      content: `our team should have at least ${MIN_TEAM_SIZE} players, sign some new players to reach this requirement`,
+    },
+    send
+  );
 }

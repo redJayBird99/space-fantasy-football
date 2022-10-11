@@ -175,10 +175,20 @@ class PlaySim extends HTMLElement {
     `;
   }
 
+  getDisabledDescription(): string {
+    if (window.$game.state!.flags.userDrafting) {
+      return "⚠ disabled until you draft a player";
+    } else if (window.$game.state!.flags.underMinTeamSize) {
+      return `⚠ disabled your team has too few players`;
+    }
+
+    return "";
+  }
+
   renderDisabledDescription(): TemplateResult {
     // for now only for drafting in the future for all condition
     return html`<p id="play-disabled-desc">
-      ⚠ disabled until you draft a player
+      ${this.getDisabledDescription()}
     </p>`;
   }
 

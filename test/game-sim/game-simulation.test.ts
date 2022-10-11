@@ -877,6 +877,14 @@ describe("process()", () => {
     await _sm.process(st);
     expect(st.rejections).toEqual(rjs);
   });
+
+  test("when the next event closer than SIM_TIME_SLICE only the missing amount of time should be added", async () => {
+    const evtD = new Date(st.date);
+    evtD.setHours(evtD.getHours() + _sm.SIM_TIME_SLICE / 2);
+    st.eventQueue.push({ date: evtD, type: "simRound", detail: { round: 0 } });
+    await _sm.process(st);
+    expect(st.date).toEqual(evtD);
+  });
 });
 
 describe("timeout()()", () => {
