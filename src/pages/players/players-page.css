@@ -52,3 +52,38 @@ th > .btn-txt {
 .btn-txt.descending::after {
   content: "▼";
 }
+
+#js-filters {
+  background-clip: border-box;
+  border: 2px solid var(--dk-bg-color-500, --dk-bg-color-500);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0.5rem;
+  width: max-content;
+}
+
+.cnt-filters {
+  display: flex;
+}
+
+.cnt-filters > :first-child {
+  flex-shrink: 0;
+}
+
+@media screen and (max-width: 28rem) {
+  .cnt-filters {
+    flex-wrap: wrap;
+  }
+
+  .cnt-filters > :first-child {
+    flex-shrink: initial;
+  }
+}
+
+.filter-rst {
+  display: inline-block;
+  padding: 0px 4px;
+}

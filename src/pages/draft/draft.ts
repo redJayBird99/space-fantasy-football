@@ -35,7 +35,7 @@ class Draft extends HTMLElement {
     this.season = (e.target as HTMLSelectElement).value;
     // preserve the season position when navigating back
     const href = location.origin + location.pathname + `?season=${this.season}`;
-    history.pushState({}, "", href);
+    history.replaceState({}, "", href);
     this.render();
   };
 

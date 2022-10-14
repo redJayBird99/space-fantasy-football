@@ -55,21 +55,18 @@ function getContracts(st: _gs.GameState, team: _t.Team): _t.Contract[] {
   );
 }
 
-/** keep track of the sorting position */
-export class SorterBy {
-  ascending = false;
-  lastSortBy: unknown;
+/** keep track of the sorting position, by is the key and ascending the orientation */
+export type Sort = { ascending: boolean; by: unknown };
 
-  /**
-   * it sets lastSortBy to by and updates ascending to false by default but when
-   * by is the same of lastSortBy toggle to the opposite
-   * @returns ascending after an update
-   */
-  ascendingly(by: unknown): boolean {
-    this.ascending = !this.ascending && this.lastSortBy === by;
-    this.lastSortBy = by;
-    return this.ascending;
-  }
+/**
+ * it sets sort.by to by and updates ascending to false by default but when
+ * by is the same of sort.by toggle to the opposite
+ * @returns the ascending value after an update
+ */
+export function updateSort(s: Sort, by: unknown): boolean {
+  s.ascending = !s.ascending && s.by === by;
+  s.by = by;
+  return s.ascending;
 }
 
 export function sortBySkill(

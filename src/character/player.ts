@@ -24,19 +24,21 @@ const MIN_WAGE = Math.round(SALARY_CAP / 100);
 const MAX_WAGE = Math.round(SALARY_CAP / 5);
 
 type Foot = "ambidextrous" | "left" | "right";
-type Position =
-  | "gk"
-  | "cb"
-  | "lb"
-  | "rb"
-  | "cm"
-  | "dm"
-  | "lm"
-  | "rm"
-  | "am"
-  | "rw"
-  | "lw"
-  | "cf";
+export const POSITIONS = [
+  "gk",
+  "cb",
+  "lb",
+  "rb",
+  "cm",
+  "dm",
+  "lm",
+  "rm",
+  "am",
+  "rw",
+  "lw",
+  "cf",
+] as const;
+type Position = typeof POSITIONS[number];
 
 type PositionArea = "goalkeeper" | "defender" | "midfielder" | "forward";
 const POSITION_AREA: Readonly<Record<PositionArea, readonly Position[]>> = {
@@ -120,27 +122,27 @@ function createPreferredFoot(pos: Position): Foot {
   return "ambidextrous";
 }
 
-interface Skills {
-  strength: number;
-  height: number;
-  reflexes: number;
-  handling: number;
-  diving: number;
-  speed: number;
-  agility: number;
-  stamina: number;
-  defensivePositioning: number;
-  interception: number;
-  marking: number;
-  passing: number;
-  vision: number;
-  technique: number;
-  offensivePositioning: number;
-  shot: number;
-  finishing: number;
-}
-
-type Skill = keyof Skills;
+export const SKILLS = [
+  "strength",
+  "height",
+  "reflexes",
+  "handling",
+  "diving",
+  "speed",
+  "agility",
+  "stamina",
+  "defensivePositioning",
+  "interception",
+  "marking",
+  "passing",
+  "vision",
+  "technique",
+  "offensivePositioning",
+  "shot",
+  "finishing",
+] as const;
+type Skill = typeof SKILLS[number];
+type Skills = Record<Skill, number>;
 type SkillList = readonly Skill[];
 
 /** macroSkills are combination of skills */
@@ -152,7 +154,6 @@ const MACRO_SKILLS = {
   ability: ["passing", "vision", "technique"] as SkillList,
   offense: ["offensivePositioning", "shot", "finishing"] as SkillList,
 } as const;
-
 type MacroSkill = keyof typeof MACRO_SKILLS;
 
 type Penalty = "smallPenalty" | "midPenalty"; // bigPenalty default

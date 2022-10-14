@@ -2,7 +2,7 @@ import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
 import {
   exportedForTesting as _u,
-  SorterBy,
+  updateSort,
   sortBySkill,
   sortByAge,
   sortByInfo,
@@ -26,31 +26,20 @@ describe("bestAtPos()", () => {
 });
 
 describe("SortBy", () => {
-  test("when by is different to lastSortBy should return false", () => {
-    expect(new SorterBy().ascendingly("next")).toBe(false);
+  test("when by is different to last Sort by should return false", () => {
+    expect(updateSort({ ascending: true, by: "sort" }, "next")).toBe(false);
   });
 
-  test("when by is equal to lastSortBy and ascending was false should return true", () => {
-    const s = new SorterBy();
-    s.ascendingly("name");
-    expect(s.ascending).toBe(false);
-    expect(s.ascendingly("name")).toBe(true);
+  test("when by is equal to last Sort.by and ascending was false should return true", () => {
+    expect(updateSort({ ascending: false, by: "name" }, "name")).toBe(true);
   });
 
-  test("when by is equal to lastSortBy and ascending was true should return false", () => {
-    const s = new SorterBy();
-    s.ascendingly("name");
-    s.ascendingly("name");
-    expect(s.ascending).toBe(true);
-    expect(s.ascendingly("name")).toBe(false);
+  test("when by is equal to last Sort.by and ascending was true should return false", () => {
+    expect(updateSort({ ascending: true, by: "name" }, "name")).toBe(false);
   });
 
-  test("when by is different to lastSortBy and ascending was true should return false", () => {
-    const s = new SorterBy();
-    s.ascendingly("name");
-    s.ascendingly("name");
-    expect(s.ascending).toBe(true);
-    expect(s.ascendingly("next")).toBe(false);
+  test("when by is different to last Sort.by and ascending was true should return false", () => {
+    expect(updateSort({ ascending: true, by: "name" }, "next")).toBe(false);
   });
 });
 
