@@ -1,3 +1,4 @@
+import { MAX_GROWTH_RATE, Player } from "../character/player";
 import { endSimOnEvent } from "../game-sim/game-simulation";
 import { GameState } from "../game-state/game-state";
 
@@ -10,5 +11,8 @@ export default {
       // @ts-ignore
       (p) => p[key] === val
     );
+  },
+  getImprovabilityRating(p: Player): number {
+    return p.growthRate / MAX_GROWTH_RATE;
   },
 };

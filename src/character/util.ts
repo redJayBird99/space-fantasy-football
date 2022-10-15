@@ -1,6 +1,7 @@
 import * as _p from "./player";
 import * as _gs from "../game-state/game-state";
 import * as _t from "./team";
+import { estimateImprovabilityRating, getPlayerRating } from "./user";
 
 const GOOD_STAT = 75;
 const BAD_STAT = 35;
@@ -91,17 +92,22 @@ export function sortByAge(pls: _p.Player[], ascending: boolean): void {
 
 /**
  * it sorts the given players according the preferred player key and direction
- * NOTE: it doesn't sort for skills, growthRate and growthState keys
+ * NOTE: it doesn't sort for skills, growthRate (but improvability) and growthState keys
  */
 export function sortByInfo(
-  k: keyof _p.Player,
+  k: keyof _p.Player | "improvability" | "rating",
   pls: _p.Player[],
-  ascending: boolean
+  ascending: boolean,
+  gs: _gs.GameState
 ) {
   if (k === "birthday") {
     sortByAge(pls, ascending);
   } else if (k === "position") {
     sortByPosition(pls, ascending);
+  } else if (k === "improvability") {
+    sortByImprovability(gs.teams[gs.userTeam], pls, ascending);
+  } else if (k === "rating") {
+    sortByPlayerRating(gs, pls, ascending);
   } else if (k !== "skills" && k !== "growthRate" && k !== "growthState") {
     pls.sort((p1, p2) =>
       ascending ? p1[k].localeCompare(p2[k]) : p2[k].localeCompare(p1[k])
@@ -109,20 +115,32 @@ export function sortByInfo(
   }
 }
 
-const posOrder: Record<_p.Position, number> = {
-  gk: 1,
-  cb: 2,
-  lb: 3,
-  rb: 4,
-  cm: 5,
-  dm: 6,
-  lm: 7,
-  rm: 8,
-  am: 9,
-  rw: 10,
-  lw: 11,
-  cf: 12,
-};
+/** sort the given players according to the team scouting estimation  */
+function sortByImprovability(t: _t.Team, pls: _p.Player[], ascending: boolean) {
+  pls.sort((p1, p2) =>
+    ascending
+      ? estimateImprovabilityRating(p1, t) - estimateImprovabilityRating(p2, t)
+      : estimateImprovabilityRating(p2, t) - estimateImprovabilityRating(p1, t)
+  );
+}
+
+/** sort the given players according to the team scouting estimation  */
+function sortByPlayerRating(
+  gs: _gs.GameState,
+  pls: _p.Player[],
+  ascending: boolean
+) {
+  pls.sort((p1, p2) =>
+    ascending
+      ? getPlayerRating(p1, gs) - getPlayerRating(p2, gs)
+      : getPlayerRating(p2, gs) - getPlayerRating(p1, gs)
+  );
+}
+
+const posOrder: Record<_p.Position, number> = _p.POSITIONS.reduce((a, p, i) => {
+  a[p] = i;
+  return a;
+}, {} as Record<_p.Position, number>);
 
 export function sortByPosition(pls: _p.Player[], ascending: boolean): void {
   pls.sort((p1, p2) =>

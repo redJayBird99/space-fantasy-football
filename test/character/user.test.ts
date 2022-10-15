@@ -1,32 +1,92 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
-import { getImprovability } from "../../src/character/user";
+import {
+  getPlayerRating,
+  getPlayerRatingSymbol,
+  improvabilityRatingSymbol,
+} from "../../src/character/user";
 import * as _gs from "../../src/game-state/game-state";
+import { MAX_GROWTH_RATE, Player } from "../../src/character/player";
+import { Team } from "../../src/character/team";
 jest.mock("../../src/game-sim/sim-worker-interface");
 
-describe("getImprovability(", () => {
-  const st = _gs.GameState.init(["hacks", "cats", "dogs", "birds"], "hacks");
-  const players = Object.values(st.players);
+Player.getScore = jest.fn();
+const mockPlrGetScore = Player.getScore as jest.Mock;
+Team.estimateGrowthRate = jest.fn();
+const mockEstimateGrowthRate = Team.estimateGrowthRate as jest.Mock;
 
-  test("should return a value greater than or equal to 0", () => {
-    expect(getImprovability(players[0], st)).toBeGreaterThanOrEqual(0);
+describe("improvabilityRatingSymbol()", () => {
+  const gs = new _gs.GameState(new Date("2000-10-10"));
+  const p = new Player("am", gs.date);
+  const t = new Team("a");
+
+  test("should return C when a player growth rate is half MAX_GROWTH_RATE", () => {
+    mockEstimateGrowthRate.mockImplementation(() => MAX_GROWTH_RATE / 2);
+    expect(improvabilityRatingSymbol(p, t)).toBe("C");
   });
 
-  test("should return a value less than or equal to 10", () => {
-    expect(getImprovability(players[0], st)).toBeLessThanOrEqual(10);
+  test("should return A+ when a player growth rate is MAX_GROWTH_RATE", () => {
+    mockEstimateGrowthRate.mockImplementation(() => MAX_GROWTH_RATE);
+    expect(improvabilityRatingSymbol(p, t)).toBe("A+");
   });
 
-  test("two different teams should sometimes disagree", () => {
-    const aRst = Array.from(
-      { length: Math.floor(players.length * 0.5) },
-      (_, i) => getImprovability(players[i], st)
-    );
-    st.userTeam = "birds";
-    const bRst = Array.from(
-      { length: Math.floor(players.length * 0.15) },
-      (_, i) => getImprovability(players[i], st)
-    );
+  test("should return F when a player growth rate is 0", () => {
+    mockEstimateGrowthRate.mockImplementation(() => 0);
+    expect(improvabilityRatingSymbol(p, t)).toBe("F");
+  });
+});
 
-    expect(aRst).not.toEqual(bRst);
+describe("getPlayerRating()", () => {
+  const gs = new _gs.GameState(new Date("2000-10-10"));
+  const mean = 60;
+  const stdDev = 5;
+  gs.popStats.meanScore = mean;
+  gs.popStats.standardDev = stdDev;
+  const p = new Player("am", gs.date);
+
+  test("should not exceed 0 or 1", () => {
+    mockPlrGetScore.mockImplementation(() => mean + 4 * stdDev);
+    expect(getPlayerRating(p, gs)).toBeLessThanOrEqual(1);
+    mockPlrGetScore.mockImplementation(() => mean - 4 * stdDev);
+    expect(getPlayerRating(p, gs)).toBeGreaterThanOrEqual(0);
+  });
+
+  test("should return around 0.667 when a player is one Standard deviation higher than the mean", () => {
+    mockPlrGetScore.mockImplementation(() => mean + 1 * stdDev);
+    expect(getPlayerRating(p, gs)).toBeCloseTo(0.667);
+  });
+});
+
+describe("getPlayerRatingSymbol()", () => {
+  const gs = new _gs.GameState(new Date("2000-10-10"));
+  const mean = 60;
+  const stdDev = 5;
+  gs.popStats.meanScore = mean;
+  gs.popStats.standardDev = stdDev;
+  const p = new Player("am", gs.date);
+
+  test("should return C when a player on the mean", () => {
+    mockPlrGetScore.mockImplementation(() => gs.popStats.meanScore);
+    expect(getPlayerRatingSymbol(p, gs)).toBe("C");
+  });
+
+  test("should return A+ when a player is 3 Standard deviation higher than the mean", () => {
+    mockPlrGetScore.mockImplementation(() => mean + 3 * stdDev);
+    expect(getPlayerRatingSymbol(p, gs)).toBe("A+");
+  });
+
+  test("should return F when a player is 3 Standard deviation lower than the mean", () => {
+    mockPlrGetScore.mockImplementation(() => mean - 3 * stdDev);
+    expect(getPlayerRatingSymbol(p, gs)).toBe("F");
+  });
+
+  test("should return F when a player is over 3 Standard deviation lower than the mean", () => {
+    mockPlrGetScore.mockImplementation(() => mean - 4 * stdDev);
+    expect(getPlayerRatingSymbol(p, gs)).toBe("F");
+  });
+
+  test("should return A+ when a player is over 3 Standard deviation higher than the mean", () => {
+    mockPlrGetScore.mockImplementation(() => mean + 4 * stdDev);
+    expect(getPlayerRatingSymbol(p, gs)).toBe("A+");
   });
 });

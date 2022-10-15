@@ -6,19 +6,41 @@ import {
   TransRecord,
 } from "../game-state/game-state";
 import { within } from "../util/math";
-import { Player, getImprovabilityRating, MIN_WAGE, SALARY_CAP } from "./player";
+import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
 import { MAX_TEAM_SIZE, MIN_TEAM_SIZE, Team } from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
 
 /**
- * estimate the player improvability rating according the user team scouting
- * @Returns a value between 0 and 10
+ * estimate the player improvability rating according to the team scouting
+ * @Returns a value between 0 and 1 inclusive
  */
-export function getImprovability(p: Player, gs: GameState): number {
-  const gRate = Team.estimateGrowthRate(gs.teams[gs.userTeam], p);
-  return within(getImprovabilityRating(gRate), 0, 10);
+export function estimateImprovabilityRating(p: Player, t: Team): number {
+  return Team.estimateGrowthRate(t, p) / MAX_GROWTH_RATE;
+}
+
+/** returns an estimation rating between F (bad) to A+ (great) about the player improvability */
+export function improvabilityRatingSymbol(p: Player, t: Team): string {
+  const rtg = ["F", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+"];
+  return rtg[Math.round(estimateImprovabilityRating(p, t) * (rtg.length - 1))];
+}
+
+/**
+ * returns a rating value between 0 and 1 (inclusive) about how good the
+ * given player is respect to the others players
+ */
+export function getPlayerRating(p: Player, gs: GameState): number {
+  const start = gs.popStats.meanScore - 3 * gs.popStats.standardDev;
+  const end = gs.popStats.meanScore + 3 * gs.popStats.standardDev;
+  const range = end - start;
+  return within((Player.getScore(p) - start) / range, 0, 1);
+}
+
+/** returns a rating value between F (bad) to A+ (great) about how good the given player is */
+export function getPlayerRatingSymbol(p: Player, gs: GameState): string {
+  const rtg = ["F", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+"];
+  return rtg[Math.round(getPlayerRating(p, gs) * (rtg.length - 1))];
 }
 
 /** get all transfer informations about the given player in no particular order */

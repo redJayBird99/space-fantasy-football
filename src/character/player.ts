@@ -91,12 +91,6 @@ function createGrowthState(p: Player, now: Date): number {
   const annualDegrowthRate = (MAX_GROWTH_RATE / 2) * 12;
   return 1 - annualDegrowthRate * Math.max(0, age - START_DEGROWTH_AGE);
 }
-
-/** convert the growth rate to an improvability rating value between 0 and 10 */
-function getImprovabilityRating(growthRate: number): number {
-  return Math.round((growthRate / MAX_GROWTH_RATE) * 10);
-}
-
 // returns the probability for the preferred foot between left and right
 function preferredFootChance(pos: Position): { left: number; right: number } {
   if (pos === "lb" || pos === "lm" || pos === "lw") {
@@ -555,7 +549,6 @@ export {
   getArea,
   createAge,
   createGrowthState,
-  getImprovabilityRating,
   preferredFootChance,
   createPreferredFoot,
   MACRO_SKILLS,

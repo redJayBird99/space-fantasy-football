@@ -799,14 +799,13 @@ describe("Team.estimateGrowthRate()", () => {
     );
   });
 
-  test("should return a value within (2 * MAX_SCOUTING_OFFSET)% of the real growthRate", () => {
-    team.scoutOffset = _t.MAX_SCOUTING_OFFSET;
+  test("should always return a value within 0 and MAX_GROWTH_RATE", () => {
+    team.scoutOffset = 100 * _t.MAX_SCOUTING_OFFSET;
     expect(_t.Team.estimateGrowthRate(team, p)).toBeLessThanOrEqual(
-      (1 + 2 * _t.MAX_SCOUTING_OFFSET) * p.growthRate
+      _p.MAX_GROWTH_RATE
     );
-    expect(_t.Team.estimateGrowthRate(team, p)).toBeGreaterThanOrEqual(
-      (1 - 2 * _t.MAX_SCOUTING_OFFSET) * p.growthRate
-    );
+    team.scoutOffset = -100 * _t.MAX_SCOUTING_OFFSET;
+    expect(_t.Team.estimateGrowthRate(team, p)).toBeGreaterThanOrEqual(0);
   });
 
   test("lower is team.scoutOffset closer should be to the real growthRate", () => {

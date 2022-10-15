@@ -90,20 +90,6 @@ describe("Player.retire()", () => {
   });
 });
 
-describe("getImprovabilityRating()", () => {
-  test("should return 0 when given 0", () => {
-    expect(_pl.getImprovabilityRating(0)).toBe(0);
-  });
-
-  test("should return 10 when given MAX_GROWTH_RATE", () => {
-    expect(_pl.getImprovabilityRating(_pl.MAX_GROWTH_RATE)).toBe(10);
-  });
-
-  test("should return 3 when given 3 * MAX_GROWTH_RATE / 10", () => {
-    expect(_pl.getImprovabilityRating((3 * _pl.MAX_GROWTH_RATE) / 10)).toBe(3);
-  });
-});
-
 describe("preferredFootChance()", () => {
   poss.forEach((p) => {
     const rst = _pl.preferredFootChance(p);

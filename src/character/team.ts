@@ -5,6 +5,7 @@ import {
   MIN_SALARY_CAP,
   MAX_SKILL,
   MIN_WAGE,
+  MAX_GROWTH_RATE,
 } from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
@@ -280,13 +281,18 @@ class Team {
     return 4 * (Team.evaluatePlayer(g) / MAX_SKILL) + r[getArea(g.p.position)];
   }
 
-  // this method is meant for the user when he want to see the player improvability
-  // returns a predicted player growth rate by the team scouting, the max offset
-  // from the real growth is of (2 * MAX_SCOUTING_OFFSET)% percentage
+  /** this method is meant for the user, it returns a prediction of the player
+   * growth rate by the team scouting,
+   * the max offset from the real growth rate is 2 * MAX_SCOUTING_OFFSET * MAX_GROWTH_RATE,
+   * but never less than 0 or greater than MAX_GROWTH_RATE */
   static estimateGrowthRate(t: Team, p: Player): number {
     // the hash it used to get a deterministic value for each player and team without storing anything extra
     const h = (hash(p.id + t.name, 200) - 100) / 100;
-    return (1 + 2 * t.scoutOffset * h) * p.growthRate;
+    return within(
+      h * 2 * t.scoutOffset * MAX_GROWTH_RATE + p.growthRate,
+      0,
+      MAX_GROWTH_RATE
+    );
   }
 }
 

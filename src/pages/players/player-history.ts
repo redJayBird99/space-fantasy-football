@@ -17,8 +17,17 @@ class PlayerHistory extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
+  }
+
+  gameStateUpdated() {
+    this.render();
   }
 
   render(): void {

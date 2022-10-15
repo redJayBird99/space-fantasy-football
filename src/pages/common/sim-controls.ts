@@ -136,6 +136,9 @@ class PlaySim extends HTMLElement {
     } else if (gs.flags.onGameEvent === "retiring") {
       prepareRedirect();
       goTo(`${window.$PUBLIC_PATH}retiring`);
+    } else if (gs.flags.onGameEvent === "openFreeSigningWindow") {
+      prepareRedirect();
+      goTo(`${window.$PUBLIC_PATH}players?team=free+agent`);
     } else {
       update();
     }

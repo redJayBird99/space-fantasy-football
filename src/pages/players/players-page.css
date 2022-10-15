@@ -42,6 +42,7 @@ th.descending {
 }
 
 th > .btn-txt {
+  text-transform: capitalize;
   width: 100%;
 }
 

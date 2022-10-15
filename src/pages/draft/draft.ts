@@ -8,7 +8,12 @@ import {
 } from "../../game-state/game-state";
 import { goLink } from "../util/go-link";
 import { Player } from "../../character/player";
-import { getImprovability } from "../../character/user";
+import {
+  estimateImprovabilityRating,
+  getPlayerRating,
+  getPlayerRatingSymbol,
+  improvabilityRatingSymbol,
+} from "../../character/user";
 import { draftPlayer } from "../../game-sim/game-simulation";
 
 /** the page where all drafts are collected */
@@ -97,11 +102,12 @@ function draftTable(dft: DraftRecord): TemplateResult {
         <tr>
           <th>Pick</th>
           <th>Name</th>
-          <th><abbr title="position">Pos.</abbr></th>
+          <th><abbr title="Position">Pos.</abbr></th>
           <th>Age</th>
-          <th><abbr title="improvability">Imp.</abbr></th>
+          <th><abbr title="Improvability">Imp.</abbr></th>
+          <th><abbr title="Rating">Rat.</abbr></th>
           <th>Team</th>
-          <th>draft</th>
+          <th>Draft</th>
         </tr>
         ${dft.picked.map((d) => plrRow(d, new Date(dft.when)))}
         ${dft.picks.map((d) => plrRow(d, new Date(dft.when)))}
@@ -130,6 +136,7 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
       <td>${p ? p.position.toUpperCase() : ""}</td>
       <td>${p ? Player.age(p, when) : ""}</td>
       <td>${p ? improvabilitySymbol(rec.plId) : ""}</td>
+      <td>${p ? PlayerRatingSymbol(rec.plId) : ""}</td></td>
       <td ?data-user=${rec.team === gs.userTeam}>${rec.team}</td>
       <td>
         <button
@@ -148,15 +155,28 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
 /** show the estimated player improvability */
 function improvabilitySymbol(plId: string): TemplateResult {
   const gs = window.$game.state!;
-  const rks = ["F", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+"];
-  const rk = getImprovability(gs.players[plId], gs);
+  const p = gs.players[plId];
+  const t = gs.teams[gs.userTeam];
+  return ratingSymbol(
+    improvabilityRatingSymbol(p, t),
+    estimateImprovabilityRating(p, t)
+  );
+}
 
+/** show the player rating value (how good the player is currently) */
+function PlayerRatingSymbol(plId: string): TemplateResult {
+  const gs = window.$game.state!;
+  const p = gs.players[plId];
+  return ratingSymbol(getPlayerRatingSymbol(p, gs), getPlayerRating(p, gs));
+}
+
+function ratingSymbol(symbol: string, rating: number): TemplateResult {
   return html`
     <span
-      class="impv-symbol"
-      style="border-color: ${`hsl(${(rk / 10) * 120}deg 100% 60%)`}"
+      class="rtg-symbol"
+      style="border-color: ${`hsl(${rating * 120}deg 100% 60%)`}"
     >
-      ${rks[Math.floor(rk)]}
+      ${symbol}
     </span>
   `;
 }

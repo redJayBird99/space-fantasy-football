@@ -7,6 +7,10 @@ import { goLink } from "../util/go-link";
 import style from "./players-page.css";
 import { sortByInfo, sortBySkill, updateSort } from "../../character/util";
 import * as qsSync from "../util/query-string-sync";
+import {
+  getPlayerRatingSymbol,
+  improvabilityRatingSymbol,
+} from "../../character/user";
 
 /** filters applicable to players, when null or undefined the filter won't be applied */
 interface PlayersFilters {
@@ -20,7 +24,7 @@ interface PlayersFilters {
 interface TableState {
   at: number; // table starting entry position
   size: number; // table amount of entries
-  sortBy: string;
+  sortBy: string | null;
   sortAsc: boolean; // ascending order
 }
 
@@ -84,10 +88,12 @@ function onTbSizeChange(size: number): void {
 
 /** sort the table according to the the given key, it is assumed to be a table head key */
 function sortPlayersBy(key: string, ascending: boolean) {
+  const gs = window.$game.state!;
+
   if (SKILLS.includes(key as Skill)) {
     sortBySkill(key as Skill, pgGb!.players, ascending);
   } else {
-    sortByInfo(key as keyof Player, pgGb!.players, ascending);
+    sortByInfo(key as keyof Player, pgGb!.players, ascending, gs);
   }
 }
 
@@ -117,7 +123,7 @@ function onFilterChange(f: PlayersFilters) {
     s.at >= pgGb!.players.length
       ? Math.trunc(pgGb!.players.length / s.size) * s.size
       : s.at;
-  qsSync.save({ ...s, ...f, at });
+  qsSync.save({ ...s, ...f, at, sortBy: null, sortAsc: false }); // clear the sorting order too (just a preference)
 }
 
 /** it is the root of the page and handle the PageGlobal */
@@ -181,8 +187,8 @@ function tableControls(): TemplateResult {
   const pages = Math.ceil((pgGb!.players.length ?? 0) / c.size);
   const page = Math.trunc(c.at / c.size) + 1;
   const sizes = Array.from({ length: 5 }, (_, i) => 2 ** i * TB_SIZE);
-  const prev = () => onTableTurn(c.at - c.size);
-  const next = () => onTableTurn(c.at + c.size);
+  const onPrev = () => onTableTurn(c.at - c.size);
+  const onNext = () => onTableTurn(c.at + c.size);
   const onSizeChange = (e: Event) =>
     onTbSizeChange(Number((e.target as HTMLSelectElement).value));
   const onSearchChange = (e: Event) =>
@@ -193,8 +199,12 @@ function tableControls(): TemplateResult {
 
   return html`
     <span>page ${page} / ${pages}</span>
-    <button @click=${prev} aria-label="previous page">🡨</button>
-    <button @click=${next} aria-label="next page">🡪</button>
+    <button ?disabled=${page === 1} @click=${onPrev} aria-label="previous page">
+      🡨
+    </button>
+    <button ?disabled=${page === pages} @click=${onNext} aria-label="next page">
+      🡪
+    </button>
     <label for="sizes">entries:</label>
     <select id="sizes" @change=${onSizeChange}>
       ${sizes.map(
@@ -312,13 +322,13 @@ class PlayersTable extends HTMLElement {
 
   /**
    * the button contained by the th
-   * @param value one of the player key property or a skill
+   * @param key one of the player key property or a skill
    * @param child the content to nest in the button
    */
-  headBtn(value: string, child: string | TemplateResult): TemplateResult {
-    const ord = this.sortOrder(value);
+  headBtn(key: string, child: string | TemplateResult): TemplateResult {
+    const ord = this.sortOrder(key);
     const lbl = ord === "ascending" || ord === "" ? "descending" : "ascending";
-    const onClick = () => this.onHeadClick(value);
+    const onClick = () => this.onHeadClick(key);
     return html`
       <button class="btn-txt ${ord}" @click=${onClick} aria-label="sort ${lbl}">
         ${child}
@@ -342,6 +352,12 @@ class PlayersTable extends HTMLElement {
         const btn = this.headBtn(sk, abbr(sk));
         return html`<th class="${this.sortOrder(sk)}">${btn}</th>`;
       })}
+      <th class="${this.sortOrder("rating")}">
+        ${this.headBtn("rating", abbr("rating"))}
+      </th>
+      <th class="${this.sortOrder("improvability")}">
+        ${this.headBtn("improvability", abbr("improvability"))}
+      </th>
     </tr>`;
   }
 
@@ -385,6 +401,8 @@ function renderRows(players: Player[]) {
         ${SKILLS.map(
           (sk) => html`<td>${Math.round(Player.getSkill(p, sk))}</td>`
         )}
+        <td>${getPlayerRatingSymbol(p, gs)}</td>
+        <td>${improvabilityRatingSymbol(p, gs.teams[gs.userTeam])}</td>
       </tr>`
   );
 }

@@ -9,11 +9,11 @@ import {
   bestAtPos,
 } from "../../src/character/util";
 import { Player } from "../../src/character/player";
+import { GameState } from "../../src/game-state/game-state";
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 Player.getScore = jest.fn();
 const mockPlrGetScore = Player.getScore as jest.Mock;
-
 const sample = _u.createPlayers("forward", 10);
 
 describe("bestAtPos()", () => {
@@ -85,7 +85,7 @@ describe("sortByAge()", () => {
 describe("sortByInfo()", () => {
   test("should sort by the given player key", () => {
     const sml = sample.slice().sort((p1, p2) => p1.name.localeCompare(p2.name));
-    sortByInfo("name", sample, true);
+    sortByInfo("name", sample, true, {} as GameState);
     expect(sample).toEqual(sml);
   });
 });

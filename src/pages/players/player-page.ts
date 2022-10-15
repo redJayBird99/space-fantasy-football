@@ -9,7 +9,7 @@ import {
 import "./player-history.ts";
 import {
   canSignPlayer,
-  getImprovability,
+  estimateImprovabilityRating,
   signPlayer,
 } from "../../character/user";
 import style from "./player-page.css";
@@ -19,8 +19,17 @@ import { Team } from "../../character/team";
 class PlayerPage extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
+  }
+
+  gameStateUpdated() {
+    this.render();
   }
 
   render(): void {
@@ -80,6 +89,7 @@ class PlayerInfo extends HTMLElement {
 /** biography informations */
 function playerBio(p: Player): TemplateResult {
   const gs = window.$game.state!;
+  const t = gs.teams[gs.userTeam];
 
   // TODO: use half starts for improvability
   return html`
@@ -93,7 +103,9 @@ function playerBio(p: Player): TemplateResult {
       </span>
       <span>
         improvability
-        <span class="plr-stars">${"🟊".repeat(getImprovability(p, gs))}</span>
+        <span class="plr-stars">
+          ${"🟊".repeat(Math.round(estimateImprovabilityRating(p, t) * 5))}
+        </span>
       </span>
       <span> Preferred foot ${p.foot} </span>
     </div>
