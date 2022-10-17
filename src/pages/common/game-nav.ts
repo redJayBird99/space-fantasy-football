@@ -42,6 +42,7 @@ class GameNav extends HTMLElement {
             ${goLink(`${window.$PUBLIC_PATH}transactions`, "transactions")}
           </li>
           <li>${goLink(`${window.$PUBLIC_PATH}draft`, "draft")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}trade`, "trade")}</li>
           ${window.$game.state?.flags.onGameEvent === "retiring"
             ? html`<li>
                 ${goLink(`${window.$PUBLIC_PATH}retiring`, "retiring")}

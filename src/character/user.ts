@@ -1,5 +1,11 @@
 // a series of utils for the user interaction with the games
 import {
+  acceptable,
+  affordable,
+  transferPlayers,
+  validTeamSize,
+} from "../game-sim/trade";
+import {
   DraftPickRecord,
   GameState,
   SignRequest,
@@ -143,6 +149,46 @@ export function resignPlayer(r: SignRequest): void {
     when: gs.date.toDateString(),
     plId: p.id,
     team: t.name,
+  });
+  window.$game.state = gs; // mutation notification
+}
+
+/**
+ * check if the given trade by the user is possible
+ * @param other the trading partner
+ * @param get what the user team would receive from the other team
+ * @param give what the user give to the other team
+ */
+export function canTrade(other: Team, get: Player[], give: Player[]): boolean {
+  const gs = window.$game.state!;
+  const user = gs.teams[gs.userTeam];
+
+  return (
+    gs.flags.openTradeWindow &&
+    validTeamSize(user, get, give) &&
+    affordable({ gs, t: user })(get, give) &&
+    acceptable({ gs, t: other }, give, get)
+  );
+}
+
+/**
+ * transfer the players between the user team and the other team an save the
+ * record in the the trade history
+ * @param other the trading partner
+ * @param get what the user team would receive from the other team
+ * @param give what the user give to the other team
+ */
+export function makeTrade(other: Team, get: Player[], give: Player[]) {
+  const gs = window.$game.state!;
+  const user = gs.teams[gs.userTeam];
+  transferPlayers(gs, get, user);
+  transferPlayers(gs, give, other);
+  gs.transactions.now.trades.push({
+    when: gs.date.toDateString(),
+    sides: [
+      { team: user.name, plIds: give.map((p) => p.id) },
+      { team: other.name, plIds: get.map((p) => p.id) },
+    ],
   });
   window.$game.state = gs; // mutation notification
 }

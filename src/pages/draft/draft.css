@@ -24,7 +24,7 @@ table {
 }
 
 tr:nth-of-type(even) {
-  background-color: var(--dk-bg-color-700, var(--lt-dg-color-100));
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
 }
 
 td,
@@ -105,8 +105,8 @@ td:nth-of-type(2) {
   width: 1.8rem;
 }
 
-a {
-  color: white;
+sff-go > a {
+  color: var(--dk-on-bg-color, initial);
 }
 
 .cnt-lottery > h2 {
@@ -125,7 +125,7 @@ a {
 }
 
 .lottery > li:nth-of-type(odd) {
-  background-color: var(--dk-bg-color-700, var(--lt-dg-color-100));
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
 }
 
 [data-user] {

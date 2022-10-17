@@ -412,7 +412,7 @@ function handleDraft(gs: GameState): boolean {
 function handleTrade(gs: GameState): boolean {
   if (gs.flags.openTradeWindow) {
     makeTrades(gs).forEach((t) => {
-      gs.transactions.now.trades.push(toTradeRecord(gs, t, gs.date));
+      gs.transactions.now.trades.push(toTradeRecord(t, gs.date));
     });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }

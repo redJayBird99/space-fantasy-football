@@ -25,7 +25,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --dk-bg-color: hsl(275deg, 4%, 16%);
+    --dk-bg-color-750: hsl(275deg, 4%, 20%);
     --dk-bg-color-700: hsl(275deg, 4%, 24%);
+    --dk-bg-color-650: hsl(275deg, 4%, 28%);
     --dk-bg-color-600: hsl(275deg, 4%, 32%);
     --dk-bg-color-500: hsl(275deg, 4%, 40%);
     --dk-on-bg-color: white;
@@ -48,7 +50,9 @@
 /* default mode */
 :root.dark {
   --dk-bg-color: hsl(275deg, 4%, 16%);
+  --dk-bg-color-750: hsl(275deg, 4%, 20%);
   --dk-bg-color-700: hsl(275deg, 4%, 24%);
+  --dk-bg-color-650: hsl(275deg, 4%, 28%);
   --dk-bg-color-600: hsl(275deg, 4%, 32%);
   --dk-bg-color-500: hsl(275deg, 4%, 40%);
   --dk-on-bg-color: white;

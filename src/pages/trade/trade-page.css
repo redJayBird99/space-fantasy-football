@@ -1,0 +1,124 @@
+.cnt-traders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.cnt-traders > * {
+  flex-grow: 1;
+  max-width: 52rem;
+}
+
+.fin-infos {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 3px;
+  padding-right: 2.5rem;
+}
+
+.fin-info {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-300));
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 7%, 0.18);
+  flex-grow: 1;
+  padding: 1rem 0.1rem;
+  text-align: center;
+}
+
+.fin-info > :nth-child(2) {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.roster {
+  margin: 0;
+  padding: 0;
+}
+
+.plr-entry {
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 7%, 0.15);
+  display: flex;
+  list-style-type: none;
+  margin: 4px 0;
+}
+
+.plr-entry > :first-child {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-300));
+  border-right: none;
+  border-bottom: none;
+  flex-grow: 1;
+}
+
+.plr-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 6px 1rem;
+}
+
+.plr-bio {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cnt-checkbox {
+  align-items: center;
+  background-color: var(--dk-primary-color, var(--lt-primary-color));
+  border-left: 2px dashed var(--dk-bg-color-500, var(--lt-bg-color-500));
+  border-radius: 0 14px 14px 0px / 25px;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 2.5rem;
+}
+
+.plr-bio > :first-child {
+  margin: 0px;
+}
+
+.plr-bio > :nth-child(2) {
+  font-size: 0.9rem;
+}
+
+.plr-pos {
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.plr-wage {
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.25);
+}
+
+.plr-skills {
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-300));
+  border-top: 1px dashed var(--dk-bg-color-500, var(--lt-bg-color-500));
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  gap: 1px 1rem;
+  justify-content: flex-start;
+  padding: 4px 1rem 2px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+abbr[title] {
+  text-decoration: none;
+}
+
+.plr-skill {
+  border-left: 2px solid;
+  padding-left: 4px;
+  width: 3.2rem;
+}
+
+sff-go > a {
+  color: var(--dk-on-bg-color, initial);
+}

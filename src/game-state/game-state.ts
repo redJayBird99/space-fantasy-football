@@ -226,7 +226,7 @@ class GameState {
 }
 
 /** convert the given trade to a tradeRecord */
-export function toTradeRecord(s: GameState, t: Trade, when: Date): TradeRecord {
+export function toTradeRecord(t: Trade, when: Date): TradeRecord {
   return {
     when: when.toDateString(),
     sides: [
