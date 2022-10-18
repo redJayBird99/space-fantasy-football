@@ -1,14 +1,18 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
+import * as _trd from "../../src/game-sim/trade";
 import {
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
+  tradeOfferIsStillValid,
 } from "../../src/character/user";
 import * as _gs from "../../src/game-state/game-state";
 import { MAX_GROWTH_RATE, Player } from "../../src/character/player";
 import { Team } from "../../src/character/team";
 jest.mock("../../src/game-sim/sim-worker-interface");
+jest.mock("../../src/game-sim/trade");
+(_trd.tradeRequirements as jest.Mock) = jest.fn(() => true);
 
 Player.getScore = jest.fn();
 const mockPlrGetScore = Player.getScore as jest.Mock;
@@ -88,5 +92,30 @@ describe("getPlayerRatingSymbol()", () => {
   test("should return A+ when a player is over 3 Standard deviation higher than the mean", () => {
     mockPlrGetScore.mockImplementation(() => mean + 4 * stdDev);
     expect(getPlayerRatingSymbol(p, gs)).toBe("A+");
+  });
+});
+
+describe("tradeOfferIsStillValid()", () => {
+  const gs = _gs.GameState.init(["a", "b"]);
+  gs.tradeOffers.push({
+    when: "",
+    sides: [
+      { team: "a", plIds: gs.teams.a.playerIds.slice(0, 3) },
+      { team: "b", plIds: gs.teams.b.playerIds.slice(0, 3) },
+    ],
+  });
+  gs.flags.openTradeWindow = true;
+
+  test("when the player are still available should return true", () => {
+    const mockGs = _gs.GameState.parse(JSON.stringify(gs));
+    (window.$game as any) = { state: mockGs };
+    expect(tradeOfferIsStillValid(mockGs.tradeOffers[0])).toBe(true);
+  });
+
+  test("when the player aren't available should return false", () => {
+    const mockGs = _gs.GameState.parse(JSON.stringify(gs));
+    mockGs.teams.a.playerIds = [];
+    (window.$game as any) = { state: mockGs };
+    expect(tradeOfferIsStillValid(mockGs.tradeOffers[0])).toBe(false);
   });
 });

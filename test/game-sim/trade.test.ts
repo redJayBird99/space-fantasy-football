@@ -322,14 +322,16 @@ describe("searchTrade", () => {
   });
 });
 
-describe("makeTrades", () => {
+describe("findTrades and commitTrade", () => {
   describe("when some trade was made", () => {
     let gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
-    let trades = _tde.makeTrades(gs);
+    let trades = _tde.findTrades(gs);
+    trades.forEach((t) => _tde.commitTrade(gs, t));
 
     while (trades.length !== 0) {
       gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
-      trades = _tde.makeTrades(gs);
+      trades = _tde.findTrades(gs);
+      trades.forEach((t) => _tde.commitTrade(gs, t));
     }
 
     test("the traded players should switch team", () => {

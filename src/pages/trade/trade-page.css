@@ -74,6 +74,10 @@
   width: 2.5rem;
 }
 
+.cnt-checkbox--on {
+  background-color: var(--dk-positive-color, var(--lt-positive-color));
+}
+
 .plr-bio > :first-child {
   margin: 0px;
 }

@@ -14,6 +14,7 @@ import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
 import { sendSyncUpdatedGame } from "./game-sync";
 import { Trade } from "../game-sim/trade";
+import { updateTradeOffers } from "../character/user";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -68,6 +69,8 @@ class GameState {
   /** player requests to sign for the user team (used only when re-signing players),
    * when wage or seasons are 0 means that the player is unwilling to sign */
   reSigning?: SignRequest[];
+  /** the trade offers received by the user */
+  tradeOffers: TradeRecord[] = [];
   flags = {
     openTradeWindow: false,
     openFreeSigningWindow: true,
@@ -255,6 +258,8 @@ class GameStateHandle {
   set state(updated: GameState | undefined) {
     const init = !this._state;
     this._state = updated;
+    // check here to catch all possible events which could make the trade invalid (new signings, traded players, other teams trading and etc)
+    this._state && updateTradeOffers(this._state);
     this.onUpdate();
 
     if (!init) {

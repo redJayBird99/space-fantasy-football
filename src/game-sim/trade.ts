@@ -6,7 +6,7 @@ import {
   sumWages,
   Team,
 } from "../character/team";
-import { GameState } from "../game-state/game-state";
+import { GameState, toTradeRecord } from "../game-state/game-state";
 import { shuffle } from "../util/generator";
 import { dist } from "../util/math";
 
@@ -205,11 +205,10 @@ function transferPlayers(gs: GameState, pls: Player[], to: Team): void {
   });
 }
 
-/**
- * try to make some trade between teams
- * @returns the trades made
+/** try to find some possible trades between teams
+ * * @returns the potential trades without duplicate teams (same team in multiple trades)
  */
-function makeTrades(gs: GameState): Trade[] {
+export function findTrades(gs: GameState): Trade[] {
   const rst: Trade[] = [];
   const teams = shuffle(Object.values(gs.teams));
 
@@ -217,13 +216,25 @@ function makeTrades(gs: GameState): Trade[] {
     const trade = searchTrade({ gs, t: teams[i] }, teams[i - 1]);
 
     if (trade) {
-      transferPlayers(gs, trade.side1.content, trade.side2.by);
-      transferPlayers(gs, trade.side2.content, trade.side1.by);
       rst.push(trade);
     }
   }
 
   return rst;
+}
+
+/** transfer the players and save the trade record in the game state */
+export function commitTrade(gs: GameState, t: Trade) {
+  transferPlayers(gs, t.side1.content, t.side2.by);
+  transferPlayers(gs, t.side2.content, t.side1.by);
+  gs.transactions.now.trades.push(toTradeRecord(t, gs.date));
+}
+
+// just a wrapper around validTeamSize and affordable
+/** returns true if the team has the financial and size requirements to make the trade */
+export function tradeRequirements(t: Team, get: Player[], give: Player[]) {
+  const gs = window.$game.state!;
+  return validTeamSize(t, get, give) && affordable({ gs, t })(get, give);
 }
 
 export {
@@ -242,5 +253,4 @@ export {
   acceptable,
   findOffer,
   searchTrade,
-  makeTrades,
 };

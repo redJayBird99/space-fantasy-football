@@ -1,7 +1,9 @@
 import { createId } from "../util/generator";
 import { interpolate } from "../util/util";
 import mails from "../asset/mails.json";
-import { MIN_TEAM_SIZE } from "./team";
+import { MIN_TEAM_SIZE, Team } from "./team";
+import { Trade } from "../game-sim/trade";
+import { TradeRecord } from "../game-state/game-state";
 
 export interface Mail {
   id: string;
@@ -47,6 +49,38 @@ export function teamSizeAlert(send: Date): Mail {
       sender: "Coach Assistant",
       subject: "we have too few players",
       content: `our team should have at least ${MIN_TEAM_SIZE} players, sign some new players to reach this requirement`,
+    },
+    send
+  );
+}
+
+export function tradeOffer(send: Date, t: Trade, user: Team): Mail {
+  const offer = t.side1.by === user ? t.side2 : t.side1;
+
+  return newMail(
+    {
+      sender: "Head Scout",
+      subject: "we received a trade offer",
+      content: `we have received an offer by ${
+        offer.by.name
+      } for ${offer.content.map((p) => p.name).join(", ")}`,
+    },
+    send
+  );
+}
+
+export function withdrawOffer(send: Date, t: TradeRecord, user: Team): Mail {
+  const offer = t.sides[0].team === user.name ? t.sides[1] : t.sides[0];
+  // we don't need to worry about retired player (it called only when the trade window is open)
+  const pls = offer.plIds.map((id) => window.$game.state!.players[id]);
+
+  return newMail(
+    {
+      sender: "Head Scout",
+      subject: `${offer.team} has withdrawn his offer`,
+      content: `${offer.team} has withdrawn his trading offer for ${pls
+        .map((p) => p.name)
+        .join(", ")}. The trading conditions aren't met anymore`,
     },
     send
   );

@@ -15,12 +15,12 @@ import {
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
 import { getPopStats } from "../game-state/population-stats";
-import { makeTrades } from "./trade";
+import { commitTrade, findTrades } from "./trade";
 import {
   fetchNewFormations,
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
-import { mustDraft, teamSizeAlert } from "../character/mail";
+import { mustDraft, teamSizeAlert, tradeOffer } from "../character/mail";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -302,6 +302,7 @@ async function handleSeasonStart(gs: GameState): PBool {
 export function prepareSeasonStart(gs: GameState): void {
   newSeasonSchedule(gs, Object.keys(gs.teams));
   gs.flags.openTradeWindow = false;
+  gs.tradeOffers = []; // when the window close the offers disappear
   enqueueSimRoundEvent(gs, 0);
   const endDate = enqueueSeasonEndEvent(gs).date;
   enqueueEventFor(gs, endDate, "closeFreeSigningWindow", { months: -1 });
@@ -410,9 +411,17 @@ function handleDraft(gs: GameState): boolean {
 
 /**  when the trade window is open try to do some trade between teams */
 function handleTrade(gs: GameState): boolean {
+  const user = gs.teams[gs.userTeam];
+
   if (gs.flags.openTradeWindow) {
-    makeTrades(gs).forEach((t) => {
-      gs.transactions.now.trades.push(toTradeRecord(t, gs.date));
+    findTrades(gs).forEach((t) => {
+      // TODO add auto trade option for the user team
+      if (t.side1.by === user || t.side2.by === user) {
+        gs.tradeOffers.push(toTradeRecord(t, gs.date));
+        gs.mails.unshift(tradeOffer(gs.date, t, user));
+      } else {
+        commitTrade(gs, t);
+      }
     });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
