@@ -62,10 +62,10 @@ class TradePage extends HTMLElement {
       return;
     }
 
-    const o = this.offer;
-    this.offer = undefined;
     const gs = window.$game.state! as GameState;
     gs.tradeOffers = gs.tradeOffers.filter((t) => t !== this.offer);
+    const o = this.offer;
+    this.offer = undefined;
     const other = o.sides[0].team === gs.userTeam ? o.sides[1] : o.sides[0];
     const user = o.sides[0].team === gs.userTeam ? o.sides[0] : o.sides[1];
 

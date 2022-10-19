@@ -238,8 +238,6 @@ export function tradeRequirements(t: Team, get: Player[], give: Player[]) {
 }
 
 export {
-  MAX_TEAM_SIZE,
-  MIN_TEAM_SIZE,
   MAX_EXCHANGE_SIZE,
   underMinTeamSize,
   overMaxTeamSize,

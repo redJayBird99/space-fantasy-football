@@ -826,7 +826,7 @@ describe("handleGameEvent()", () => {
           type,
           detail: type === "simRound" ? { round: 0 } : undefined,
         };
-        expect(await _sm.handleGameEvent(st, e as GameEvent)).toBe(true);
+        expect((await _sm.handleGameEvent(st, e as GameEvent)).stop).toBe(true);
       }
     });
   });
@@ -834,7 +834,8 @@ describe("handleGameEvent()", () => {
   describe("for events not defined in endSimOnEvent", () => {
     test("should return false", async () => {
       const e = { date: startD, type: "updateContract" };
-      expect(await _sm.handleGameEvent(st, e as GameEvent)).toBe(false);
+      const rst = await _sm.handleGameEvent(st, e as GameEvent);
+      expect(rst.stop).toBe(false);
     });
   });
 });

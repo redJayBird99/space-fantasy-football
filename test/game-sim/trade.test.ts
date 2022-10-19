@@ -34,7 +34,7 @@ describe("underMinTeamSize", () => {
   });
 
   test("when get under the min team size return true", () => {
-    const giveAmount = tm1Pls.length - _tde.MIN_TEAM_SIZE + 2;
+    const giveAmount = tm1Pls.length - _t.MIN_TEAM_SIZE + 2;
     const give = tm1Pls.slice(0, giveAmount);
     expect(_tde.underMinTeamSize(team, [tm2Pls[0]], give)).toBe(true);
   });
@@ -52,7 +52,7 @@ describe("overMaxTeamSize", () => {
   });
 
   test("when get over the max team size return true", () => {
-    const getAmount = _tde.MAX_TEAM_SIZE - tm2Pls.length + 2;
+    const getAmount = _t.MAX_TEAM_SIZE - tm2Pls.length + 2;
     const get = tm1Pls.slice(0, getAmount);
     expect(_tde.overMaxTeamSize(team, get, [tm1Pls[0]])).toBe(true);
   });
@@ -65,7 +65,7 @@ describe("validTeamSize", () => {
 
   test("when is over the team max size but the team size is reduced return true", () => {
     const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-    const pls = _u.rdmPlayers(_tde.MAX_TEAM_SIZE - tm1Pls.length + 3);
+    const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
       _gs.GameState.savePlayer(st, p);
       _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
@@ -77,7 +77,7 @@ describe("validTeamSize", () => {
 
   test("when is over the max team size return false", () => {
     const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-    const pls = _u.rdmPlayers(_tde.MAX_TEAM_SIZE - tm1Pls.length + 3);
+    const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
       _gs.GameState.savePlayer(st, p);
       _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
@@ -90,7 +90,7 @@ describe("validTeamSize", () => {
   test("when is under the team min size but the team size is increased return true", () => {
     const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
-      .slice(0, tm1Pls.length + 2 - _tde.MIN_TEAM_SIZE)
+      .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
       .forEach((p) =>
         _t.Team.unSignPlayer(st, _gs.GameState.getContract(st, p)!)
       );
@@ -102,7 +102,7 @@ describe("validTeamSize", () => {
   test("when is under the team min size return false", () => {
     const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
-      .slice(0, tm1Pls.length + 2 - _tde.MIN_TEAM_SIZE)
+      .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
       .forEach((p) =>
         _t.Team.unSignPlayer(st, _gs.GameState.getContract(st, p)!)
       );
@@ -226,14 +226,14 @@ describe("acceptable()", () => {
   });
 
   test("should return false when the team get under the min team size", () => {
-    const giveAmount = tm1Pls.length - _tde.MIN_TEAM_SIZE + 2;
+    const giveAmount = tm1Pls.length - _t.MIN_TEAM_SIZE + 2;
     const give = tm1Pls.slice(0, giveAmount);
     const get = tm2Pls.slice(0, 1);
     expect(_tde.acceptable({ gs: st, t: team }, get, give)).toBe(false);
   });
 
   test("should return false when the team get over the max team size", () => {
-    const getAmount = _tde.MAX_TEAM_SIZE + 2 - tm1Pls.length;
+    const getAmount = _t.MAX_TEAM_SIZE + 2 - tm1Pls.length;
     const get = tm2Pls.slice(0, getAmount);
     const give = tm1Pls.slice(0, 1);
     expect(_tde.acceptable({ gs: st, t: team }, get, give)).toBe(false);

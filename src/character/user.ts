@@ -14,7 +14,7 @@ import {
 import { within } from "../util/math";
 import { withdrawOffer } from "./mail";
 import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
-import { MAX_TEAM_SIZE, MIN_TEAM_SIZE, Team } from "./team";
+import { MAX_TEAM_SIZE, Team } from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
@@ -129,7 +129,6 @@ export function signPlayer(p: Player): void {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
   Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
-  gs.flags.underMinTeamSize = t?.playerIds.length < MIN_TEAM_SIZE;
   gs.flags.signedNewPlayer = true;
   gs.transactions.now.signings.push({
     when: gs.date.toDateString(),

@@ -67,9 +67,9 @@ function gameDate(): TemplateResult {
 function dateEventInfo(): string {
   switch (window.$game.state!.flags.onGameEvent) {
     case "draftStart":
-      return "Draft day";
+      return "Draft";
     case "draft":
-      return "Drafting";
+      return "Draft End";
     case "retiring":
       return "Retiring day";
     case "simRound":
@@ -184,7 +184,7 @@ class PlaySim extends HTMLElement {
   getDisabledDescription(): string {
     if (window.$game.state!.flags.userDrafting) {
       return "⚠ disabled until you draft a player";
-    } else if (window.$game.state!.flags.underMinTeamSize) {
+    } else if (!window.$game.state!.flags.canSimRound) {
       return `⚠ disabled your team has too few players`;
     }
 

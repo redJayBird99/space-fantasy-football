@@ -21,6 +21,7 @@ import {
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
 import { mustDraft, teamSizeAlert, tradeOffer } from "../character/mail";
+import { updateTradeOffers } from "../character/user";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -48,8 +49,12 @@ export type GameEventTypes =
   | "openFreeSigningWindow" // start the signing free players period
   | "closeFreeSigningWindow"; //
 export type SimRound = { round: number };
-type DateOffset = { years?: number; months?: number; days?: number };
+/** when done is true when the event was processed, stop is true when the sim should stop on the event */
+type EventRst = { stop: boolean; done: boolean };
+type PEventRst = Promise<EventRst>;
 type PBool = Promise<boolean>;
+type DateOffset = { years?: number; months?: number; days?: number };
+
 export type SimEndEvent = "oneDay" | GameEventTypes;
 
 /** the default events where the simulation end */
@@ -101,7 +106,7 @@ let simCtrl = { stop: false };
 /** check if the gs has flags that prevent the simulation from running,
  * usually used when waiting for some user action */
 export function isSimDisabled(gs: GameState) {
-  return gs.flags.userDrafting || gs.flags.underMinTeamSize;
+  return gs.flags.userDrafting || !gs.flags.canSimRound;
 }
 
 /** check if the previous called simulate() function is still simulating */
@@ -182,9 +187,14 @@ async function process(gs: GameState): PBool {
 
   while (t < MAX_SIM_TIME_PER_TICK && gs.eventQueue.length !== 0) {
     if (gs.date.getTime() >= gs.eventQueue[0]?.date.getTime()) {
-      const gEvt = gs.eventQueue.shift()!;
-      gs.flags.onGameEvent = gEvt.type;
-      return await handleGameEvent(gs, gEvt);
+      const rst = await handleGameEvent(gs, gs.eventQueue[0]);
+
+      if (rst.done) {
+        gs.flags.onGameEvent = gs.eventQueue.shift()!.type;
+      }
+
+      onStateUpdate(gs); // only what happens on events is relevant for this function
+      return rst.stop;
     } else {
       updateGameDate(gs);
       gs.flags.onGameEvent = undefined;
@@ -214,7 +224,7 @@ function updateGameDate(gs: GameState): void {
 }
 
 // returns true when a particular event handling require to momentarily stop the simulation
-async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
+async function handleGameEvent(gs: GameState, evt: GameEvent): PEventRst {
   if (evt.type === "simRound") {
     return await handleSimRound(gs, evt.detail as SimRound);
   } else if (evt.type === "skillUpdate") {
@@ -249,50 +259,44 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PBool {
     return handleCloseFreeSigningWindow(gs);
   }
 
-  return false;
+  return { stop: false, done: false };
 }
 
 /** before sim all matches updates all formations */
-async function handleSimRound(gs: GameState, r: SimRound): PBool {
-  if (simRoundRequirements(gs)) {
+async function handleSimRound(gs: GameState, r: SimRound): PEventRst {
+  if (!updateCanSimRound(gs)) {
     gs.mails.unshift(teamSizeAlert(gs.date));
-    // we need to prepend the same event because the process function pop it
-    gs.eventQueue.unshift({
-      date: new Date(gs.date),
-      type: "simRound",
-      detail: r,
-    });
-    return true;
+    return { stop: true, done: false };
   }
 
   await updateFormations(gs);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
-  return endSimOnEvent.simRound ?? false;
+  return { stop: endSimOnEvent.simRound ?? false, done: true };
 }
 
-function handleSkillUpdate(gs: GameState): boolean {
+function handleSkillUpdate(gs: GameState): EventRst {
   updateSkills(gs);
   enqueueSkillUpdateEvent(gs);
   gs.popStats = getPopStats(Object.values(gs.players));
-  return endSimOnEvent.skillUpdate ?? false;
+  return { stop: endSimOnEvent.skillUpdate ?? false, done: true };
 }
 
-function handleSeasonEnd(gs: GameState): boolean {
+function handleSeasonEnd(gs: GameState): EventRst {
   storeEndedSeason(gs);
   enqueueSeasonStartEvent(gs);
   updateTeamsAppeal(gs);
   updateTeamsScouting(gs);
-  return endSimOnEvent.seasonEnd ?? false;
+  return { stop: endSimOnEvent.seasonEnd ?? false, done: true };
 }
 
 // TODO: testing the setNewFormation part
 /** prepare the season events and the team formations */
-async function handleSeasonStart(gs: GameState): PBool {
+async function handleSeasonStart(gs: GameState): PEventRst {
   prepareSeasonStart(gs);
   gs.flags.signLimit = false;
   await setNewFormations(gs);
-  return endSimOnEvent.seasonStart ?? false;
+  return { stop: endSimOnEvent.seasonStart ?? false, done: true };
 }
 
 /**
@@ -315,34 +319,35 @@ export function prepareSeasonStart(gs: GameState): void {
 }
 
 /** update the contracts length and add re-signing requests for the user team */
-function handleUpdateContracts(gs: GameState): boolean {
+function handleUpdateContracts(gs: GameState): EventRst {
   updateContracts(gs);
   addRenewalRequests(gs);
   GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "renewals" });
   // return endSimOnEvent.updateContracts ?? false;
-  return true; // TODO: until auto re-sign flags is done we need always to stop here
+  // TODO: until auto re-sign flags is done we need always to stop here
+  return { stop: true, done: true };
 }
 
 /** re-sign some expiring contract and expire all others */
-function handleRenewals(gs: GameState): boolean {
+function handleRenewals(gs: GameState): EventRst {
   // TODO: check the auto re-sign option instead of a bool
   renewExpiringContracts(gs, true);
   removeExpiredContracts(gs);
   gs.reSigning = undefined;
-  return endSimOnEvent.renewals ?? false;
+  return { stop: endSimOnEvent.renewals ?? false, done: true };
 }
 
-function handleUpdateFinances(gs: GameState): boolean {
+function handleUpdateFinances(gs: GameState): EventRst {
   Object.values(gs.teams).forEach((t) => Team.updateFinances({ gs, t }));
   enqueueUpdateFinancesEvent(gs);
-  return endSimOnEvent.updateFinances ?? false;
+  return { stop: endSimOnEvent.updateFinances ?? false, done: true };
 }
 
 /**
  * if the free signing window is open try to sign some players for each team and
  * enqueue the next signings event weekly if the season already started otherwise daily
  */
-function handleSignings(gs: GameState): boolean {
+function handleSignings(gs: GameState): EventRst {
   if (gs.flags.openFreeSigningWindow) {
     teamsSignFreeAgents(gs, true); // TODO: auto sign option
     // if the season didn't already start try new signings every day
@@ -350,23 +355,23 @@ function handleSignings(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "signings", { days });
   }
 
-  return endSimOnEvent.signings ?? false;
+  return { stop: endSimOnEvent.signings ?? false, done: true };
 }
 
 /** check which players is willing to retire and add them to the gs.retiring */
-function handleRetiring(gs: GameState): boolean {
+function handleRetiring(gs: GameState): EventRst {
   gs.retiring = Object.values(gs.players)
     .filter((p) => Player.retire(p, gs.date))
     .map((p) => p.id);
   GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "retire" });
-  return endSimOnEvent.retiring ?? false;
+  return { stop: endSimOnEvent.retiring ?? false, done: true };
 }
 
 /** retires all players in gs.retiring and add the to the retirees */
-function handleRetire(gs: GameState): boolean {
+function handleRetire(gs: GameState): EventRst {
   gs.retiring.forEach((id) => retirePlayer(gs, gs.players[id]));
   gs.retiring = [];
-  return endSimOnEvent.retire ?? false;
+  return { stop: endSimOnEvent.retire ?? false, done: true };
 }
 
 function retirePlayer(gs: GameState, p: Player): void {
@@ -376,25 +381,21 @@ function retirePlayer(gs: GameState, p: Player): void {
   gs.retirees[p.id] = { name: p.name };
 }
 
-function handleDraftStart(gs: GameState): boolean {
+function handleDraftStart(gs: GameState): EventRst {
   GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "draft" });
-  return endSimOnEvent.draftStart ?? false;
+  return { stop: endSimOnEvent.draftStart ?? false, done: true };
 }
 
 /** differently from the nba only one player get drafted, it stops on the user turn
  * when the draft ends all not picked player become free agents
  */
-function handleDraft(gs: GameState): boolean {
+function handleDraft(gs: GameState): EventRst {
   // a clone because the lottery get mutated by draftPlayer
   for (const team of gs.drafts.now.lottery.slice()) {
     if (team === gs.userTeam) {
       gs.flags.userDrafting = true;
       gs.mails.unshift(mustDraft(gs.date));
-      GameState.enqueueGameEvent(gs, {
-        date: new Date(gs.date),
-        type: "draft",
-      });
-      return true; // TODO: when we add the auto draft change with break
+      return { stop: true, done: false }; // TODO: when we add the auto draft change with break
     }
 
     draftPlayer(gs);
@@ -406,11 +407,11 @@ function handleDraft(gs: GameState): boolean {
     );
   }
 
-  return endSimOnEvent.draft ?? false;
+  return { stop: endSimOnEvent.draft ?? false, done: true };
 }
 
 /**  when the trade window is open try to do some trade between teams */
-function handleTrade(gs: GameState): boolean {
+function handleTrade(gs: GameState): EventRst {
   const user = gs.teams[gs.userTeam];
 
   if (gs.flags.openTradeWindow) {
@@ -426,29 +427,29 @@ function handleTrade(gs: GameState): boolean {
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
 
-  return endSimOnEvent.trade ?? false;
+  return { stop: endSimOnEvent.trade ?? false, done: true };
 }
 
 /** open the trade window and enqueue a trade event */
-function handleOpenTradeWindow(gs: GameState): boolean {
+function handleOpenTradeWindow(gs: GameState): EventRst {
   gs.flags.openTradeWindow = true;
   enqueueEventFor(gs, gs.date, "trade", { days: 1 });
-  return endSimOnEvent.openTradeWindow ?? false;
+  return { stop: endSimOnEvent.openTradeWindow ?? false, done: true };
 }
 
 /** open the free signing window setting the gameState flag to false and enqueue a signings event */
-function handleOpenFreeSigningWindow(gs: GameState): boolean {
+function handleOpenFreeSigningWindow(gs: GameState): EventRst {
   gs.flags.openFreeSigningWindow = true;
   gs.flags.signLimit = true;
   updateRejections(gs);
   enqueueEventFor(gs, gs.date, "signings", { days: 1 });
-  return endSimOnEvent.openFreeSigningWindow ?? false;
+  return { stop: endSimOnEvent.openFreeSigningWindow ?? false, done: true };
 }
 
 /** close the free signing window setting the gameState flag to false */
-function handleCloseFreeSigningWindow(gs: GameState): boolean {
+function handleCloseFreeSigningWindow(gs: GameState): EventRst {
   gs.flags.openFreeSigningWindow = false;
-  return endSimOnEvent.closeFreeSigningWindow ?? false;
+  return { stop: endSimOnEvent.closeFreeSigningWindow ?? false, done: true };
 }
 
 /** find a new formation for each team asynchronously and make the sim wait until they are setted */
@@ -760,14 +761,31 @@ function updateRejections(gs: GameState): void {
   });
 }
 
-/** returns true when some user requirements are missing for the simRound event,
- * and update the related gs flags when necessary (like underMinTeamSize) */
-function simRoundRequirements(gs: GameState): boolean {
-  if (gs.teams[gs.userTeam]?.playerIds.length < MIN_TEAM_SIZE) {
-    return (gs.flags.underMinTeamSize = true);
+/** update the canSimRound and return it */
+function updateCanSimRound(gs: GameState): boolean {
+  // the team size check is important only when the team must play
+  if (gs.eventQueue[0]?.type === "simRound" && gs.teams[gs.userTeam]) {
+    gs.flags.canSimRound =
+      gs.teams[gs.userTeam].playerIds.length >= MIN_TEAM_SIZE;
+  } else {
+    gs.flags.canSimRound = true;
   }
 
-  return false;
+  return gs.flags.canSimRound;
+}
+
+/** apply some common check on every update
+ * - update the canSimRound flag
+ * - update the tradeOffers
+ * can skip it if the update wasn't related to the above
+ */
+export function onStateUpdate(gs: GameState): void {
+  // this type of operations are duplicated on multiple events (new signings, user trading, other teams trading and etc)
+  // doing the check after every state update we are sure to catch them all
+  if (gs.teams[gs.userTeam]) {
+    updateCanSimRound(gs);
+    updateTradeOffers(gs);
+  }
 }
 
 export const exportedForTesting = {

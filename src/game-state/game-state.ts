@@ -7,6 +7,7 @@ import {
   setNewFormations,
   prepareSeasonStart,
   GameEventTypes,
+  onStateUpdate,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
@@ -14,7 +15,6 @@ import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
 import { sendSyncUpdatedGame } from "./game-sync";
 import { Trade } from "../game-sim/trade";
-import { updateTradeOffers } from "../character/user";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -75,7 +75,7 @@ class GameState {
     openTradeWindow: false,
     openFreeSigningWindow: true,
     userDrafting: false, // true when it is the user turn to pick
-    underMinTeamSize: false, // true when the user team has less than MIN_PLAYERS (check before a match)
+    canSimRound: true, // true when the user team has more than MIN_PLAYERS (check before a match)
     onGameEvent: undefined as GameEventTypes | undefined, // on which event the game is currently at (only for the user relevant events)
     signLimit: false, // when true the user should be able to sign only one new player per some amount of time
     signedNewPlayer: false, // when true means that the used signed a new player recently
@@ -258,8 +258,7 @@ class GameStateHandle {
   set state(updated: GameState | undefined) {
     const init = !this._state;
     this._state = updated;
-    // check here to catch all possible events which could make the trade invalid (new signings, traded players, other teams trading and etc)
-    this._state && updateTradeOffers(this._state);
+    this._state && onStateUpdate(this._state); // to check the user activity
     this.onUpdate();
 
     if (!init) {
