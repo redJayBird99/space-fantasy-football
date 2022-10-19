@@ -10,6 +10,9 @@ import "./player-history.ts";
 import {
   canSignPlayer,
   estimateImprovabilityRating,
+  getPlayerRating,
+  getPlayerRatingSymbol,
+  improvabilityRatingSymbol,
   signPlayer,
 } from "../../character/user";
 import style from "./player-page.css";
@@ -33,13 +36,15 @@ class PlayerPage extends HTMLElement {
   }
 
   render(): void {
+    const p = getSearchParamPlayer();
+
     render(
       html`
         <style>
           ${style}
         </style>
         <sff-game-page>
-          <player-info slot="in-main"></player-info>
+          <div slot="in-main">${p ? playerCtn(p) : nothing}</div>
         </sff-game-page>
       `,
       this
@@ -53,77 +58,66 @@ function getSearchParamPlayer(): Player | undefined {
   return window.$game.state!.players[id ?? ""];
 }
 
-class PlayerInfo extends HTMLElement {
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  disconnectedCallback(): void {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.render();
-  }
-
-  render(): void {
-    const player = getSearchParamPlayer();
-
-    render(
-      html`
-        <section class="plr-info">
-          <img class="plr-img" src=${pImg} alt="a football player" />
-          ${player && playerBio(player)} ${player && playerTeam(player)}
-        </section>
-        <div class="plr-skills">${player && playersMacroSkills(player)}</div>
-        <player-history data-pl-id=${player?.id ?? ""}></player-history>
-      `,
-      this
-    );
-  }
-}
-
-/** biography informations */
-function playerBio(p: Player): TemplateResult {
-  const gs = window.$game.state!;
-  const t = gs.teams[gs.userTeam];
-
-  // TODO: use half starts for improvability
+/** render the player informations */
+function playerCtn(p: Player): TemplateResult {
   return html`
-    <div class="plr-bio">
-      <span>${p.name}</span>
-      <span>${p.birthday} (${Player.age(p, gs.date)} years old)</span>
-      <span>${Player.getHeightInCm(p)}cm</span>
-      <span>
-        <abbr title="position">pos</abbr>
-        <span class="plr-pos">${p.position.toUpperCase()}</span>
-      </span>
-      <span>
-        improvability
-        <span class="plr-stars">
-          ${"🟊".repeat(Math.round(estimateImprovabilityRating(p, t) * 5))}
-        </span>
-      </span>
-      <span> Preferred foot ${p.foot} </span>
-    </div>
+    <section class="plr-info">
+      <div>
+        <h3 class="plr-info__name">${p?.name}</h3>
+        <img class="plr-img" src=${pImg} alt="a football player" />
+      </div>
+      ${playerBio(p)}
+    </section>
+    ${signBtn(p)}
+    <div class="plr-skills">${p && playersMacroSkills(p)}</div>
+    <player-history data-pl-id=${p?.id ?? ""}></player-history>
   `;
 }
 
-/** contractual informations */
-function playerTeam(p: Player): TemplateResult {
+/** biography informations about the player */
+function playerBio(p: Player): TemplateResult {
+  const gs = window.$game.state!;
+  const t = gs.teams[gs.userTeam];
   const c = GameState.getContract(window.$game.state!, p);
   const wage = new Intl.NumberFormat("en-GB").format(c?.wage ?? 0);
   const seasons = c?.duration;
+  const bgColor = (c: string) => `background-color: ${c}`;
+  const rColor = `hsl(${getPlayerRating(p, gs) * 120}deg 100% 60%)`;
+  const iColor = `hsl(${estimateImprovabilityRating(p, t) * 120}deg 100% 60%)`;
 
   return html`
-    <div class="plr-team">
-      <span>team: ${p.team}</span>
-      <span>wage: ${wage}₡</span>
-      <span>contract: ${seasons ? `length ${seasons} seasons` : "free"}</span>
-      ${signBtn(p)}
+    <div class="plr-bio">
+      <div>
+        <div class="plr-high">
+          <div>Position</div>
+          <div class="plr-high__val">${p.position.toUpperCase()}</div>
+        </div>
+        <div class="plr-high">
+          <div>Rating</div>
+          <div class="plr-high__val-stl" style=${bgColor(rColor)}>
+            ${getPlayerRatingSymbol(p, gs)}
+          </div>
+        </div>
+        <div class="plr-high">
+          <div>
+            <abbr title="Improvability">Improv.</abbr>
+          </div>
+          <div class="plr-high__val-stl" style=${bgColor(iColor)}>
+            ${improvabilityRatingSymbol(p, t)}
+          </div>
+        </div>
+        <div class="plr-high">
+          <div>Team</div>
+          <div>${p.team}</div>
+        </div>
+      </div>
+      <div>
+        <div>${Player.age(p, gs.date)} y. o. ${p.birthday}</div>
+        <div>${Player.getHeightInCm(p)} cm</div>
+        <div>Preferred foot ${p.foot}</div>
+        <div>wage: ${wage}₡</div>
+        <div>contract: ${seasons ? `length ${seasons} seasons` : "free"}</div>
+      </div>
     </div>
   `;
 }
@@ -131,17 +125,25 @@ function playerTeam(p: Player): TemplateResult {
 /** the button to sign the given player, it is enabled only if signable */
 function signBtn(p: Player): TemplateResult {
   const gs = window.$game.state!;
+  const t = gs.teams[gs.userTeam];
   const uPayroll = Team.getWagesAmount({ gs, t: gs.teams[gs.userTeam] });
-  const signable = canSignPlayer(gs, uPayroll, p);
+  const req = new Intl.NumberFormat("en-GB").format(
+    Player.wageRequest({ gs, t, p })
+  );
+  const sign = canSignPlayer(gs, uPayroll, p);
 
   return html`
-    <button
-      class="btn btn--acc"
-      ?disabled=${!signable}
-      @click=${signable ? () => signPlayer(p) : nothing}
-    >
-      sign
-    </button>
+    <div>
+      <label>
+        <button
+          class="btn btn--acc sign-btn"
+          ?disabled=${!sign.can}
+          @click=${sign.can ? () => signPlayer(p) : nothing}
+        >
+          sign</button
+        >${sign.can ? `sign him for ${req}₡` : sign.why}
+      </label>
+    </div>
   `;
 }
 
@@ -182,5 +184,4 @@ export function skillData(score: number): { color: string; score: string } {
 
 if (!customElements.get("sff-player")) {
   customElements.define("sff-player", PlayerPage);
-  customElements.define("player-info", PlayerInfo);
 }

@@ -109,19 +109,33 @@ export function canSignPlayer(
   gs: GameState,
   payroll: number,
   p: Player
-): boolean {
+): { can: boolean; why: string } {
   const user = gs.teams[gs.userTeam];
   const wage = Player.wageRequest({ gs, t: user, p });
-  const signLimitReached = gs.flags.signLimit && gs.flags.signedNewPlayer;
 
-  return (
-    !signLimitReached &&
-    p.team === "free agent" &&
-    gs.flags.openFreeSigningWindow &&
-    !gs.rejections[p.id] &&
-    user.playerIds.length < MAX_TEAM_SIZE &&
-    (wage <= MIN_WAGE || wage + payroll <= SALARY_CAP)
-  );
+  if (!gs.flags.openFreeSigningWindow) {
+    return { can: false, why: "the signing window is close" };
+  }
+  if (p.team !== "free agent") {
+    return { can: false, why: "the player isn't free" };
+  }
+  if (gs.flags.signLimit && gs.flags.signedNewPlayer) {
+    return { can: false, why: "you can't sign others players for today" };
+  }
+  if (gs.rejections[p.id]) {
+    return { can: false, why: "the player is unwilling to sign" };
+  }
+  if (user.playerIds.length >= MAX_TEAM_SIZE) {
+    return {
+      can: false,
+      why: `your team can't have more than ${MAX_TEAM_SIZE} players`,
+    };
+  }
+  if (wage > MIN_WAGE && wage + payroll > SALARY_CAP) {
+    return { can: false, why: "your team doesn't have enough free cap space" };
+  }
+
+  return { can: true, why: "" };
 }
 
 /** the user add the player to his team */

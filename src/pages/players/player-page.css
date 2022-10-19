@@ -5,36 +5,52 @@ sff-player {
 }
 
 .plr-info {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  line-height: 1.2;
+}
+
+.plr-info__name {
+  font-size: 1.3rem;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
 }
 
 .plr-img {
-  margin: 8px;
   width: 150px;
 }
 
-.plr-bio,
-.plr-team {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  padding-left: 40px;
+.plr-bio {
+  padding: 1rem;
+  padding-top: 0;
 }
 
-.plr-team > .btn {
-  align-self: start;
-  padding: 0.2rem 0.5rem;
-  margin: 0.3rem 20px;
+.plr-bio > :first-child {
+  display: flex;
+  gap: 3px 1.3rem;
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.plr-high {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0;
+}
+
+.plr-high > :last-child {
+  font-size: 1.25rem;
+  font-style: italic;
+  font-weight: bold;
 }
 
 .plr-skills {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  margin-top: 1rem;
 }
 
 .skill-score {
@@ -45,20 +61,29 @@ sff-player {
   padding: 0.1rem 0.2rem;
 }
 
+.plr-skills > ul {
+  margin: 4px 0;
+}
+
 .plr-skills li {
   list-style-type: none;
   text-transform: capitalize;
   white-space: nowrap;
 }
 
-.plr-pos {
+.plr-high__val,
+.plr-high__val-stl {
   background-color: var(--dk-bg-color-600, var(--lt-bg-color--200));
   border-radius: 3px;
-  font-style: italic;
-  padding: 0 0.2rem;
+  width: 2.4rem;
 }
 
-.plr-stars {
-  color: gold;
-  font-size: 1.25rem;
+.plr-high__val-stl {
+  color: var(--lt-on-bg-color);
+}
+
+.sign-btn {
+  margin-right: 1rem;
+  padding: 3px 0;
+  width: 150px;
 }
