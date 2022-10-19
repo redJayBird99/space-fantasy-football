@@ -21,6 +21,8 @@ import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
+import "../util/modal.ts";
+import { trade } from "../transactions/transactions";
 
 type hdl = (e: Event) => unknown;
 
@@ -48,6 +50,11 @@ class TradePage extends HTMLElement {
     window.$game.removeObserver(this);
   }
 
+  onCloseResult = () => {
+    this.offerResult = undefined;
+    this.render();
+  };
+
   /** handle the user response to the received offer, when accept is true make
    * the trade, otherwise reject the trade  */
   onOfferResponse = (accept: boolean) => {
@@ -55,13 +62,12 @@ class TradePage extends HTMLElement {
       return;
     }
 
+    const o = this.offer;
+    this.offer = undefined;
     const gs = window.$game.state! as GameState;
     gs.tradeOffers = gs.tradeOffers.filter((t) => t !== this.offer);
-    const s1 = this.offer.sides[0];
-    const s2 = this.offer.sides[1];
-    this.offer = undefined;
-    const other = s1.team === gs.userTeam ? s2 : s1;
-    const user = s1.team === gs.userTeam ? s1 : s2;
+    const other = o.sides[0].team === gs.userTeam ? o.sides[1] : o.sides[0];
+    const user = o.sides[0].team === gs.userTeam ? o.sides[0] : o.sides[1];
 
     // only valid offers are kept in the gs.tradeOffer so no other check is needed
     if (accept) {
@@ -163,32 +169,41 @@ class TradePage extends HTMLElement {
               this.offer
             )}
           </div>
-          ${outputRst(
-            this.offer ? "btn-accept btn-reject" : "btn-offer",
-            this.offerResult
-          )}
           ${tradeContent}
         </sff-game-page>
       `,
       this
     );
+    render(outputRst(this.onCloseResult, this.offerResult), document.body);
   }
 }
 
 /**
- * render the result of the offer or the trade proposal
- * @param forIds the input ids
+ * render a modal with the result of the offer when rst is defined
+ *  @param onClose called when close button is called
  */
-function outputRst(forIds: string, rst?: boolean): TemplateResult {
+function outputRst(onClose: () => void, rst?: boolean) {
+  const trades = window.$game.state!.transactions.now.trades;
   const txt =
     rst === undefined
-      ? ""
+      ? null
       : rst
-      ? "The offer is accepted!"
-      : "The offer is rejected!";
-  return html`<output slot="in-main" aria-label="trade result" for=${forIds}>
-    ${txt}
-  </output>`;
+      ? "The offer was accepted!"
+      : "The offer was rejected!";
+
+  if (txt) {
+    // if the trade was successful it is added as last trade operation
+    return html`
+      <sff-modal .handleClose=${onClose}>
+        <output aria-label="trade result">
+          <h3>${txt}</h3>
+          ${rst ? trade(trades[trades.length - 1]) : nothing}
+        </output>
+      </sff-modal>
+    `;
+  }
+
+  return nothing;
 }
 
 /** render the ui to allow the user to make trade offers to other team  */
@@ -362,7 +377,7 @@ function playerInfo(p: Player): TemplateResult {
       <div class="plr-bio">
         <h3>${goLink(link, p.name)}</h3>
         <div>
-          <span class="plr-pos">${p.position}</span>
+          <span class="plr-bio__pos">${p.position}</span>
           <span>
             ${Player.age(p, gs.date)} <abbr title="years old">y.o.</abbr>
           </span>

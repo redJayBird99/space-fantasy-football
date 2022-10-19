@@ -34,7 +34,9 @@ window.$script = script;
 document.documentElement.classList.add("dark");
 document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
 
-new Router(document.body, "<div>404 page no found</div>")
+const root = document.createElement("div");
+document.body.append(root);
+new Router(root, "<div>404 page no found</div>")
   .addRoutes([
     { path: `${window.$PUBLIC_PATH}`, page: "<sff-home></sff-home>" },
     {

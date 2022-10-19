@@ -86,12 +86,6 @@
   font-size: 0.9rem;
 }
 
-.plr-pos {
-  font-style: italic;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
 .plr-wage {
   font-weight: bold;
 }
@@ -125,4 +119,61 @@ abbr[title] {
 
 sff-go > a {
   color: var(--dk-on-bg-color, initial);
+}
+
+/* ----------- Content of the offer result modal ------------------ */
+.transaction-summary {
+  padding: 0.6rem 1rem;
+}
+
+.trade-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.transaction-title {
+  margin: 4px 0;
+}
+
+.transaction-content {
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+}
+
+.team-log {
+  font-size: 24px;
+}
+
+.plr-bio__pos,
+.plr-pos {
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.traded-pls {
+  margin: 0;
+  padding-left: 0;
+}
+
+.cnt-pl-info {
+  list-style-type: none;
+}
+
+.plr-pos {
+  background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
+  background-clip: padding-box;
+  border-radius: 5px;
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 0.1);
+  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
+  display: inline-block;
+  font-size: 0.8rem;
+  text-align: center;
+  width: 1.3rem;
+}
+
+.cnt-pl-info > * {
+  white-space: nowrap;
 }

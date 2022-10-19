@@ -138,7 +138,7 @@ function tradesBlocks(ts: TradeRecord[]): TemplateResult {
 }
 
 /** returns informations about the given trade */
-function trade(t: TradeRecord): TemplateResult {
+export function trade(t: TradeRecord): TemplateResult {
   const s1 = t.sides[0];
   const s2 = t.sides[1];
   const was = new Date(t.when);
@@ -176,8 +176,8 @@ function playerInfo(plId: string, was: Date): TemplateResult {
       <span class="plr-pos" aria-label="position">${p.position}</span>
       ${goLink(playerPath(p), p.name)}
       <span aria-label="age">
-        ${Player.age(p, was)} (<abbr title="year">y.</abbr>
-        <abbr title="old">o.</abbr>)
+        ${Player.age(p, was)} <abbr title="year">y.</abbr>
+        <abbr title="old">o.</abbr>
       </span>
     `;
   }
