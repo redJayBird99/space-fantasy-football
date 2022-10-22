@@ -6,7 +6,7 @@ import {
   Player,
   SALARY_CAP,
 } from "../../character/player";
-import { luxuryTax, minSalaryTax, Team } from "../../character/team";
+import { luxuryTax, minSalaryTax, sumWages, Team } from "../../character/team";
 import {
   canTrade,
   estimateImprovabilityRating,
@@ -21,19 +21,19 @@ import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
+import { keyed } from "lit-html/directives/keyed.js";
 import "../util/modal.ts";
 import { trade } from "../transactions/transactions";
+import { isEqual } from "lodash-es";
+import { tradeRequirements } from "../../game-sim/trade";
 
 type hdl = (e: Event) => unknown;
+type TradeSide = { get: Player[]; give: Player[]; team: Team };
+type TradeState = { user: Team } & TradeSide;
 
+/** render the root of the page for two modes trade and offers */
 class TradePage extends HTMLElement {
-  // only one between offer an other can be defined at any given time
-  /* if offer is defined then the user is checking the received offer */
-  private offer?: TradeRecord;
-  /** if other is defined or offer is undefined the user is checking the trade interface */
-  private other?: Team;
-  /** true when the offer was accepted */
-  private offerResult?: boolean;
+  private onOffer = false;
 
   connectedCallback() {
     if (this.isConnected) {
@@ -50,105 +50,15 @@ class TradePage extends HTMLElement {
     window.$game.removeObserver(this);
   }
 
-  onCloseResult = () => {
-    this.offerResult = undefined;
-    this.render();
-  };
-
-  /** handle the user response to the received offer, when accept is true make
-   * the trade, otherwise reject the trade  */
-  onOfferResponse = (accept: boolean) => {
-    if (!this.offer) {
-      return;
-    }
-
-    const gs = window.$game.state! as GameState;
-    gs.tradeOffers = gs.tradeOffers.filter((t) => t !== this.offer);
-    const o = this.offer;
-    this.offer = undefined;
-    const other = o.sides[0].team === gs.userTeam ? o.sides[1] : o.sides[0];
-    const user = o.sides[0].team === gs.userTeam ? o.sides[0] : o.sides[1];
-
-    // only valid offers are kept in the gs.tradeOffer so no other check is needed
-    if (accept) {
-      this.offerResult = true;
-      makeTrade(
-        gs.teams[other.team],
-        other.plIds.map((id) => gs.players[id]),
-        user.plIds.map((id) => gs.players[id])
-      );
-    } else {
-      this.offerResult = false;
-      window.$game.state = gs; // mutation notification, and check other trades
+  onBtnClick = (toOffer: boolean) => {
+    if (this.onOffer !== toOffer) {
+      this.onOffer = toOffer;
+      this.render();
     }
   };
-
-  onOfferSelect = (idx: string) => {
-    if (idx && window.$game.state!.tradeOffers[Number(idx)]) {
-      this.offer = window.$game.state!.tradeOffers[Number(idx)];
-      this.other = undefined;
-    } else {
-      this.offer = undefined;
-    }
-  };
-
-  onTeamSelect = (team: string) => {
-    if (window.$game.state!.teams[team]) {
-      this.other = window.$game.state!.teams[team];
-      this.offer = undefined;
-    } else {
-      this.other = undefined;
-    }
-  };
-
-  onSelect = (e: Event, handle: (val: string) => void) => {
-    handle((e.currentTarget as HTMLSelectElement).value);
-    this.render();
-  };
-
-  /** get the checkboxes selected for the given team */
-  getSelectedPlayers(team: string, form: HTMLFormElement): Player[] {
-    return Array.from<HTMLInputElement>(form[team] ?? [])
-      .filter((e) => e.checked)
-      .map((e) => window.$game.state!.players[e.value]);
-  }
-
-  /** handle the user requested trade, if it's acceptable make the trade otherwise reject it  */
-  onTradeSummit = (e: Event) => {
-    e.preventDefault();
-    const gs = window.$game.state!;
-
-    if (Boolean(this.other) && gs.flags.openTradeWindow) {
-      const form = e.currentTarget as HTMLFormElement;
-      const give = this.getSelectedPlayers(gs.userTeam, form);
-      const get = this.getSelectedPlayers(this.other!.name, form);
-      this.offerResult = canTrade(this.other!, get, give);
-
-      if (this.offerResult) {
-        makeTrade(this.other!, get, give); // the mutation notification will re-render
-      } else {
-        this.render();
-      }
-    }
-  };
-
-  /** the offer response */
-  resultMessage(): string {
-    if (this.offerResult === undefined) {
-      return "";
-    } else if (this.offerResult) {
-      return "The offer is accepted!";
-    }
-
-    return "The offer is rejected!";
-  }
 
   render(): void {
-    const gs = window.$game.state!;
-    const tradeContent = this.offer
-      ? openOffer(this.offer, this.onOfferResponse)
-      : openTradeMaker(this.onTradeSummit, this.other);
-
+    const open = window.$game.state?.flags.openTradeWindow;
     render(
       html`
         <style>
@@ -156,31 +66,259 @@ class TradePage extends HTMLElement {
         </style>
         <sff-game-page>
           <div slot="in-main">
-            <div>
-              The trade window is
-              ${gs.flags.openTradeWindow ? "open" : "closed ⚠️"}
-            </div>
-            ${otherTeamSelector(
-              (e) => this.onSelect(e, this.onTeamSelect),
-              this.other
-            )}
-            ${offersSelector(
-              (e) => this.onSelect(e, this.onOfferSelect),
-              this.offer
-            )}
+            <button
+              ?disabled=${!this.onOffer}
+              @click=${() => this.onBtnClick(false)}
+            >
+              trade
+            </button>
+            <button
+              ?disabled=${this.onOffer}
+              @click=${() => this.onBtnClick(true)}
+            >
+              check offers
+            </button>
+            <span> The trade window is ${open ? "open" : "closed ⚠️"} </span>
           </div>
-          ${tradeContent}
+          ${this.onOffer
+            ? html`<sff-Offers slot="in-main"></sff-Offers>`
+            : html`<sff-trade slot="in-main"></sff-trade>`}
         </sff-game-page>
       `,
       this
     );
-    render(outputRst(this.onCloseResult, this.offerResult), document.body);
   }
+}
+
+abstract class PageContent extends HTMLElement {
+  /** the resulting answer to trade or the offer */
+  protected offerResult?: boolean;
+
+  connectedCallback() {
+    if (this.isConnected) {
+      window.$game.addObserver(this);
+      this.render();
+    }
+  }
+
+  gameStateUpdated() {
+    this.render();
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
+    // we need to clean the modal when successful because can navigate to other pages
+    this.offerResult && render(nothing, window.$modalRoot);
+  }
+
+  /** called when the modal showing the result is closed */
+  onCloseResult = () => {
+    this.offerResult = undefined;
+    this.render();
+  };
+
+  abstract render(): void;
+}
+
+/** render the user trade maker */
+class Trade extends PageContent {
+  /** from the user prospective, this is a Controlled Components (as react call it), get and give are ids */
+  private offer: { get: string[]; give: string[]; team?: string } = {
+    get: [],
+    give: [],
+  };
+
+  connectedCallback() {
+    if (this.isConnected) {
+      this.addEventListener("click", this.onCheckboxClick);
+      super.connectedCallback();
+    }
+  }
+
+  gameStateUpdated() {
+    this.offer = { get: [], give: [], team: this.offer.team };
+    super.gameStateUpdated();
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener("click", this.onCheckboxClick);
+    super.disconnectedCallback();
+  }
+
+  /** updated the offer if a player was checked or unchecked and re-render */
+  onCheckboxClick = (e: Event) => {
+    const t = e.target;
+
+    if (!(t instanceof HTMLInputElement) || t.type !== "checkbox") {
+      return;
+    }
+
+    if (t.checked) {
+      t.name === this.offer.team
+        ? this.offer.get.push(t.value)
+        : this.offer.give.push(t.value);
+    } else {
+      this.offer.get = this.offer.get.filter((id) => id !== t.value);
+      this.offer.give = this.offer.give.filter((id) => id !== t.value);
+    }
+
+    this.render();
+  };
+
+  /** update the trade partner when the selection change */
+  onTeamSelect = (e: Event) => {
+    const team = (e.currentTarget as HTMLSelectElement).value;
+    this.offer = { get: [], give: [], team: team || undefined };
+    this.render();
+  };
+
+  /** handle the user trade offer, if it's acceptable make the trade otherwise reject it  */
+  onSummitTrade = (e: Event) => {
+    e.preventDefault();
+    const gs = window.$game.state!;
+    const { get, give, team } = this.offer;
+
+    if (team && gs.flags.openTradeWindow) {
+      const other = gs.teams[team];
+      const gv = give.map((id) => gs.players[id]);
+      const gt = get.map((id) => gs.players[id]);
+      this.offerResult = canTrade(other, gt, gv);
+
+      if (this.offerResult) {
+        makeTrade(other, gt, gv); // on the mutation notification clean the offer and re-render
+      } else {
+        this.render();
+      }
+    }
+  };
+
+  render(): void {
+    const gs = window.$game.state!;
+    const { team, give: gv, get: gt } = this.offer;
+    const user = gs.teams[gs.userTeam];
+    const give = gv.map((id) => gs.players[id]);
+    const get = gt.map((id) => gs.players[id]);
+    const canMakeOffer =
+      team && gs.flags.openTradeWindow && give.length && get.length;
+
+    render(
+      html`
+        ${otherTeamSelector(this.onTeamSelect, team ?? "")}
+        <div>
+          <button
+            id="btn-offer"
+            ?disabled=${!canMakeOffer}
+            @click=${canMakeOffer ? this.onSummitTrade : nothing}
+          >
+            Make offer
+          </button>
+        </div>
+        <section class="cnt-traders">
+          ${tradingTeam({ team: user, get, give })}
+          ${team
+            ? tradingTeam({ team: gs.teams[team], get: give, give: get })
+            : nothing}
+        </section>
+      `,
+      this
+    );
+    render(outputRst(this.onCloseResult, this.offerResult), window.$modalRoot);
+  }
+}
+
+/** render the received trade offer fot the user team */
+class Offers extends PageContent {
+  private offer?: TradeRecord = window.$game.state!.tradeOffers[0] ?? undefined;
+
+  gameStateUpdated() {
+    if (!window.$game.state!.tradeOffers.some((o) => isEqual(o, this.offer))) {
+      this.offer = undefined;
+    }
+    super.gameStateUpdated();
+  }
+
+  /** handle the selection of a different different offer */
+  onOfferSelect = (e: Event) => {
+    const v = (e.currentTarget as HTMLSelectElement).value;
+    const trades = window.$game.state!.tradeOffers;
+    this.offer = v && trades[Number(v)] ? trades[Number(v)] : undefined;
+    this.render();
+  };
+
+  /** handle the user response to the offer, when accept is true make
+   * the trade, otherwise reject the trade, in both case the offer is removed */
+  onOfferResponse = (accept: boolean) => {
+    if (!this.offer) {
+      return;
+    }
+
+    const gs = window.$game.state! as GameState;
+    gs.tradeOffers = gs.tradeOffers.filter((t) => t !== this.offer);
+    const { get, give, team: other } = toTradeState(this.offer);
+    this.offer = undefined;
+
+    // only valid offers are kept in the gs.tradeOffer so no other check is needed
+    // the game handler will take care of the remaining trades validity after the mutation
+    if (accept) {
+      this.offerResult = true;
+      makeTrade(other, get, give);
+    } else {
+      this.offerResult = false;
+      window.$game.state = gs; // mutation notification
+    }
+  };
+
+  renderOffer(): TemplateResult {
+    const { user, get, give, team } = toTradeState(this.offer!);
+
+    return html`
+      <section class="cnt-traders">
+        ${tradingTeam({ team: user, give, get }, true)}
+        ${tradingTeam({ team, get: give, give: get }, true)}
+      </section>
+    `;
+  }
+
+  render(): void {
+    const dis = !this.offer;
+
+    render(
+      html`
+        ${offersSelector(this.onOfferSelect, this.offer)}
+        <div>
+          <button ?disabled=${dis} @click=${() => this.onOfferResponse(true)}>
+            accept
+          </button>
+          <button ?disabled=${dis} @click=${() => this.onOfferResponse(false)}>
+            reject
+          </button>
+        </div>
+        ${dis ? nothing : this.renderOffer()}
+      `,
+      this
+    );
+    render(outputRst(this.onCloseResult, this.offerResult), window.$modalRoot);
+  }
+}
+
+/** return convert the record from the user prospective */
+function toTradeState(t: TradeRecord): TradeState {
+  const gs = window.$game.state!;
+  const [s1, s2] = t.sides;
+  const user = s1.team === gs.userTeam ? s1 : s2;
+  const other = s1.team === gs.userTeam ? s2 : s1;
+
+  return {
+    user: gs.teams[user.team],
+    team: gs.teams[other.team],
+    get: other.plIds.map((id) => gs.players[id]),
+    give: user.plIds.map((id) => gs.players[id]),
+  };
 }
 
 /**
  * render a modal with the result of the offer when rst is defined
- *  @param onClose called when close button is called
+ *  @param onClose called when the close button is clicked
  */
 function outputRst(onClose: () => void, rst?: boolean) {
   const trades = window.$game.state!.transactions.now.trades;
@@ -206,52 +344,17 @@ function outputRst(onClose: () => void, rst?: boolean) {
   return nothing;
 }
 
-/** render the ui to allow the user to make trade offers to other team  */
-function openTradeMaker(onSubmit: hdl, other?: Team): TemplateResult {
-  const gs = window.$game.state!;
-  const canMakeOffer = other && gs.flags.openTradeWindow;
-
-  return html`
-    <form slot="in-main" @submit=${canMakeOffer ? onSubmit : nothing}>
-      <button id="btn-offer" ?disabled=${!canMakeOffer}>Make offer</button>
-      <section class="cnt-traders">
-        ${team(gs.teams[gs.userTeam])} ${other ? team(other) : nothing}
-      </section>
-    </form>
-  `;
-}
-
-/** render the received offer selected by the user and allow the user to accept or reject it */
-function openOffer(
-  t: TradeRecord,
-  onResponse: (b: boolean) => void
-): TemplateResult {
-  const gs = window.$game.state!;
-  const user = t.sides[0].team === gs?.userTeam ? t.sides[0] : t.sides[1];
-  const other = t.sides[0].team === gs?.userTeam ? t.sides[1] : t.sides[0];
-
-  return html`
-    <div slot="in-main">
-      <button id="btn-accept" @click=${() => onResponse(true)}>accept</button>
-      <button id="btn-reject" @click=${() => onResponse(false)}>reject</button>
-      <section class="cnt-traders">
-        ${team(gs.teams[gs.userTeam], user.plIds)}
-        ${team(gs.teams[other.team], other.plIds)}
-      </section>
-    </div>
-  `;
-}
-
 /**
- * render a received offer selector,
+ * render a selector for all received offers,
  * @param onSelect a change event handler
  * @param cur on which trade is currently on
  */
 function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
-  // TODO: I think firefox has a bug selected attribute bug, it doesn't switch to it when change programmatically
-  // I should report it if that is the case
-  const offers = window.$game.state!.tradeOffers;
+  const gs = window.$game.state!;
+  const offers = gs.tradeOffers;
   const dis = offers.length === 0;
+  const by = (t: TradeRecord) =>
+    t.sides[0].team === gs.userTeam ? t.sides[1].team : t.sides[0].team;
 
   return html`
     <label>
@@ -260,7 +363,7 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
         <option ?selected=${!cur} value="">Select offer</option>
         ${offers.map(
           (o, i) =>
-            html`<option ?selected=${cur === o} value=${i}>${i}#</option>`
+            html`<option ?selected=${cur === o} value=${i}>by ${by(o)}</option>`
         )}
       </select>
     </label>
@@ -271,10 +374,8 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
  * render a team selector to trade with
  * @param onSelect a change event handler
  * @param cur on which offer is currently on
- * @returns
  */
-function otherTeamSelector(onSelect: hdl, cur?: Team): TemplateResult {
-  // TODO: I think firefox has a bug selected attribute bug, it doesn't switch to it when change programmatically
+function otherTeamSelector(onSelect: hdl, cur: string): TemplateResult {
   const gs = window.$game.state!;
   return html`
     <label>
@@ -283,46 +384,63 @@ function otherTeamSelector(onSelect: hdl, cur?: Team): TemplateResult {
         <option ?selected=${!cur} value="">Select team</option>
         ${Object.keys(gs.teams)
           .filter((n) => n !== gs.userTeam)
-          .map((n) => html`<option ?selected=${cur?.name === n}>${n}</option>`)}
+          .map((n) => html`<option ?selected=${cur === n}>${n}</option>`)}
       </select>
     </label>
   `;
 }
 
-/** render the trading option, the team roster and some financial info for the given team,
- * when checked is defined it renders a predefined not interactive offer
- * @param checked players ids involved in the trade offer
+/**
+ * render the team trading options, the roster and an financial preview for the given side
+ * @param readonly when true render a predefined not interactive offer
  */
-function team(t: Team, checked?: string[]): TemplateResult {
+function tradingTeam(side: TradeSide, readonly = false): TemplateResult {
   const gs = window.$game.state!;
+  const { team: t, give } = side;
+  const cks = new Set(give.map((p) => p.id));
+
   return html`
     <section>
-      <h2>${t.name}</h2>
-      ${finance(t)}
+      <h2>🌕 ${t.name}</h2>
+      ${finance(side)}
       <ul class="roster">
         ${repeat(
           t.playerIds,
           (id: string) => id,
-          (id: string) =>
-            player(gs.players[id], t.name, checked?.includes(id) ?? undefined)
+          (id: string) => player(gs.players[id], t.name, cks.has(id), readonly)
         )}
       </ul>
     </section>
   `;
 }
 
-/** render some financial informations about the team roster */
-function finance(t: Team): TemplateResult {
+/** render a financial preview about the trade for the given side */
+function finance({ team, get, give }: TradeSide): TemplateResult {
   const gs = window.$game.state!;
-  const wages = Team.getWagesAmount({ gs, t });
+  const incoming = sumWages(gs, get);
+  const outgoing = sumWages(gs, give);
+  const wages = Team.getWagesAmount({ gs, t: team }) + incoming - outgoing;
+  const capSpace = SALARY_CAP - wages;
+  const nFm = new Intl.NumberFormat("en-GB");
+  const color =
+    incoming !== 0 || outgoing !== 0
+      ? tradeRequirements(team, get, give)
+        ? "fin-good"
+        : "fin-bad"
+      : "";
 
   return html`
-    <div class="fin-infos">
-      ${financeInfo("Roster wages", wages)}
-      ${financeInfo("Cap Space", SALARY_CAP - wages)}
-      ${financeInfo("Luxury tax", luxuryTax(wages))}
-      ${financeInfo("Min cap tax", minSalaryTax(wages))}
-    </div>
+    <output for=${team.playerIds.join(" ")} class="fin-preview">
+      <div class="fin-preview__status ${color}"></div>
+      <div class="fin-move">${nFm.format(incoming)}₡ Incoming</div>
+      <div class="fin-move">${nFm.format(-outgoing)}₡ Outgoing</div>
+      <div class="fin-infos">
+        ${financeInfo("Roster wages", wages)}
+        ${financeInfo("Cap Space", capSpace)}
+        ${financeInfo("Luxury tax", luxuryTax(wages))}
+        ${financeInfo("Min cap tax", minSalaryTax(wages))}
+      </div>
+    </output>
   `;
 }
 
@@ -344,22 +462,41 @@ function onCheckboxClick(e: Event): void {
 /** render informations about the given player and a checkbox option to add
  * the player in the trade, if checked is defined the checkbox is fixed
  */
-function player(p: Player, team: string, checked?: boolean): TemplateResult {
+
+/**
+ * render informations about the given player and a checkbox option to add
+ * the player in the trade
+ * @param readonly when true the checkbox is fixed to the given checked value
+ */
+function player(
+  p: Player,
+  team: string,
+  checked: boolean,
+  readonly = false
+): TemplateResult {
+  // live doesn't work with boolean attributes
+  const check = keyed(
+    checked,
+    html`
+      <input
+        @click=${onCheckboxClick}
+        ?disabled=${readonly}
+        ?checked=${checked}
+        type="checkbox"
+        name=${team}
+        value=${p.id}
+        id=${p.id}
+        aria-label="add to the trade offer"
+      />
+    `
+  );
   // instead of disable we could use this solution if needed
   // https://stackoverflow.com/questions/12267242/how-can-i-make-a-checkbox-readonly-not-disabled
   return html`
     <li class="plr-entry">
       <div>${playerInfo(p)} ${playerSkills(p)}</div>
       <div class="cnt-checkbox ${checked ? "cnt-checkbox--on" : ""}">
-        <input
-          @click=${onCheckboxClick}
-          ?disabled=${checked !== undefined}
-          ?checked=${Boolean(checked)}
-          type="checkbox"
-          name=${team}
-          value=${p.id}
-          aria-label="add to the trade offer"
-        />
+        ${check}
       </div>
     </li>
   `;
@@ -431,4 +568,6 @@ function playerSkill(key: string, val: string, rating: number): TemplateResult {
 
 if (!customElements.get("sff-trade-page")) {
   customElements.define("sff-trade-page", TradePage);
+  customElements.define("sff-trade", Trade);
+  customElements.define("sff-offers", Offers);
 }

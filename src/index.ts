@@ -23,6 +23,7 @@ declare global {
     $appState: typeof appState;
     $PUBLIC_PATH: string;
     $script: any; // utils for testing (and cheating)
+    $modalRoot: HTMLElement;
   }
 }
 
@@ -35,7 +36,9 @@ document.documentElement.classList.add("dark");
 document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
 
 const root = document.createElement("div");
-document.body.append(root);
+const modalRoot = (window.$modalRoot = document.createElement("div"));
+document.body.append(root, modalRoot);
+
 new Router(root, "<div>404 page no found</div>")
   .addRoutes([
     { path: `${window.$PUBLIC_PATH}`, page: "<sff-home></sff-home>" },
