@@ -22,6 +22,7 @@ type GsTm = { gs: GameState; t: Team }; // eslint-disable-line no-use-before-def
 type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
 type Affordable = (wage: number) => boolean;
 type fanBase = "huge" | "big" | "medium" | "small" | "very small";
+export type LineupSpot = { plID?: string; sp: Spot };
 
 export const fanBaseScore: Readonly<Record<fanBase, number>> = {
   huge: 4,
@@ -78,7 +79,7 @@ class Team {
   fanBase: fanBase;
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
-  formation?: { name: Formations; lineup: { plID?: string; sp: Spot }[] }; // this will only get saved (in the JSON file) for the userTeam
+  formation?: { name: Formations; lineup: LineupSpot[] }; // this will only get saved (in the JSON file) for the userTeam
 
   constructor(name: string) {
     this.name = name;

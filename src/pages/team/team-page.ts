@@ -1,4 +1,11 @@
-import { render, html, TemplateResult, svg, SVGTemplateResult } from "lit-html";
+import {
+  render,
+  html,
+  TemplateResult,
+  svg,
+  SVGTemplateResult,
+  nothing,
+} from "lit-html";
 import { styleMap } from "lit-html/directives/style-map.js";
 import { GameState } from "../../game-state/game-state";
 import {
@@ -11,18 +18,23 @@ import "../common/game-page.ts";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
 import { sortByPosition } from "../../character/util";
-import { getX, getY, Starter } from "../../character/formation";
+import { getX, getY, Spot, Starter } from "../../character/formation";
 import pImg from "../../asset/player.svg";
 import { getFormation } from "../../character/team";
+import "./change-spot";
+import "../util/modal";
 
-const PITCH_WIDTH = 66;
-const PITCH_HEIGHT = 52; // half pitch
+export const PITCH_WIDTH = 66;
+export const PITCH_HEIGHT = 52; // half pitch
 const PITCH_PAD = 3;
 const ENTIRE_PITCH_WIDTH = PITCH_WIDTH + PITCH_PAD * 2;
 const ENTIRE_PITCH_HEIGHT = PITCH_HEIGHT + PITCH_PAD * 2;
 const P_IMG_SIZE = 8;
 
 class TeamPage extends HTMLElement {
+  /** control the ui to change a starting player */
+  updateLineup: { open: boolean; plId?: string } = { open: false };
+
   connectedCallback() {
     if (this.isConnected) {
       window.$game.addObserver(this);
@@ -38,6 +50,29 @@ class TeamPage extends HTMLElement {
     window.$game.removeObserver(this);
   }
 
+  closeUpdateLineup = () => {
+    this.updateLineup = { open: false };
+    this.render();
+  };
+
+  openUpdateLineup = (plId: string) => {
+    this.updateLineup = { open: true, plId };
+    this.render();
+  };
+
+  /** show the ui to change a staring player */
+  renderUpdateLineup(): TemplateResult {
+    return html`
+      <sff-modal .closeHandler=${this.closeUpdateLineup}>
+        <change-spot
+          data-pl-id=${this.updateLineup.plId!}
+          .onUpdateSpot=${this.closeUpdateLineup}
+        >
+        </change-spot>
+      </sff-modal>
+    `;
+  }
+
   render(): void {
     render(
       html`
@@ -45,15 +80,22 @@ class TeamPage extends HTMLElement {
           ${style}
         </style>
         <sff-game-page>
-          ${teamMain(window.$game.state?.userTeam ?? "")}
+          ${teamMain(window.$game.state?.userTeam ?? "", this.openUpdateLineup)}
         </sff-game-page>
       `,
       this
     );
+    render(
+      this.updateLineup.open ? this.renderUpdateLineup() : nothing,
+      window.$modalRoot
+    );
   }
 }
 
-function teamMain(team: string): TemplateResult {
+function teamMain(
+  team: string,
+  openUpdateLineup: (id: string) => void
+): TemplateResult {
   const st = window.$game.state!;
   const pls = GameState.getTeamPlayers(st, team);
   const starters = getFormation({ gs: st, t: st.teams[team] })?.lineup ?? [];
@@ -65,12 +107,16 @@ function teamMain(team: string): TemplateResult {
         <h2>TODO: controls</h2>
         <p>formation: ${st.teams[team].formation?.name}</p>
       </div>
-      ${teamPlayersTable(pls, starters)}
+      ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
   `;
 }
 
-function teamPlayersTable(pls: Player[], sts: Starter[]): TemplateResult {
+function teamPlayersTable(
+  pls: Player[],
+  sts: Starter[],
+  openUpdateLineup: (id: string) => void
+): TemplateResult {
   sortByPosition(pls, true);
   const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
   const starter = (p: Player) => sts.find((s) => s.pl?.id === p.id);
@@ -78,7 +124,7 @@ function teamPlayersTable(pls: Player[], sts: Starter[]): TemplateResult {
   return html`
     <table>
       ${teamPlayersTableHead(mSkills)}
-      ${pls.map((p) => teamPlayerRow(p, mSkills, starter(p)))}
+      ${pls.map((p) => teamPlayerRow(p, mSkills, openUpdateLineup, starter(p)))}
     </table>
   `;
 }
@@ -106,12 +152,21 @@ function teamPlayersTableHead(mSkills: string[]): TemplateResult {
 function teamPlayerRow(
   p: Player,
   skl: MacroSkill[],
+  openUpdateLineup: (id: string) => void,
   st?: Starter
 ): TemplateResult {
   const at = st?.sp.pos;
   return html`<tr class="plr ${st ? "starting" : ""}">
     <td class="plr-pos">${p.position}</td>
-    <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>${at}</td>
+    <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>
+      <button
+        @click=${() => openUpdateLineup(p.id)}
+        class="btn-at btn-txt"
+        aria-label="change starting position"
+      >
+        ${at}
+      </button>
+    </td>
     <td class="plr-name">${p.name}</td>
     ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
   </tr>`;
@@ -152,8 +207,8 @@ function pitch(sts: Starter[]): TemplateResult {
 
 function starterTag(s: Starter): TemplateResult {
   const style = {
-    left: `${(getStarterX(s) / ENTIRE_PITCH_WIDTH) * 100}%`,
-    top: `${(getStarterY(s) / ENTIRE_PITCH_HEIGHT) * 100}%`,
+    left: `${(getStarterX(s.sp) / ENTIRE_PITCH_WIDTH) * 100}%`,
+    top: `${(getStarterY(s.sp) / ENTIRE_PITCH_HEIGHT) * 100}%`,
   };
   return html`
     <div
@@ -189,21 +244,23 @@ function pitchDraw(sts: Starter[]): TemplateResult {
         width=${PITCH_WIDTH}
         height=${PITCH_HEIGHT}
       />
-      ${sts.map((ss) => starter(ss))}
+      ${sts.map((s) => starter(s.sp))}
     </svg>
   `;
 }
 
-function getStarterX(s: Starter): number {
-  return getX(s.sp.col, PITCH_WIDTH * 0.9) + PITCH_WIDTH * 0.05 + PITCH_PAD;
+export function getStarterX(s: Spot, noPad = false): number {
+  const x = getX(s.col, PITCH_WIDTH * 0.9) + PITCH_WIDTH * 0.05;
+  return noPad ? x : x + PITCH_PAD;
 }
 
-function getStarterY(s: Starter): number {
-  return getY(s.sp.row, PITCH_HEIGHT * 0.78) + PITCH_HEIGHT * 0.2 + PITCH_PAD;
+export function getStarterY(s: Spot, noPad = false): number {
+  const y = getY(s.row, PITCH_HEIGHT * 0.75) + PITCH_HEIGHT * 0.22;
+  return noPad ? y : y + PITCH_PAD;
 }
 
 /** the staring players images on the pitch */
-function starter(s: Starter): SVGTemplateResult {
+function starter(s: Spot): SVGTemplateResult {
   const x = getStarterX(s) - P_IMG_SIZE / 2;
   const y = getStarterY(s) - P_IMG_SIZE / 2;
   return svg`

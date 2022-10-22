@@ -1,0 +1,73 @@
+change-pos {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+.pitch {
+  background-color: green;
+  border: 1px solid white;
+  height: 64vw;
+  /* this values should match PITCH_WIDTH  and PITCH_HEIGHT */
+  min-width: calc(66px * 4.8);
+  min-height: calc(52px * 4.8);
+  /* preserve the proportion PITCH_HEIGHT / PITCH_WIDTH */
+  max-width: 100vh;
+  max-height: 80vh;
+  position: relative;
+  width: 80vw;
+}
+
+.sub {
+  background-color: hsla(275deg, 4%, 16%, 0.75);
+  display: inline-block;
+  font-size: 0.9rem;
+  padding: 3px;
+}
+
+.spot {
+  background-color: hsla(275deg, 4%, 16%, 0.75);
+  border: none;
+  border-radius: 5%;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
+  color: var(--dk-on-bg-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  width: 4.5rem;
+}
+
+.spot-name {
+  background-color: hsla(275deg, 4%, 23.5%, 0.75);
+  border-top: 1px dashed white;
+  font-weight: bold;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.plr-name {
+  font-size: 0.75rem;
+  font-style: italic;
+  overflow: hidden;
+  padding: 0 2px;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.sub-name {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.sub-pos {
+  text-transform: uppercase;
+}

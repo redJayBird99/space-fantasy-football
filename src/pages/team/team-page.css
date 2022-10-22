@@ -1,3 +1,5 @@
+@import url("../util/button.css");
+
 sff-team {
   display: block;
 }
@@ -69,14 +71,24 @@ td.plr-pos {
   background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
   border-radius: 8px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 15%);
-  font-style: italic;
-  font-weight: bold;
-  text-transform: uppercase;
 }
 
 .plr-at {
   /* background-color: #d44e4e; */
   align-self: stretch;
+}
+
+.btn-at,
+td.plr-pos {
+  font-style: italic;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.btn-at {
+  height: 100%;
+  width: 100%;
+  color: var(--dk-on-primary-color);
 }
 
 .starting > .plr-pos {
@@ -98,7 +110,7 @@ td.skill-score > span {
 
 .plr > td,
 .plr-head > th {
-  overflow-x: hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
