@@ -7,7 +7,6 @@ import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { swap } from "../../src/util/generator";
 import { mean } from "../../src/util/math";
-const _tt = _t.exportedForTesting;
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 let st = _gs.GameState.init("abcd".split(""));
@@ -850,7 +849,7 @@ describe("subLineupDepartures()", () => {
   };
   _sm.retirePlayer(st, retired);
   _t.Team.unSignPlayer(st, st.contracts[traded]);
-  _tt.subLineupDepartures({ gs: st, t: team });
+  _t.subLineupDepartures({ gs: st, t: team });
   const cpTeam = JSON.parse(JSON.stringify(team));
 
   test("should substitute retired players", () => {

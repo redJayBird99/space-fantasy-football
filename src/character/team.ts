@@ -305,7 +305,7 @@ class Team {
  * motivation: before every match the formation is guaranteed to be complete
  * (the sim updateFormations is called), but in between matches changes can happen
  */
-function subLineupDepartures({ gs, t }: GsTm): void {
+export function subLineupDepartures({ gs, t }: GsTm): void {
   if (!t.formation) {
     return;
   }
@@ -463,6 +463,4 @@ export {
   sumWages,
 };
 
-export const exportedForTesting = {
-  subLineupDepartures,
-};
+export const exportedForTesting = {};

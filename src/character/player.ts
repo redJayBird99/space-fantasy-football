@@ -195,11 +195,11 @@ const OUT_OF_POSITION_PENALTY: PosPenalty = {
     midPenalty: ["lm", "rm", "lw", "rw", "cf"],
   },
   lw: {
-    smallPenalty: ["lm", "am"],
+    smallPenalty: ["lm", "am", "rw"],
     midPenalty: ["rm", "cf"],
   },
   rw: {
-    smallPenalty: ["rm", "am"],
+    smallPenalty: ["rm", "am", "lw"],
     midPenalty: ["lm", "cf"],
   },
   cf: {

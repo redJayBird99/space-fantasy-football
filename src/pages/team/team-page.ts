@@ -18,11 +18,19 @@ import "../common/game-page.ts";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
 import { sortByPosition } from "../../character/util";
-import { getX, getY, Spot, Starter } from "../../character/formation";
+import {
+  Formations,
+  FORMATIONS,
+  getX,
+  getY,
+  Spot,
+  Starter,
+} from "../../character/formation";
 import pImg from "../../asset/player.svg";
 import { getFormation } from "../../character/team";
 import "./change-spot";
 import "../util/modal";
+import { changeFormation } from "../../character/user";
 
 export const PITCH_WIDTH = 66;
 export const PITCH_HEIGHT = 52; // half pitch
@@ -63,7 +71,7 @@ class TeamPage extends HTMLElement {
   /** show the ui to change a staring player */
   renderUpdateLineup(): TemplateResult {
     return html`
-      <sff-modal .closeHandler=${this.closeUpdateLineup}>
+      <sff-modal class="update-modal" .closeHandler=${this.closeUpdateLineup}>
         <change-spot
           data-pl-id=${this.updateLineup.plId!}
           .onUpdateSpot=${this.closeUpdateLineup}
@@ -102,10 +110,11 @@ function teamMain(
 
   return html`
     <section slot="in-main" class="team-main">
-      ${pitch(starters)}
+      <div>${pitch(starters)}</div>
       <div class="controls">
         <h2>TODO: controls</h2>
         <p>formation: ${st.teams[team].formation?.name}</p>
+        ${formationSelector()}
       </div>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
@@ -265,6 +274,24 @@ function starter(s: Spot): SVGTemplateResult {
   const y = getStarterY(s) - P_IMG_SIZE / 2;
   return svg`
     <image href=${pImg} x=${x} y=${y} height=${P_IMG_SIZE} width=${P_IMG_SIZE}/>
+  `;
+}
+
+/** formation selector to change the user formation */
+function formationSelector(): TemplateResult {
+  const uFrm =
+    window.$game.state?.teams[window.$game.state.userTeam].formation?.name;
+  const fms = Object.keys(FORMATIONS) as Formations[];
+  const onChange = (e: Event) =>
+    changeFormation((e.currentTarget as HTMLSelectElement).value as Formations);
+
+  return html`
+    <label>
+      change formation
+      <select @change=${onChange}>
+        ${fms.map((f) => html`<option ?selected=${f === uFrm}>${f}</option>`)}
+      </select>
+    </label>
   `;
 }
 

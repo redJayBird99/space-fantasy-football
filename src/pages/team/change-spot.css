@@ -39,11 +39,17 @@ change-pos {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 4.5rem;
+  max-width: 7rem;
   padding: 0;
   position: absolute;
   transform: translate(-50%, -50%);
   white-space: nowrap;
-  width: 4.5rem;
+  width: 12.5vw;
+}
+
+.spot:hover {
+  filter: brightness(1.25);
 }
 
 .spot-name {

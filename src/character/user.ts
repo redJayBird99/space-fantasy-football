@@ -12,9 +12,10 @@ import {
   TransRecord,
 } from "../game-state/game-state";
 import { within } from "../util/math";
+import { Formations, FORMATIONS } from "./formation";
 import { withdrawOffer } from "./mail";
 import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
-import { MAX_TEAM_SIZE, Team } from "./team";
+import { MAX_TEAM_SIZE, subLineupDepartures, Team } from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
@@ -240,5 +241,21 @@ export function updateTradeOffers(gs: GameState): void {
         gs.mails.unshift(withdrawOffer(gs.date, t, gs.teams[gs.userTeam]));
       return valid;
     });
+  }
+}
+
+/** change the user team formation with the given one if it is different,
+ * the new formation is filled with placeholder players */
+export function changeFormation(to: Formations): void {
+  const gs = window.$game.state!;
+  const user = gs.teams[gs.userTeam];
+
+  if (user.formation?.name !== to) {
+    user.formation = {
+      name: to,
+      lineup: FORMATIONS[to].map((s) => ({ sp: s })),
+    };
+    subLineupDepartures({ gs, t: user });
+    window.$game.state = gs;
   }
 }

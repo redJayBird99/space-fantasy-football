@@ -4,6 +4,10 @@ sff-team {
   display: block;
 }
 
+.update-modal {
+  padding: 0;
+}
+
 .team-main {
   align-items: flex-start;
   display: flex;
@@ -11,12 +15,18 @@ sff-team {
   gap: 0.5rem;
 }
 
+.team-main > :first-child {
+  flex-grow: 2;
+  /* this value should match ENTIRE_PITCH_WIDTH */
+  max-width: calc((66px + 3px * 2) * 12);
+  overflow: auto;
+}
+
 .controls {
   flex-grow: 0.5;
 }
 
 .cnt-pitch {
-  flex-grow: 2;
   position: relative;
   /* this value should match ENTIRE_PITCH_WIDTH */
   min-width: calc((66px + 3px * 2) * 4.9);
@@ -78,6 +88,10 @@ td.plr-pos {
   align-self: stretch;
 }
 
+.plr-at:hover {
+  filter: brightness(1.25);
+}
+
 .btn-at,
 td.plr-pos {
   font-style: italic;
@@ -136,10 +150,12 @@ rect.playing-pitch {
   background-color: hsla(275deg, 4%, 16%, 0.75);
   border-radius: 5px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
+  max-width: 7rem;
+  min-width: 5.5rem;
   position: absolute;
   text-align: center;
   transform: translateX(-50%);
-  width: 7rem;
+  width: 15vw;
   white-space: nowrap;
 }
 

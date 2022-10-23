@@ -1,5 +1,6 @@
 import { Formation, Formations, FORMATIONS, Spot } from "./formation";
 import { Player, Position } from "./player";
+// this file is meant to be used by a background threads via teh sim-worker interface
 
 /** pick the best fitting player at a position and cache the score answer */
 class PlayersPicker {
@@ -177,7 +178,7 @@ function toFormation(st: LineupState): Formation {
  * get a good fitting formation for the given players, trying to find the best lineup.
  * note: this function is slow, it is unnecessary for a single substitution or
  * when a Formation was already picked (consider fillFormation)
- * @param players at least 11 for a complete lineup
+ * @param pls at least 11 for a complete lineup
  */
 export function getFormation(pls: Player[]): Formation {
   return toFormation(findFormation(pls));
