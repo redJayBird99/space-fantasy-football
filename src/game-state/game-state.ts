@@ -79,6 +79,7 @@ class GameState {
     onGameEvent: undefined as GameEventTypes | undefined, // on which event the game is currently at (only for the user relevant events)
     signLimit: false, // when true the user should be able to sign only one new player per some amount of time
     signedNewPlayer: false, // when true means that the used signed a new player recently
+    whyIsSimDisabled: "" as "missingLineup" | "underMinTeamSize" | "",
   };
 
   popStats: PopStats = {
@@ -341,8 +342,8 @@ class GameStateHandle {
   loadGameFrom(gs: GameState): void {
     this._state = gs;
     this.saveNewGSOnDB();
-    // we need to set the formation because they don't get saved in a json file
-    setNewFormations(this._state).then(() => (this.state = this._state)); // set just to notify everyone
+    // we need to set the formation because they don't get saved in a json file except for the user
+    setNewFormations(this._state, true).then(() => (this.state = this._state)); // set just to notify everyone
   }
 
   /** try to save the current gameState as a new entry on the db, if a game name is provided */
@@ -373,8 +374,10 @@ class GameStateHandle {
       (s: GameState) => {
         this.state = s;
         onLoad();
-        // we don't know if the formations were saved, set to notify
-        setNewFormations(this.state).then(() => (this.state = this._state));
+        // we don't know if the formations were saved except for the user, set to notify
+        setNewFormations(this.state, true).then(
+          () => (this.state = this._state)
+        );
       },
       onErr
     );

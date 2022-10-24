@@ -11,6 +11,7 @@ import {
   MAX_SCOUTING_OFFSET,
   setFormation,
   MIN_TEAM_SIZE,
+  removeLineupDepartures,
 } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
@@ -20,7 +21,12 @@ import {
   fetchNewFormations,
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
-import { mustDraft, teamSizeAlert, tradeOffer } from "../character/mail";
+import {
+  mustDraft,
+  teamLineupAlert,
+  teamSizeAlert,
+  tradeOffer,
+} from "../character/mail";
 import { updateTradeOffers } from "../character/user";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
@@ -265,11 +271,10 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PEventRst {
 /** before sim all matches updates all formations */
 async function handleSimRound(gs: GameState, r: SimRound): PEventRst {
   if (!updateCanSimRound(gs)) {
-    gs.mails.unshift(teamSizeAlert(gs.date));
     return { stop: true, done: false };
   }
 
-  await updateFormations(gs);
+  await updateFormations(gs, true); // TODO add auto option
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
   return { stop: endSimOnEvent.simRound ?? false, done: true };
@@ -295,7 +300,7 @@ function handleSeasonEnd(gs: GameState): EventRst {
 async function handleSeasonStart(gs: GameState): PEventRst {
   prepareSeasonStart(gs);
   gs.flags.signLimit = false;
-  await setNewFormations(gs);
+  await setNewFormations(gs, true); // TODO add auto option
   return { stop: endSimOnEvent.seasonStart ?? false, done: true };
 }
 
@@ -328,11 +333,12 @@ function handleUpdateContracts(gs: GameState): EventRst {
   return { stop: true, done: true };
 }
 
-/** re-sign some expiring contract and expire all others */
+/** re-sign some expiring contract, expire all others and remove departures from the lineups */
 function handleRenewals(gs: GameState): EventRst {
   // TODO: check the auto re-sign option instead of a bool
   renewExpiringContracts(gs, true);
   removeExpiredContracts(gs);
+  Object.values(gs.teams).forEach((t) => removeLineupDepartures({ gs, t }));
   gs.reSigning = undefined;
   return { stop: endSimOnEvent.renewals ?? false, done: true };
 }
@@ -367,10 +373,12 @@ function handleRetiring(gs: GameState): EventRst {
   return { stop: endSimOnEvent.retiring ?? false, done: true };
 }
 
-/** retires all players in gs.retiring and add the to the retirees */
+/** retires all players in gs.retiring and add them to the retirees,
+ * all retired players get removed from the lineups */
 function handleRetire(gs: GameState): EventRst {
   gs.retiring.forEach((id) => retirePlayer(gs, gs.players[id]));
   gs.retiring = [];
+  Object.values(gs.teams).forEach((t) => removeLineupDepartures({ gs, t }));
   return { stop: endSimOnEvent.retire ?? false, done: true };
 }
 
@@ -410,7 +418,8 @@ function handleDraft(gs: GameState): EventRst {
   return { stop: endSimOnEvent.draft ?? false, done: true };
 }
 
-/**  when the trade window is open try to do some trade between teams */
+/**  when the trade window is open try to do some trade between teams
+ * and remove traded players from the lineups */
 function handleTrade(gs: GameState): EventRst {
   const user = gs.teams[gs.userTeam];
 
@@ -422,6 +431,8 @@ function handleTrade(gs: GameState): EventRst {
         gs.mails.unshift(tradeOffer(gs.date, t, user));
       } else {
         commitTrade(gs, t);
+        removeLineupDepartures({ gs, t: t.side1.by });
+        removeLineupDepartures({ gs, t: t.side2.by });
       }
     });
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
@@ -452,21 +463,30 @@ function handleCloseFreeSigningWindow(gs: GameState): EventRst {
   return { stop: endSimOnEvent.closeFreeSigningWindow ?? false, done: true };
 }
 
-/** find a new formation for each team asynchronously and make the sim wait until they are setted */
-export async function setNewFormations(gs: GameState) {
+/**
+ * find a new formation for each team asynchronously and make the sim wait until they are setted
+ * @param skipUser when true it doesn't touch the user formation
+ */
+export async function setNewFormations(gs: GameState, skipUser = false) {
   simWait = true;
-  const forms = await fetchNewFormations({ gs, teams: Object.keys(gs.teams) });
+  const teams = skipUser
+    ? Object.keys(gs.teams).filter((t) => t !== gs.userTeam)
+    : Object.keys(gs.teams);
+  const forms = await fetchNewFormations({ gs, teams });
   forms.forEach((res) => setFormation(gs.teams[res.team], res.f)); // set the given formation to each team in the gs
   simWait = false;
 }
 
-/** update (swapping and filling spots) the current formations or set new ones
- * if no one was found for each team */
-async function updateFormations(gs: GameState): Promise<void> {
-  const forms = await fetchUpdatedFormations({
-    gs,
-    teams: Object.keys(gs.teams),
-  });
+/**
+ * update (swapping and filling spots) the current formations or set new ones
+ * if no one was found for each team
+ * @param skipUser when true it doesn't touch the user formation
+ */
+async function updateFormations(gs: GameState, skipUser = false) {
+  const teams = skipUser
+    ? Object.keys(gs.teams).filter((t) => t !== gs.userTeam)
+    : Object.keys(gs.teams);
+  const forms = await fetchUpdatedFormations({ gs, teams });
   forms.forEach((res) => setFormation(gs.teams[res.team], res.f)); // set the given formation to each team in the gs
 }
 
@@ -761,21 +781,53 @@ function updateRejections(gs: GameState): void {
   });
 }
 
-/** update the canSimRound and return it */
+/** update the canSimRound and whyIsSimDisabled flags then return it */
 function updateCanSimRound(gs: GameState): boolean {
-  // the team size check is important only when the team must play
-  if (gs.eventQueue[0]?.type === "simRound" && gs.teams[gs.userTeam]) {
-    gs.flags.canSimRound =
-      gs.teams[gs.userTeam].playerIds.length >= MIN_TEAM_SIZE;
-  } else {
-    gs.flags.canSimRound = true;
+  return checkUserTeamSize(gs) && checkUserLineup(gs);
+}
+
+/** check if the user team has at least the minimum amount of player required,
+ * the check is delay until the next event is a match,
+ * the canSimRound and whyIsSimDisabled flags can get updated  */
+function checkUserTeamSize(gs: GameState): boolean {
+  const f = gs.flags;
+  const u = gs.teams[gs.userTeam];
+  f.canSimRound =
+    !u ||
+    gs.eventQueue[0]?.type !== "simRound" ||
+    u.playerIds.length >= MIN_TEAM_SIZE;
+
+  if (!f.canSimRound && f.whyIsSimDisabled !== "underMinTeamSize") {
+    f.whyIsSimDisabled = "underMinTeamSize";
+    gs.mails.unshift(teamSizeAlert(gs.date));
+  }
+
+  return f.canSimRound;
+}
+
+/** check if the user team lineup is complete, the check is delay until the next match,
+ * the canSimRound and whyIsSimDisabled flags can get updated  */
+function checkUserLineup(gs: GameState): boolean {
+  const hour = 3_600_000;
+  const u = gs.teams[gs.userTeam];
+  const e = gs.eventQueue[0];
+  gs.flags.canSimRound =
+    !u ||
+    !e ||
+    e.type !== "simRound" ||
+    e.date.getTime() - gs.date.getTime() > hour ||
+    Boolean(u.formation && !u.formation.lineup.some((s) => !s.plID));
+
+  if (!gs.flags.canSimRound && gs.flags.whyIsSimDisabled !== "missingLineup") {
+    gs.flags.whyIsSimDisabled = "missingLineup";
+    gs.mails.unshift(teamLineupAlert(gs.date));
   }
 
   return gs.flags.canSimRound;
 }
 
 /** apply some common check on every update
- * - update the canSimRound flag
+ * - check fort the user team size requirements and update the canSimRound flag
  * - update the tradeOffers
  * can skip it if the update wasn't related to the above
  */

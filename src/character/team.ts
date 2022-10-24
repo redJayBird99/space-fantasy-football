@@ -306,24 +306,45 @@ class Team {
  * (the sim updateFormations is called), but in between matches changes can happen
  */
 export function subLineupDepartures({ gs, t }: GsTm): void {
+  removeLineupDepartures({ gs, t });
+  fillLineupMissingSpot({ gs, t });
+}
+
+/** remove all players not in the team anymore (retired, traded and ect) */
+export function removeLineupDepartures({ gs, t }: GsTm): void {
+  t.formation?.lineup.forEach((s) => {
+    const id = s.plID;
+
+    if (!id || !gs.players[id] || gs.players[id].team !== t.name) {
+      s.plID = undefined;
+    }
+  });
+}
+
+/** this function does a simple substitution and it doesn't add new spots when missing.
+ * updateFormations instead does a complete overhaul of the lineup so it is usually preferable
+ *
+ * motivation: before every match the formation is guaranteed to have a complete lineup
+ * (the sim updateFormations is called), but in between matches changes can happen
+ */
+export function fillLineupMissingSpot({ gs, t }: GsTm): void {
   if (!t.formation) {
     return;
   }
 
   const ln = t.formation.lineup;
-  const exclude = new Set(ln.map((s) => s.plID ?? ""));
+  const exclude = new Set(ln.map((s) => s.plID).filter((id) => id));
   const bench = new Set(
     Team.getNotExpiringPlayers({ gs, t }).filter((p) => !exclude.has(p.id))
   );
-  const emptyPos = ln.filter(
-    ({ plID: id }) => !id || !gs.players[id] || gs.players[id].team !== t.name
-  );
-  emptyPos.forEach((s) => {
-    const sub = bestAtPos(bench, s.sp.pos);
+  ln.forEach((s) => {
+    if (s.plID === undefined) {
+      const sub = bestAtPos(bench, s.sp.pos);
 
-    if (sub?.id) {
-      s.plID = sub.id;
-      bench.delete(sub);
+      if (sub) {
+        s.plID = sub.id;
+        bench.delete(sub);
+      }
     }
   });
 }
@@ -338,7 +359,6 @@ export function setFormation(t: Team, fm: Formation): void {
 
 /** get the formation of the given team if any exist */
 export function getFormation(g: GsTm): Formation | void {
-  subLineupDepartures(g);
   if (g.t.formation) {
     return {
       name: g.t.formation.name,

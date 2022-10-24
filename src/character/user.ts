@@ -15,7 +15,12 @@ import { within } from "../util/math";
 import { Formations, FORMATIONS } from "./formation";
 import { withdrawOffer } from "./mail";
 import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
-import { MAX_TEAM_SIZE, subLineupDepartures, Team } from "./team";
+import {
+  MAX_TEAM_SIZE,
+  removeLineupDepartures,
+  subLineupDepartures,
+  Team,
+} from "./team";
 
 type DraftHistory = DraftPickRecord & { when: number };
 type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
@@ -186,7 +191,8 @@ export function canTrade(other: Team, get: Player[], give: Player[]): boolean {
 
 /**
  * transfer the players between the user team and the other team an save the
- * record in the the trade history
+ * record in the the trade history.
+ * all traded player are removed from the lineups
  * @param other the trading partner
  * @param get what the user team would receive from the other team
  * @param give what the user give to the other team
@@ -196,6 +202,8 @@ export function makeTrade(other: Team, get: Player[], give: Player[]) {
   const user = gs.teams[gs.userTeam];
   transferPlayers(gs, get, user);
   transferPlayers(gs, give, other);
+  removeLineupDepartures({ gs, t: other });
+  removeLineupDepartures({ gs, t: user });
   gs.transactions.now.trades.push({
     when: gs.date.toDateString(),
     sides: [
@@ -210,8 +218,7 @@ export function makeTrade(other: Team, get: Player[], give: Player[]) {
  * finances and if the player are still available */
 export function tradeOfferIsStillValid(t: TradeRecord): boolean {
   const gs = window.$game.state!;
-  const s1 = t.sides[0];
-  const s2 = t.sides[1];
+  const [s1, s2] = t.sides;
   const t1 = gs.teams[s1.team];
   const t2 = gs.teams[s2.team];
   const t1StillHasPls = !s1.plIds.some((id) => !t1.playerIds.includes(id));

@@ -833,38 +833,64 @@ describe("sumWages()", () => {
   });
 });
 
-describe("subLineupDepartures()", () => {
+describe("removeLineupDepartures", () => {
   const sp = { pos: "cm", row: 3, col: 8 } as const;
   const pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
   const retired = pls[0];
-  const traded = pls[1].id;
+  const traded = pls[1];
   team.formation = {
     name: "3-4-3",
     lineup: [
       { plID: "", sp },
       { plID: retired.id, sp },
-      { plID: traded, sp },
+      { plID: traded.id, sp },
       { plID: pls[2].id, sp },
     ],
   };
   _sm.retirePlayer(st, retired);
-  _t.Team.unSignPlayer(st, st.contracts[traded]);
-  _t.subLineupDepartures({ gs: st, t: team });
+  _t.Team.unSignPlayer(st, st.contracts[traded.id]);
   const cpTeam = JSON.parse(JSON.stringify(team));
+  _t.removeLineupDepartures({ gs: st, t: cpTeam });
 
-  test("should substitute retired players", () => {
-    expect(cpTeam.formation?.lineup[1].plID).not.toBe(retired.id);
+  test("should remove retired players", () => {
+    expect(cpTeam.formation?.lineup[1].plID).toBeUndefined();
   });
 
-  test("should substitute traded players", () => {
-    expect(cpTeam.formation?.lineup[2].plID).not.toBe(traded);
+  test("should remove traded players", () => {
+    expect(cpTeam.formation?.lineup[2].plID).toBeUndefined();
   });
 
-  test("should substitute empty position", () => {
-    expect(cpTeam.formation?.lineup[0].plID).not.toBe("");
+  test("should remove empty position", () => {
+    expect(cpTeam.formation?.lineup[0].plID).toBeUndefined();
   });
 
   test("should preserve all already filled position", () => {
     expect(cpTeam.formation?.lineup[3].plID).toBe(pls[2].id);
+  });
+});
+
+describe("fillLineupMissingSpot()", () => {
+  const sp = { pos: "cm", row: 3, col: 8 } as const;
+  const pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+  team.formation = {
+    name: "3-4-3",
+    lineup: [{ plID: pls[0].id, sp }, { sp }, { sp }],
+  };
+  const cpTeam = JSON.parse(JSON.stringify(team));
+  _t.fillLineupMissingSpot({ gs: st, t: cpTeam });
+
+  test("should substitute empty spot", () => {
+    expect(cpTeam.formation?.lineup[1].plID).toBeDefined();
+    expect(cpTeam.formation?.lineup[2].plID).toBeDefined();
+  });
+
+  test("should preserve all already filled position", () => {
+    expect(cpTeam.formation?.lineup[0].plID).toBe(pls[0].id);
+  });
+
+  test("the subs should different for each spot", () => {
+    expect(new Set(cpTeam.formation?.lineup.map((s: any) => s.plID)).size).toBe(
+      3
+    );
   });
 });

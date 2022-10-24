@@ -106,6 +106,7 @@ function teamMain(
 ): TemplateResult {
   const st = window.$game.state!;
   const pls = GameState.getTeamPlayers(st, team);
+  // TODO for any other team other than the user call fillLineupMissingSpot
   const starters = getFormation({ gs: st, t: st.teams[team] })?.lineup ?? [];
 
   return html`

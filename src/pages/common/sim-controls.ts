@@ -182,10 +182,18 @@ class PlaySim extends HTMLElement {
   }
 
   getDisabledDescription(): string {
-    if (window.$game.state!.flags.userDrafting) {
+    const gs = window.$game.state!;
+
+    if (gs.flags.userDrafting) {
       return "⚠ disabled until you draft a player";
-    } else if (!window.$game.state!.flags.canSimRound) {
-      return `⚠ disabled your team has too few players`;
+    }
+    if (!gs.flags.canSimRound) {
+      if (gs.flags.whyIsSimDisabled === "underMinTeamSize") {
+        return `⚠ disabled your team has too few players`;
+      }
+      if (gs.flags.whyIsSimDisabled === "missingLineup") {
+        return `⚠ disabled your team lineup is incomplete`;
+      }
     }
 
     return "";

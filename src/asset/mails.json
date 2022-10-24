@@ -8,5 +8,10 @@
     "sender": "Coach Assistant",
     "subject": "It is our turn to draft a player",
     "content": "we have a great opportunity to get a young talent, don't waste it"
+  },
+  "must-fill-lineup": {
+    "sender": "Coach Assistant",
+    "subject": "We need to prepare the lineup",
+    "content": "we have some some position to fill in our team lineup before we can play the next match"
   }
 }

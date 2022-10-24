@@ -38,12 +38,12 @@ class ChangeSpot extends HTMLElement {
     this.onUpdateSpot?.(); // we can close before updating
 
     if (plId && gs.players[plId]) {
-      const old = gs.teams[gs.userTeam].formation?.lineup.find(
+      const oldSpot = gs.teams[gs.userTeam].formation?.lineup.find(
         (n) => n.plID === plId
       );
 
-      if (old?.plID) {
-        old.plID = undefined; // remove him from the old stating position
+      if (oldSpot?.plID) {
+        oldSpot.plID = n.plID; // swap the stating positions
       }
 
       n.plID = plId;
@@ -101,7 +101,7 @@ function spotSelector(
               @click=${() => onSpotClick(n)}
               aria-label="add to ${n.sp.pos}"
             >
-              <span class="plr-name">${p ? p.name : "Empty"}</span>
+              <span class="plr-name">${p ? p.name : ""}</span>
               <span class="spot-name">${n.sp.pos}</span>
             </button>
           `;

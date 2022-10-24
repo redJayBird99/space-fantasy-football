@@ -24,9 +24,10 @@ change-pos {
 
 .sub {
   background-color: hsla(275deg, 4%, 16%, 0.75);
+  border-radius: 0 0 5% 0;
   display: inline-block;
   font-size: 0.9rem;
-  padding: 3px;
+  padding: 0.25rem 2px;
 }
 
 .spot {

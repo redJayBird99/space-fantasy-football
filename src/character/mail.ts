@@ -22,7 +22,7 @@ export function newMail(
     ...m,
     id: createId(),
     opened: false,
-    sendDate: send.toLocaleDateString(),
+    sendDate: send.toDateString(),
   };
 }
 
@@ -52,6 +52,10 @@ export function teamSizeAlert(send: Date): Mail {
     },
     send
   );
+}
+
+export function teamLineupAlert(send: Date): Mail {
+  return newMail(mails["must-fill-lineup"], send);
 }
 
 export function tradeOffer(send: Date, t: Trade, user: Team): Mail {
