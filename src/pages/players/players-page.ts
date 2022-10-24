@@ -388,7 +388,8 @@ if (!customElements.get("sff-players")) {
 /** render table rows with the given players as entries */
 function renderRows(players: Player[]) {
   const gs = window.$game.state!;
-  const playerPath = (p: Player) => `${location.pathname}/player?id=${p.id}`;
+  const playerPath = (p: Player) =>
+    `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
   return repeat(
     players,

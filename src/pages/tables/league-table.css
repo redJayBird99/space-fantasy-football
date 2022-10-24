@@ -69,3 +69,12 @@ tr:nth-of-type(2n + 2) td:first-child {
   background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
 }
+
+td:first-child a {
+  font-style: italic;
+  font-weight: bold;
+}
+
+sff-go > a {
+  color: var(--dk-on-bg-color, initial);
+}

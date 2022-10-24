@@ -52,3 +52,7 @@ button {
 .btn:disabled {
   filter: brightness(0.5);
 }
+
+button:disabled {
+  cursor: not-allowed;
+}

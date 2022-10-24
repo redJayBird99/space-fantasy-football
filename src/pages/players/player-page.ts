@@ -18,6 +18,7 @@ import {
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
 import { Team } from "../../character/team";
+import { goLink } from "../util/go-link";
 
 class PlayerPage extends HTMLElement {
   connectedCallback() {
@@ -84,6 +85,9 @@ function playerBio(p: Player): TemplateResult {
   const bgColor = (c: string) => `background-color: ${c}`;
   const rColor = `hsl(${getPlayerRating(p, gs) * 120}deg 100% 60%)`;
   const iColor = `hsl(${estimateImprovabilityRating(p, t) * 120}deg 100% 60%)`;
+  const teamLink = gs.teams[p.team]
+    ? `${window.$PUBLIC_PATH}team?team=${p.team}`
+    : "";
 
   return html`
     <div class="plr-bio">
@@ -108,7 +112,7 @@ function playerBio(p: Player): TemplateResult {
         </div>
         <div class="plr-high">
           <div>Team</div>
-          <div>${p.team}</div>
+          <div>${teamLink ? goLink(teamLink, p.team) : p.team}</div>
         </div>
       </div>
       <div>

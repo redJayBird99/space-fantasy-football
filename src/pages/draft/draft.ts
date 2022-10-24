@@ -127,6 +127,10 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
   const p = gs.players[rec.plId];
   const link = `${window.$PUBLIC_PATH}players/player?id=${rec.plId}`;
   const canDraft = p && gs.flags.userDrafting && p.team === "draft";
+  const teamLink = goLink(
+    `${window.$PUBLIC_PATH}team?team=${rec.team}`,
+    rec.team
+  );
 
   // the player could be retired
   return html`
@@ -139,7 +143,7 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
       <td>${p ? Player.age(p, when) : ""}</td>
       <td>${p ? improvabilitySymbol(rec.plId) : ""}</td>
       <td>${p ? PlayerRatingSymbol(rec.plId) : ""}</td></td>
-      <td ?data-user=${rec.team === gs.userTeam}>${rec.team}</td>
+      <td ?data-user=${rec.team === gs.userTeam}>${teamLink}</td>
       <td>
         <button
           ?disabled=${!canDraft}
@@ -187,11 +191,16 @@ function ratingSymbol(symbol: string, rating: number): TemplateResult {
 function lottery(order: string[]): TemplateResult {
   const user = window.$game.state?.userTeam;
   const pickN = window.$game.state!.drafts.now.picked.length + 1;
+  const teamLink = (t: string) =>
+    goLink(`${window.$PUBLIC_PATH}team?team=${t}`, t);
+
   return html`
     <article class="cnt-lottery">
-      <h2>Lottery:</h2>
+      <h2>🎲 Lottery</h2>
       <ol class="lottery" start=${pickN ?? 1}>
-        ${order.map((t) => html`<li ?data-user=${user === t}>${t}</li>`)}
+        ${order.map(
+          (t) => html`<li ?data-user=${user === t}>${teamLink(t)}</li>`
+        )}
       </ol>
     </article>
   `;

@@ -107,7 +107,10 @@ function transactions(when: string, trans: TemplateResult[]): TemplateResult {
  * @param title the introductory title of the transaction
  * @param content the specific content of the transaction
  */
-function transaction(title: string, content: TemplateResult): TemplateResult {
+function transaction(
+  title: TemplateResult,
+  content: TemplateResult
+): TemplateResult {
   return html`
     <div>
       <h4 class="transaction-title">${title}</h4>
@@ -150,9 +153,8 @@ export function trade(t: TradeRecord): TemplateResult {
 
 /** returns informations about the given trade side */
 function tradeSide(team: string, getPls: string[], was: Date): TemplateResult {
-  const title = `${team} acquires:`;
   return transaction(
-    title,
+    html`${teamLink(team)} acquires:`,
     html`
       <ul class="traded-pls">
         ${getPls.map(
@@ -208,9 +210,8 @@ function signingsBlock(sr: SigningRecord[]): TemplateResult {
 
 /** returns informations about the given signed player */
 function signing(r: SigningRecord): TemplateResult {
-  const title = `${r.team} signed:`;
   return transaction(
-    title,
+    html`${teamLink(r.team)} signed:`,
     html`
       <div class="cnt-pl-info">${playerInfo(r.plId, new Date(r.when))}</div>
     `
@@ -225,6 +226,10 @@ function renewals(rs: SigningRecord[]): TemplateResult {
       ${collectByDate(rs).map((r) => signingsBlock(r))}
     </section>
   `;
+}
+
+function teamLink(name: string): TemplateResult {
+  return goLink(`${window.$PUBLIC_PATH}team?team=${name}`, name);
 }
 
 if (!customElements.get("sff-transactions")) {

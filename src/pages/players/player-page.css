@@ -87,3 +87,7 @@ sff-player {
   padding: 3px 0;
   width: 150px;
 }
+
+sff-go > a {
+  color: var(--dk-on-bg-color, initial);
+}

@@ -2,6 +2,7 @@ import { GameState } from "../../game-state/game-state";
 import { Entry, LeagueTable as League } from "../../game-state/league-table";
 import { html, render, TemplateResult } from "lit-html";
 import style from "./league-table.css";
+import { goLink } from "../util/go-link";
 
 const columns = [
   { full: "name", abbr: "name", data: (e: Entry) => e.teamName },
@@ -72,18 +73,25 @@ class LeagueTable extends HTMLElement {
     );
   }
 
-  /** when the table is in large mode add supplementary datas columns */
-  renderDatas(e: Entry): TemplateResult[] {
-    return (this.dataset.mode === "compact" ? cmpctCols : columns).map(
-      (c) => html`<td>${c.data(e)}</td>`
-    );
+  /** when the table is in large mode add supplementary data columns */
+  renderData(e: Entry): TemplateResult[] {
+    const teamLink = (name: string) =>
+      `${window.$PUBLIC_PATH}team?team=${name}`;
+    return (this.dataset.mode === "compact" ? cmpctCols : columns).map((c) => {
+      const rst = c.data(e);
+      return html`<td>
+        ${c.full === "name" && typeof rst === "string"
+          ? goLink(teamLink(rst), rst)
+          : rst}
+      </td>`;
+    });
   }
 
   renderRows() {
     const season = this.dataset.season ?? "now";
     const renderRow = (e: Entry) =>
       html`<tr>
-        ${this.renderDatas(e)}
+        ${this.renderData(e)}
       </tr>`;
     return new League(GameState.getSeasonMatches(window.$game.state!, season))
       .getSortedTable()

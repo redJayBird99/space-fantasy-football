@@ -142,3 +142,7 @@ sff-go > a {
   font-weight: bold;
   margin: 3px 0;
 }
+
+.lottery > [data-user] a {
+  color: var(--dk-on-primary-color);
+}

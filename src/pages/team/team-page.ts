@@ -27,7 +27,11 @@ import {
   Starter,
 } from "../../character/formation";
 import pImg from "../../asset/player.svg";
-import { getFormation } from "../../character/team";
+import {
+  fillLineupMissingSpot,
+  getFormation,
+  Team,
+} from "../../character/team";
 import "./change-spot";
 import "../util/modal";
 import { changeFormation } from "../../character/user";
@@ -39,9 +43,19 @@ const ENTIRE_PITCH_WIDTH = PITCH_WIDTH + PITCH_PAD * 2;
 const ENTIRE_PITCH_HEIGHT = PITCH_HEIGHT + PITCH_PAD * 2;
 const P_IMG_SIZE = 8;
 
+/** get the searched team from the gameState */
+function getSearchParamTeam(): Team | undefined {
+  const name = new URLSearchParams(location.search).get("team");
+  return name ? window.$game.state!.teams[name] : undefined;
+}
+
 class TeamPage extends HTMLElement {
-  /** control the ui to change a starting player */
+  /** control the ui to change a starting player only for the user team */
   updateLineup: { open: boolean; plId?: string } = { open: false };
+  /** if it doesn't exist default to the user */
+  team =
+    getSearchParamTeam() ??
+    window.$game.state!.teams[window.$game.state!.userTeam];
 
   connectedCallback() {
     if (this.isConnected) {
@@ -82,40 +96,48 @@ class TeamPage extends HTMLElement {
   }
 
   render(): void {
+    const isUser = window.$game.state!.userTeam === this.team.name;
+
     render(
       html`
         <style>
           ${style}
         </style>
         <sff-game-page>
-          ${teamMain(window.$game.state?.userTeam ?? "", this.openUpdateLineup)}
+          ${teamMain(this.team, isUser ? this.openUpdateLineup : undefined)}
         </sff-game-page>
       `,
       this
     );
     render(
-      this.updateLineup.open ? this.renderUpdateLineup() : nothing,
+      this.updateLineup.open && isUser ? this.renderUpdateLineup() : nothing,
       window.$modalRoot
     );
   }
 }
 
+/**
+ * render information about the given team, if the team is the user team add
+ * some controls for customization
+ * @param openUpdateLineup open the change starters menu, only for the user
+ */
 function teamMain(
-  team: string,
-  openUpdateLineup: (id: string) => void
+  t: Team,
+  openUpdateLineup?: (id: string) => void
 ): TemplateResult {
-  const st = window.$game.state!;
-  const pls = GameState.getTeamPlayers(st, team);
-  // TODO for any other team other than the user call fillLineupMissingSpot
-  const starters = getFormation({ gs: st, t: st.teams[team] })?.lineup ?? [];
+  const gs = window.$game.state!;
+  const pls = GameState.getTeamPlayers(gs, t.name);
+  // lazily filling empty spots (sometimes when not needed the formation is incomplete)
+  gs.userTeam !== t.name && fillLineupMissingSpot({ gs, t });
+  const starters = getFormation({ gs, t })?.lineup ?? [];
 
   return html`
     <section slot="in-main" class="team-main">
       <div>${pitch(starters)}</div>
       <div class="controls">
-        <h2>TODO: controls</h2>
-        <p>formation: ${st.teams[team].formation?.name}</p>
-        ${formationSelector()}
+        <h2>TODO: controls ${t.name}</h2>
+        <p>formation: ${t.formation?.name}</p>
+        ${gs.userTeam === t.name ? formationSelector() : nothing}
       </div>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
@@ -125,7 +147,7 @@ function teamMain(
 function teamPlayersTable(
   pls: Player[],
   sts: Starter[],
-  openUpdateLineup: (id: string) => void
+  openUpdateLineup?: (id: string) => void
 ): TemplateResult {
   sortByPosition(pls, true);
   const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
@@ -162,7 +184,7 @@ function teamPlayersTableHead(mSkills: string[]): TemplateResult {
 function teamPlayerRow(
   p: Player,
   skl: MacroSkill[],
-  openUpdateLineup: (id: string) => void,
+  openUpdateLineup?: (id: string) => void,
   st?: Starter
 ): TemplateResult {
   const at = st?.sp.pos;
@@ -170,7 +192,8 @@ function teamPlayerRow(
     <td class="plr-pos">${p.position}</td>
     <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>
       <button
-        @click=${() => openUpdateLineup(p.id)}
+        ?disabled=${!openUpdateLineup}
+        @click=${openUpdateLineup ? () => openUpdateLineup(p.id) : nothing}
         class="btn-at btn-txt"
         aria-label="change starting position"
       >
