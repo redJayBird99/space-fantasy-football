@@ -216,8 +216,7 @@ export function makeTrade(other: Team, get: Player[], give: Player[]) {
 
 /** check if the given trade offer is still possible, check both teams size,
  * finances and if the player are still available */
-export function tradeOfferIsStillValid(t: TradeRecord): boolean {
-  const gs = window.$game.state!;
+export function tradeOfferIsStillValid(gs: GameState, t: TradeRecord): boolean {
   const [s1, s2] = t.sides;
   const t1 = gs.teams[s1.team];
   const t2 = gs.teams[s2.team];
@@ -243,7 +242,7 @@ export function updateTradeOffers(gs: GameState): void {
   // when the openTradeWindow is false the gs.tradeOffers is empty
   if (gs.flags.openTradeWindow) {
     gs.tradeOffers = gs.tradeOffers.filter((t) => {
-      const valid = tradeOfferIsStillValid(t);
+      const valid = tradeOfferIsStillValid(gs, t);
       !valid &&
         gs.mails.unshift(withdrawOffer(gs.date, t, gs.teams[gs.userTeam]));
       return valid;

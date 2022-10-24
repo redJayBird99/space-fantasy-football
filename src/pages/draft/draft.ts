@@ -132,7 +132,9 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
   return html`
     <tr>
       <td><span class="pick-n">${isNaN(rec.n) ? "" : rec.n}</span></td>
-      <td>${p ? goLink(link, p.name) : "a retired player"}</td>
+      <td>${
+        p ? goLink(link, p.name) : `${gs.retirees[rec.plId]} (retired)`
+      }</td>
       <td>${p ? p.position.toUpperCase() : ""}</td>
       <td>${p ? Player.age(p, when) : ""}</td>
       <td>${p ? improvabilitySymbol(rec.plId) : ""}</td>

@@ -109,13 +109,13 @@ describe("tradeOfferIsStillValid()", () => {
   test("when the player are still available should return true", () => {
     const mockGs = _gs.GameState.parse(JSON.stringify(gs));
     (window.$game as any) = { state: mockGs };
-    expect(tradeOfferIsStillValid(mockGs.tradeOffers[0])).toBe(true);
+    expect(tradeOfferIsStillValid(mockGs, mockGs.tradeOffers[0])).toBe(true);
   });
 
   test("when the player aren't available should return false", () => {
     const mockGs = _gs.GameState.parse(JSON.stringify(gs));
     mockGs.teams.a.playerIds = [];
     (window.$game as any) = { state: mockGs };
-    expect(tradeOfferIsStillValid(mockGs.tradeOffers[0])).toBe(false);
+    expect(tradeOfferIsStillValid(mockGs, mockGs.tradeOffers[0])).toBe(false);
   });
 });
