@@ -1,9 +1,13 @@
+@import url("../util/button.css");
+
 :host {
   display: block;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
-:host(:not([data-compact])) {
-  height: 80vh;
+:host([data-compact]) {
+  max-height: 10rem;
 }
 
 *,
@@ -46,7 +50,11 @@ tr {
 
 tr:first-child > td:nth-child(1),
 tr:first-child > td:nth-child(3) {
-  width: 20%;
+  width: 25%;
+}
+
+tr:first-child > td:nth-child(4) {
+  width: 10%;
 }
 
 td:last-child {
@@ -54,7 +62,7 @@ td:last-child {
 }
 
 tr:first-child > td:nth-child(2) {
-  width: 60%;
+  width: 40%;
 }
 
 .mail--opened {
@@ -75,4 +83,9 @@ tr:first-child > td:nth-child(2) {
 
 .mail-info > span:last-child {
   margin-right: 1rem;
+}
+
+.btn--err {
+  border-radius: 50%;
+  padding: 1px 5px;
 }

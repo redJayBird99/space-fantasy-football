@@ -19,6 +19,8 @@ import { Trade } from "../game-sim/trade";
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
 const INIT_HOUR = 10;
+const MAX_MAILS = 30;
+
 type ScheduleRound = { date: Date; matchIds: string[] };
 /** team is an empty string when not picked and n NaN */
 export type DraftPickRecord = { team: string; plId: string; n: number };
@@ -238,6 +240,15 @@ export function toTradeRecord(t: Trade, when: Date): TradeRecord {
       { team: t.side2.by.name, plIds: t.side2.content.map((p) => p.id) },
     ],
   };
+}
+
+/** add the given mail to game state, the oldest mail get removed if there are more than MAX_MAILS */
+export function addMail(gs: GameState, m: Mail): void {
+  if (gs.mails.length >= MAX_MAILS) {
+    gs.mails.pop();
+  }
+
+  gs.mails.unshift(m);
 }
 
 interface GameStateObserver {

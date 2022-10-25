@@ -2,6 +2,7 @@ import {
   GameState,
   createPlayers,
   toTradeRecord,
+  addMail,
 } from "../game-state/game-state";
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
@@ -402,7 +403,7 @@ function handleDraft(gs: GameState): EventRst {
   for (const team of gs.drafts.now.lottery.slice()) {
     if (team === gs.userTeam) {
       gs.flags.userDrafting = true;
-      gs.mails.unshift(mustDraft(gs.date));
+      addMail(gs, mustDraft(gs.date));
       return { stop: true, done: false }; // TODO: when we add the auto draft change with break
     }
 
@@ -428,7 +429,7 @@ function handleTrade(gs: GameState): EventRst {
       // TODO add auto trade option for the user team
       if (t.side1.by === user || t.side2.by === user) {
         gs.tradeOffers.push(toTradeRecord(t, gs.date));
-        gs.mails.unshift(tradeOffer(gs.date, t, user));
+        addMail(gs, tradeOffer(gs.date, t, user));
       } else {
         commitTrade(gs, t);
         removeLineupDepartures({ gs, t: t.side1.by });
@@ -799,7 +800,7 @@ function checkUserTeamSize(gs: GameState): boolean {
 
   if (!f.canSimRound && f.whyIsSimDisabled !== "underMinTeamSize") {
     f.whyIsSimDisabled = "underMinTeamSize";
-    gs.mails.unshift(teamSizeAlert(gs.date));
+    addMail(gs, teamSizeAlert(gs.date));
   }
 
   return f.canSimRound;
@@ -820,7 +821,7 @@ function checkUserLineup(gs: GameState): boolean {
 
   if (!gs.flags.canSimRound && gs.flags.whyIsSimDisabled !== "missingLineup") {
     gs.flags.whyIsSimDisabled = "missingLineup";
-    gs.mails.unshift(teamLineupAlert(gs.date));
+    addMail(gs, teamLineupAlert(gs.date));
   }
 
   return gs.flags.canSimRound;

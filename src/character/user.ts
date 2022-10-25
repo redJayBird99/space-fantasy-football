@@ -5,6 +5,7 @@ import {
   transferPlayers,
 } from "../game-sim/trade";
 import {
+  addMail,
   DraftPickRecord,
   GameState,
   SignRequest,
@@ -243,8 +244,7 @@ export function updateTradeOffers(gs: GameState): void {
   if (gs.flags.openTradeWindow) {
     gs.tradeOffers = gs.tradeOffers.filter((t) => {
       const valid = tradeOfferIsStillValid(gs, t);
-      !valid &&
-        gs.mails.unshift(withdrawOffer(gs.date, t, gs.teams[gs.userTeam]));
+      !valid && addMail(gs, withdrawOffer(gs.date, t, gs.teams[gs.userTeam]));
       return valid;
     });
   }

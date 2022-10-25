@@ -3,10 +3,8 @@ import { html, render, TemplateResult } from "lit-html";
 import "../util/modal.ts";
 import { goTo } from "../util/router";
 import { Mail } from "../../character/mail";
-import { GameState } from "../../game-state/game-state";
 import { classMap } from "lit-html/directives/class-map.js";
-import * as _ps from "../util/props-state";
-import { isEqual } from "lodash-es";
+import { GameState } from "../../game-state/game-state";
 
 /**
  * an inbox for listing and reading news feed, email etc, it has to mode
@@ -14,13 +12,8 @@ import { isEqual } from "lodash-es";
  * is limited only to redirecting to the inbox page
  */
 class Inbox extends HTMLElement {
-  state = _ps.newState(
-    {
-      mails: structuredClone(window.$game.state?.mails) ?? [],
-      openMail: undefined as undefined | Mail,
-    },
-    () => this.render()
-  );
+  /** the currently open mail */
+  mail?: Mail;
 
   constructor() {
     super();
@@ -35,23 +28,16 @@ class Inbox extends HTMLElement {
   }
 
   disconnectedCallback() {
-    const gs = window.$game.state as GameState;
-
-    if (!this.dataset.compact && !isEqual(gs.mails, this.state.mails)) {
-      // we actually want to mutate the gs only one time when the inbox section is closed
-      // the compact mode doesn't mutate the mails only redirect
-      gs.mails = this.state.mails;
-      window.$game.state = gs;
-    }
-
     window.$game.removeObserver(this);
   }
 
-  gameStateUpdated(gs?: Readonly<GameState>): void {
-    const mails = structuredClone(gs?.mails) ?? [];
-    _ps.setState(() =>
-      Object.assign(this.state, { mails, openMail: undefined })
-    );
+  gameStateUpdated(): void {
+    if (this.mail) {
+      // remove the stale reference
+      this.mail = window.$game.state?.mails.find((m) => this.mail!.id === m.id);
+    }
+
+    this.render();
   }
 
   /** when the inbox is in compact mode redirect to the inbox page,
@@ -60,28 +46,48 @@ class Inbox extends HTMLElement {
     if (this.hasAttribute("data-compact")) {
       goTo(`${window.$PUBLIC_PATH}inbox`);
     } else {
-      _ps.setState(() => {
-        e.opened = true;
-        return Object.assign(this.state, { openMail: e });
-      });
+      // we don't need to notify the game handle of the mutation because nothing depend on mails
+      e.opened = true;
+      this.mail = e;
+      this.render();
     }
   };
 
   handleCloseMail = () => {
-    _ps.setState(() => Object.assign(this.state, { openMail: undefined }));
+    this.mail = undefined;
+    this.render();
+  };
+
+  onDeleteMail = (e: Mail) => {
+    if (!confirm("are you sure do you want to delete this email")) {
+      return;
+    }
+
+    const gs = window.$game.state as GameState;
+    // we don't need to notify the game handle of the mutation because nothing depend on mails
+    gs.mails = gs.mails.filter((m) => e.id !== m.id);
+    this.render();
   };
 
   /** list all the emails */
   mailEntries(): TemplateResult[] {
-    return this.state.mails.map(
+    const onClick = (m: Mail) => (e: Event) =>
+      e.target instanceof HTMLButtonElement
+        ? this.onDeleteMail(m)
+        : this.handleOpenMail(m);
+
+    return window.$game.state!.mails.map(
       (e) =>
         html`<tr
           class=${classMap({ "mail--opened": !e.opened })}
-          @click=${() => this.handleOpenMail(e)}
+          @click=${onClick(e)}
         >
           <td>${e.sender}</td>
           <td>${e.subject}</td>
           <td>${e.sendDate}</td>
+          <td>
+            <button class="btn btn--err" aria-label="delete mail">✘</button>
+          </td>
         </tr>`
     );
   }
@@ -100,13 +106,13 @@ class Inbox extends HTMLElement {
             ${this.mailEntries()}
           </tbody>
         </table>
-        ${this.state.openMail &&
+        ${this.mail &&
         html`
           <sff-modal
             style="--modal-container-flex: 1"
             .closeHandler=${this.handleCloseMail}
           >
-            ${readMail(this.state.openMail)}
+            ${readMail(this.mail)}
           </sff-modal>
         `}
       `,
