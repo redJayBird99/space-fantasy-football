@@ -6,6 +6,7 @@ import * as _gs from "../../src/game-state/game-state";
 import * as _tde from "../../src/game-sim/trade";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { mean } from "../../src/util/math";
+const _trdTest = _tde.exportedForTesting;
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 // guarantee findOffer
@@ -345,5 +346,23 @@ describe("findTrades and commitTrade", () => {
         );
       });
     });
+  });
+});
+
+describe("estimatePlayerVal()", () => {
+  const original = _t.Team.evaluatePlayer;
+  const gs = _gs.GameState.init(["a", "b"]);
+  const t = gs.teams.a;
+
+  test("when a player is younger than 29 years old shouldn't have a age penalty", () => {
+    _t.Team.evaluatePlayer = jest.fn(() => 50);
+    const p = new _p.Player("gk", gs.date, 25);
+    expect(_trdTest.estimatePlayerVal({ gs, t, p })).toBe(50);
+  });
+
+  test("when a player is older than 29 years old a age penalty should be applied", () => {
+    const p = new _p.Player("gk", gs.date, 30);
+    expect(_trdTest.estimatePlayerVal({ gs, t, p })).toBeLessThan(50);
+    _t.Team.evaluatePlayer = original;
   });
 });

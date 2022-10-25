@@ -642,30 +642,23 @@ describe("Team.pickDraftPlayer()", () => {
   const d = new Date();
   const st = new _gs.GameState(d);
   const team = new _t.Team("insert name");
-  const pls = _u
-    .rdmPlayers(30)
-    .sort(
-      (a, b) =>
-        _t.Team.evaluatePlayer({ t: team, p: b, gs: st }) -
-        _t.Team.evaluatePlayer({ t: team, p: a, gs: st })
-    );
+  const pls = _u.rdmPlayers(30);
 
   test("should add the signed player to the team", () => {
     const sign = _t.Team.pickDraftPlayer({ gs: st, t: team }, pls);
     expect(team.playerIds).toContainEqual(sign.id);
   });
 
-  test("should sign one of the best score player when positionArea isn't a factor", () => {
-    const nthBest = pls.indexOf(
-      _t.Team.pickDraftPlayer({ gs: st, t: team }, pls)
-    );
-    expect(nthBest).not.toBe(-1);
-    expect(nthBest).toBeLessThan(6);
-  });
-
   test("the picked player should sign a 4 seasons contracts", () => {
     const sign = _t.Team.pickDraftPlayer({ gs: st, t: team }, pls);
     expect(_gs.GameState.getContract(st, sign)?.duration).toBe(4);
+  });
+
+  test("should the player with the highest score prediction", () => {
+    const original = _p.Player.predictScore;
+    _p.Player.predictScore = jest.fn((p) => (pls[0] === p ? 60 : 10));
+    expect(_t.Team.pickDraftPlayer({ gs: st, t: team }, pls)).toBe(pls[0]);
+    _p.Player.predictScore = original;
   });
 });
 

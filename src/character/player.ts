@@ -404,17 +404,21 @@ class Player {
    * the team appeal and the player score
    */
   static approachable({ gs, t, p }: GsTmPl): boolean {
+    const goodAppeal = 3;
+    const midAppeal = goodAppeal / 2;
+    const minChance = 0.3 + ((t.appeal - midAppeal) / midAppeal) * 0.2;
     const step = 0.9 * gs.popStats.standardDev;
     const highScore = gs.popStats.meanScore + 1.25 * gs.popStats.standardDev;
 
     if (Math.random() > 0.95) {
-      // TODO  this is  fake player mood
+      // TODO  this is fake player mood
       return false;
     }
 
     return (
-      t.appeal > 3 ||
-      Math.max(0.25, (highScore - Player.getScore(p)) / step) >= Math.random()
+      t.appeal > goodAppeal ||
+      Math.max(minChance, (highScore - Player.getScore(p)) / step) >=
+        Math.random()
     );
   }
 

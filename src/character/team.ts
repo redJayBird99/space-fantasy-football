@@ -241,11 +241,17 @@ class Team {
     }
   }
 
-  // pick and sign for 4 seasons a draft player for the given ones
-  // return the signed one
-  static pickDraftPlayer({ gs, t }: GsTm, players: Player[]): Player {
-    const rts = new RatingAreaByNeed(Team.getNotExpiringPlayers({ gs, t }));
-    const target = findBest(players, { t, gs }, rts);
+  /** pick and sign for 4 seasons a player from the given ones, return the signed one
+   * the signed player is always the one with the highest predicted score
+   * according to the team
+   */
+  static pickDraftPlayer({ gs, t }: GsTm, pls: Player[]): Player {
+    // I think is the most sensible option to pick always the best prospect no matter the team needs
+    const getBest = (p1: Player, p2: Player) =>
+      Player.predictScore(p2, gs.date, t) > Player.predictScore(p1, gs.date, t)
+        ? p2
+        : p1;
+    const target = pls.reduce((a, p) => getBest(a, p));
     Team.signPlayer({ gs, t, p: target }, Player.wantedWage(gs, target), 4);
     return target;
   }

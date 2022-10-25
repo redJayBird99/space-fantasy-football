@@ -1,3 +1,5 @@
+import { getAgeAt } from "./generator";
+
 function mean(sample: number[]): number {
   return sample.reduce((a, v) => a + v, 0) / sample.length;
 }
@@ -42,6 +44,13 @@ function dist(a: number, b: number): number {
 function daysBetween(a: Date, b: Date): number {
   const day = 24 * 60 * 60 * 1000;
   return Math.round(Math.abs((a.getTime() - b.getTime()) / day));
+}
+
+export function dayFromLastBirthday(birthDate: string, now: Date): number {
+  const age = getAgeAt(birthDate, now);
+  const birth = new Date(birthDate);
+  birth.setFullYear(birth.getFullYear() + age);
+  return Math.round((now.getTime() - birth.getTime()) / 1000 / 60 / 60 / 24);
 }
 
 export { mean, variance, randomSign, mod, within, dist, daysBetween };

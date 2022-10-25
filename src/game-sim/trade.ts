@@ -1,6 +1,7 @@
 import { Player, SALARY_CAP } from "../character/player";
 import {
   GsTm,
+  GsTmPl,
   MIN_TEAM_SIZE,
   MAX_TEAM_SIZE,
   sumWages,
@@ -8,13 +9,22 @@ import {
 } from "../character/team";
 import { GameState, toTradeRecord } from "../game-state/game-state";
 import { shuffle } from "../util/generator";
-import { dist } from "../util/math";
+import { dayFromLastBirthday, dist, within } from "../util/math";
 
 /** the content is what the team is giving */
 type TradeSide = { by: Team; content: Player[] };
 export type Trade = { side1: TradeSide; side2: TradeSide };
 
 const MAX_EXCHANGE_SIZE = 3; // only for the non user teams, it makes the findOffer faster and the exchange smaller
+
+/** estimate the trade value of given player, when the player is over 29 a progressive penalty get applied */
+function estimatePlayerVal(g: GsTmPl): number {
+  const daysAge = dayFromLastBirthday(g.p.birthday, g.gs.date) / 365;
+  const pAge = Player.age(g.p, g.gs.date) + daysAge;
+  // the penalty can't be too much aggressive otherwise would penalize too much the entire trade offer value
+  const agePenalty = within(1 - (pAge - 29) / 33, 0.8, 1);
+  return Team.evaluatePlayer(g) * agePenalty;
+}
 
 /**
  * @returns true if after the exchange the team players size is under the requirement
@@ -74,7 +84,7 @@ function skewMean(a: number[]): number {
  * @param plsScores all the offered player scores
  * @returns a rating of the offer or NaN when plsScores is empty
  */
-function offerAppeal({ gs, t }: GsTm, plsScores: number[]): number {
+function offerAppeal({ gs }: GsTm, plsScores: number[]): number {
   if (plsScores.length === 0) {
     return NaN;
   }
@@ -112,8 +122,8 @@ function acceptable({ gs, t }: GsTm, get: Player[], give: Player[]): boolean {
     return false;
   }
 
-  const getScores = get.map((p) => Team.evaluatePlayer({ gs, t, p }));
-  const giveScores = give.map((p) => Team.evaluatePlayer({ gs, t, p }));
+  const getScores = get.map((p) => estimatePlayerVal({ gs, t, p }));
+  const giveScores = give.map((p) => estimatePlayerVal({ gs, t, p }));
   const getAppeal = offerAppeal({ gs, t }, getScores);
   const giveAppeal = offerAppeal({ gs, t }, giveScores);
 
@@ -137,10 +147,10 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
   const pls = shuffle(Team.getNotExpiringPlayers({ gs, t })).slice(0, 20);
   const _affordable = affordable({ gs, t });
   const plsAppeal = new Map<Player, number>();
-  pls.forEach((p) => plsAppeal.set(p, Team.evaluatePlayer({ gs, t, p })));
+  pls.forEach((p) => plsAppeal.set(p, estimatePlayerVal({ gs, t, p })));
   const getAppeal = offerAppeal(
     { gs, t },
-    get.map((p) => Team.evaluatePlayer({ gs, t, p }))
+    get.map((p) => estimatePlayerVal({ gs, t, p }))
   );
   const rst: Player[][] = [];
 
@@ -251,4 +261,8 @@ export {
   acceptable,
   findOffer,
   searchTrade,
+};
+
+export const exportedForTesting = {
+  estimatePlayerVal,
 };
