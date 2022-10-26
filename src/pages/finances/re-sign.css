@@ -9,7 +9,7 @@
 table {
   border-collapse: collapse;
   max-width: 55rem;
-  min-width: 28rem;
+  min-width: 30rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
@@ -47,7 +47,7 @@ th:last-child {
 }
 
 th.small-col {
-  width: 5.4%;
+  width: 5.8%;
 }
 
 @media screen and (max-width: 34rem) {

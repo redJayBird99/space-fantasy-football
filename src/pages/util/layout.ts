@@ -13,6 +13,32 @@ class Layout extends HTMLElement {
     }
   }
 
+  /** handle the btn-toggle-nav, opening and closing the nav bar */
+  onOpenNav = () => {
+    const nav = this.shadowRoot!.querySelector("#js-nav") as HTMLElement;
+
+    if (!nav.classList.contains("nav-open")) {
+      nav.classList.add("nav-open");
+      nav.style.display = "block";
+      nav.style.opacity = "0";
+      // setTimeout without delay on firefox sometimes doesn't fire the transition
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => (nav.style.opacity = ""))
+      );
+    } else {
+      nav.classList.remove("nav-open");
+      const clear = () => {
+        nav.style.opacity = "";
+        nav.style.display = "";
+        nav.removeEventListener("transitionend", clear);
+        nav.removeEventListener("transitioncancel", clear);
+      };
+      nav.addEventListener("transitionend", clear);
+      nav.addEventListener("transitioncancel", clear);
+      nav.style.opacity = "0";
+    }
+  };
+
   render(): void {
     render(
       html`
@@ -21,8 +47,11 @@ class Layout extends HTMLElement {
         </style>
         <header>
           <slot name="in-header"></slot>
+          <button class="btn-toggle-nav" @click=${this.onOpenNav}>
+            <span>☰</span>
+          </button>
         </header>
-        <nav>
+        <nav id="js-nav">
           <slot name="in-nav"></slot>
         </nav>
         <main>

@@ -1,8 +1,10 @@
 :host {
+  background-color: var(--dk-bg-color, var(--lt-bg-color));
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin: 0 1rem;
+  height: 100%;
+  padding: 2rem 0;
 }
 
 *,
@@ -12,14 +14,40 @@
 }
 
 ul {
+  margin: 0;
   padding: 0;
 }
 
 li {
+  transition: background-color 0.2s;
   list-style-type: none;
 }
 
-a {
+li:hover {
+  background-color: var(--dk-primary-color, var(--lt-primary-color));
+}
+
+sff-go {
+  display: inline-block;
   color: var(--dk-on-bg-color, var(--lt-on-db-color));
+  cursor: pointer;
+  height: 100%;
+  padding: 0.5rem 1rem;
+  transition: color 0.25s;
+  width: 100%;
+}
+
+.home > sff-go {
+  border-bottom: 1px solid var(--dk-bg-color-700);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
   text-transform: capitalize;
+}
+
+li:hover > sff-go {
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 8%, 0.15);
+  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
 }

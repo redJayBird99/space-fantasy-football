@@ -1,4 +1,6 @@
 :root {
+  --header-height: 3.5rem;
+
   --lt-bg-color: hsl(275deg, 4%, 100%);
   --lt-bg-color-100: hsl(275deg, 4%, 95%);
   --lt-bg-color-200: hsl(275deg, 4%, 90%);

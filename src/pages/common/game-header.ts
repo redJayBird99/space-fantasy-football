@@ -21,7 +21,6 @@ class GameHeader extends HTMLElement {
         <style>
           ${style}
         </style>
-        <h1>TODO: header</h1>
         <sim-controls></sim-controls>
       `,
       this.shadowRoot!

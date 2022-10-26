@@ -1,7 +1,10 @@
 :host {
   align-items: center;
+  background-color: var(--dk-bg-color, var(--lt-bg-color));
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  white-space: nowrap;
+  height: 100%;
 }
 
 *,

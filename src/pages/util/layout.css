@@ -3,7 +3,7 @@
   grid-template-areas:
     "head head head"
     "navB main side"
-    ".... main side"
+    "navB main side"
     "foot foot foot";
   grid-template-columns: minmax(0px, auto) minmax(0px, 1fr) minmax(0px, auto);
 }
@@ -17,8 +17,7 @@
     grid-template-areas:
       "head head"
       "navB main"
-      ".... main"
-      ".... side"
+      "navB side"
       "foot foot";
     grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
   }
@@ -26,9 +25,24 @@
 
 nav {
   grid-area: navB;
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
   position: sticky;
-  top: 50vh;
-  transform: translateY(-50%);
+  top: var(--header-height);
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.btn-toggle-nav {
+  background-color: transparent;
+  border: none;
+  bottom: 1px;
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  display: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  left: 1px;
+  position: absolute;
 }
 
 @media screen and (max-width: 31rem) {
@@ -42,16 +56,22 @@ nav {
   }
 
   nav {
+    display: none;
     position: fixed;
-    bottom: 0;
-    top: initial;
-    left: 50vw;
-    transform: translate(-50%, 0%);
+    width: 100vw;
+  }
+
+  .btn-toggle-nav {
+    display: block;
   }
 }
 
 header {
   grid-area: head;
+  height: var(--header-height);
+  position: sticky;
+  z-index: 2;
+  top: 0px;
 }
 
 main {

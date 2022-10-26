@@ -30,22 +30,22 @@ class GameNav extends HTMLElement {
         <style>
           ${style}
         </style>
-        <h2>TODO</h2>
         <ul>
-          <li>${goLink(`${window.$PUBLIC_PATH}dashboard`, "dashboard")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}players`, "players")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}league`, "league")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}inbox`, "inbox")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}team`, "team")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}finances`, "finances")}</li>
+          <li class="home">${goLink(`${window.$PUBLIC_PATH}`, "⌂ home")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}inbox`, "📬 inbox")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}dashboard`, "🎮 dashboard")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}players`, "🏃 players")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}league`, "🏆 league")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}team`, "🏟 team")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}finances`, "🏦 finances")}</li>
           <li>
-            ${goLink(`${window.$PUBLIC_PATH}transactions`, "transactions")}
+            ${goLink(`${window.$PUBLIC_PATH}transactions`, "🧳 transactions")}
           </li>
-          <li>${goLink(`${window.$PUBLIC_PATH}draft`, "draft")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}trade`, "trade")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}draft`, "🥇 draft")}</li>
+          <li>${goLink(`${window.$PUBLIC_PATH}trade`, "⚖ trade")}</li>
           ${window.$game.state?.flags.onGameEvent === "retiring"
             ? html`<li>
-                ${goLink(`${window.$PUBLIC_PATH}retiring`, "retiring")}
+                ${goLink(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
               </li>`
             : nothing}
         </ul>

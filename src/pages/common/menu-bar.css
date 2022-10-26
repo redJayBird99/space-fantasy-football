@@ -3,9 +3,13 @@
 
 :host {
   align-items: center;
+  background: var(--dk-bg-color);
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.2rem;
+  padding: 3px 0.25rem;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 1;
 }
 
 *,
