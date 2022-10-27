@@ -1,14 +1,61 @@
 sff-dashboard,
-dashboard-main,
 dashboard-next-match {
   display: block;
 }
 
+[slot="in-main"] {
+  align-items: stretch;
+  display: grid;
+  gap: 2px;
+  grid-template-areas: "fixs next iBox" "tbLg tbLg tbLg";
+  grid-template-columns: repeat(3, minmax(0px, 1fr));
+}
+
+.bg-grid1 {
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
+  box-shadow: 0px 1px 4px 0px hsl(0deg 0% 6% / 20%);
+  border-radius: 10px;
+  grid-column: 1 / -1;
+  grid-row: 1 / 2;
+}
+
+@media screen and (max-width: 92rem) {
+  [slot="in-main"] {
+    grid-template-areas: "next fixs" "tbLg iBox";
+    grid-template-columns: repeat(2, minmax(0px, 1fr));
+  }
+}
+
+@media screen and (max-width: 68rem) {
+  [slot="in-main"] {
+    grid-template-areas: "next" "fixs" "tbLg" "iBox";
+    grid-template-columns: minmax(0px, 1fr);
+  }
+
+  .bg-grid1 {
+    grid-row: 1 / 3;
+  }
+}
+
 dashboard-next-match {
-  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
-  box-shadow: 0px 2px 6px 0px hsl(0deg 0% 6% / 20%);
-  margin-bottom: 2px;
+  grid-area: next;
   text-align: center;
+}
+
+sff-fixtures {
+  grid-area: fixs;
+  padding: 0.3rem;
+  justify-self: stretch;
+}
+
+sff-inbox {
+  grid-area: iBox;
+  padding: 0.3rem;
+  justify-self: center;
+}
+
+league-table {
+  grid-area: tbLg;
 }
 
 dashboard-next-match > h2 {

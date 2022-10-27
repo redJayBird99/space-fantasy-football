@@ -265,3 +265,12 @@ export function changeFormation(to: Formations): void {
     window.$game.state = gs;
   }
 }
+
+/** get all not yet played matches by the user team */
+export function getNextFixtures() {
+  const gs = window.$game.state!;
+  const user = gs.userTeam;
+  return GameState.getSeasonMatches(gs, "now").filter(
+    (m) => (m.away === user || m.home === user) && !m.result
+  );
+}

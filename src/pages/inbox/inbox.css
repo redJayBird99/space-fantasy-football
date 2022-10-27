@@ -2,12 +2,6 @@
 
 :host {
   display: block;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-:host([data-compact]) {
-  max-height: 10rem;
 }
 
 *,

@@ -7,12 +7,22 @@ import "../tables/league-table.ts";
 import "../inbox/inbox.ts";
 import style from "./dashboard.css";
 import pImg from "../../asset/planet1.svg";
+import "./fixtures";
 
 class Dashboard extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
+      window.$game.addObserver(this);
       this.render();
     }
+  }
+
+  disconnectedCallback() {
+    window.$game.removeObserver(this);
+  }
+
+  gameStateUpdated() {
+    this.render();
   }
 
   render(): void {
@@ -22,27 +32,14 @@ class Dashboard extends HTMLElement {
           ${style}
         </style>
         <sff-game-page>
-          <dashboard-main slot="in-main"></dashboard-main>
+          <div slot="in-main">
+            <div class="bg-grid1"></div>
+            <dashboard-next-match role="article"></dashboard-next-match>
+            <sff-fixtures role="article"></sff-fixtures>
+            <sff-inbox data-compact></sff-inbox>
+            <league-table data-mode="compact"></league-table>
+          </div>
         </sff-game-page>
-      `,
-      this
-    );
-  }
-}
-
-class Main extends HTMLElement {
-  connectedCallback() {
-    if (this.isConnected) {
-      this.render();
-    }
-  }
-
-  render(): void {
-    render(
-      html`
-        <dashboard-next-match role="article"></dashboard-next-match>
-        <league-table data-mode="compact"></league-table>
-        <sff-inbox data-compact></sff-inbox>
       `,
       this
     );
@@ -158,6 +155,5 @@ class NextMatch extends HTMLElement {
 
 if (!customElements.get("sff-dashboard")) {
   customElements.define("sff-dashboard", Dashboard);
-  customElements.define("dashboard-main", Main);
   customElements.define("dashboard-next-match", NextMatch);
 }

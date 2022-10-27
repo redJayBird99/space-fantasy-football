@@ -1,5 +1,5 @@
 import style from "./inbox.css";
-import { html, render, TemplateResult } from "lit-html";
+import { html, nothing, render, TemplateResult } from "lit-html";
 import "../util/modal.ts";
 import { goTo } from "../util/router";
 import { Mail } from "../../character/mail";
@@ -75,6 +75,12 @@ class Inbox extends HTMLElement {
       e.target instanceof HTMLButtonElement
         ? this.onDeleteMail(m)
         : this.handleOpenMail(m);
+    const noCompactCols = (e: Mail) => html`
+      <td>${e.sendDate}</td>
+      <td>
+        <button class="btn btn--err" aria-label="delete mail">✘</button>
+      </td>
+    `;
 
     return window.$game.state!.mails.map(
       (e) =>
@@ -84,10 +90,7 @@ class Inbox extends HTMLElement {
         >
           <td>${e.sender}</td>
           <td>${e.subject}</td>
-          <td>${e.sendDate}</td>
-          <td>
-            <button class="btn btn--err" aria-label="delete mail">✘</button>
-          </td>
+          ${this.hasAttribute("data-compact") ? nothing : noCompactCols(e)}
         </tr>`
     );
   }
