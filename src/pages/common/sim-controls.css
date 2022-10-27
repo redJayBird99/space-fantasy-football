@@ -36,13 +36,11 @@
 
 .game-date {
   background-color: var(--dk-bg-color-700, var(--lk-bg-color-100));
-  border: 2px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
   border-radius: 20px / 35px 0 0 15px;
   border-right: none;
   display: flex;
   flex-direction: column;
   font-size: 0.85rem;
-  font-weight: bold;
   padding: 0.5rem 0.85rem;
 }
 
@@ -63,7 +61,6 @@ btn-sim-options {
 
 btn-sim-options > .btn {
   background-color: var(--dk-bg-color-700, var(--lk-bg-color-100));
-  border: 2px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
   border-left: none;
   border-right: none;
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));

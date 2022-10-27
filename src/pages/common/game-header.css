@@ -1,8 +1,9 @@
 :host {
   align-items: center;
   background-color: var(--dk-bg-color, var(--lt-bg-color));
+  border-bottom: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   white-space: nowrap;
   height: 100%;
 }
@@ -11,4 +12,31 @@
 *::after,
 *::before {
   box-sizing: border-box;
+}
+
+.ctn-team {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+  margin-left: 2rem;
+  position: relative;
+}
+
+.ctn-team > h2 {
+  position: absolute;
+  left: 80%;
+}
+
+.primary {
+  stroke-width: 10;
+}
+
+.secondary {
+  stroke-width: 5;
+}
+
+.team-svg {
+  display: block;
+  height: 100%;
 }

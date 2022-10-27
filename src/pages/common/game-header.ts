@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import "../common/sim-controls";
 import style from "./game-header.css";
+import teams from "../../asset/teams.json";
 
 /** the header of the pages when in game */
 class GameHeader extends HTMLElement {
@@ -21,11 +22,34 @@ class GameHeader extends HTMLElement {
         <style>
           ${style}
         </style>
-        <sim-controls></sim-controls>
+        <div class="ctn-team">
+          ${userTeamColor()}
+          <h2>${window.$game.state!.userTeam}</h2>
+        </div>
+        <sim-controls class="cts"></sim-controls>
       `,
       this.shadowRoot!
     );
   }
+}
+
+function userTeamColor() {
+  const user = window.$game.state!.userTeam;
+  const [pc, sc] = teams[user as keyof typeof teams].colors;
+  const prClr = `stroke: ${pc}`;
+  const seClr = `stroke: ${sc}`;
+  return html`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 100"
+      class="team-svg"
+    >
+      <line style=${prClr} class="primary" x1="5" x2="60" y1="104" y2="-4" />
+      <line style=${seClr} class="secondary" x1="16" x2="71" y1="104" y2="-4" />
+      <line style=${prClr} class="primary" x1="27" x2="82" y1="104" y2="-4" />
+      <line style=${seClr} class="secondary" x1="38" x2="93" y1="104" y2="-4" />
+    </svg>
+  `;
 }
 
 if (!customElements.get("sff-game-header")) {

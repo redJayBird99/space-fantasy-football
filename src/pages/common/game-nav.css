@@ -5,6 +5,7 @@
   gap: 5px;
   height: 100%;
   padding: 2rem 0;
+  border-right: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
 }
 
 *,

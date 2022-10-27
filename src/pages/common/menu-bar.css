@@ -4,6 +4,7 @@
 :host {
   align-items: center;
   background: var(--dk-bg-color);
+  border-bottom: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
   display: flex;
   gap: 0.5rem;
   padding: 3px 0.25rem;

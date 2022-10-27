@@ -7,3 +7,7 @@
 *::before {
   box-sizing: border-box;
 }
+
+::slotted([slot="in-main"]) {
+  padding: 0.33rem;
+}

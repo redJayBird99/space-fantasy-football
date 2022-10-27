@@ -7,25 +7,37 @@ dashboard-next-match {
 dashboard-next-match {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
   box-shadow: 0px 2px 6px 0px hsl(0deg 0% 6% / 20%);
-  margin: 0.25rem 0;
-  padding: 1px 0px;
+  margin-bottom: 2px;
   text-align: center;
+}
+
+dashboard-next-match > h2 {
+  margin: 0;
+  margin-bottom: 0.3rem;
+}
+
+dashboard-next-match > p {
+  margin: 0;
 }
 
 .team {
   display: inline-block;
-  margin: 20px 10px;
+  margin: 10px 20px;
+}
+
+.team h3 {
+  margin: 0.25rem;
 }
 
 .team-logo {
-  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
-  height: 150px;
   width: 150px;
+  min-height: 150px;
 }
 
 .history-boxes {
   display: flex;
   gap: 2px;
+  transform: translateY(-100%);
 }
 
 .history-box {

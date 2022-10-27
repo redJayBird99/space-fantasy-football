@@ -1,62 +1,82 @@
 {
   "Moon": {
-    "fanBase": "big"
+    "fanBase": "big",
+    "colors": ["#dcdcdc", "#738276"]
   },
   "Earth": {
-    "fanBase": "huge"
+    "fanBase": "huge",
+    "colors": ["#0097d8", "#228b22"]
   },
   "Mercury": {
-    "fanBase": "very small"
+    "fanBase": "very small",
+    "colors": ["#bde038", "#fdfff5"]
   },
   "Venus": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#e1ad21", "#faebd7"]
   },
   "Mars": {
-    "fanBase": "big"
+    "fanBase": "big",
+    "colors": ["#C43302", "#f2f3f4"]
   },
   "Jupiter": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#d77f57", "#f2f3f4"]
   },
   "Uranus": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#008b8b", "#0b634e"]
   },
   "Neptune": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#1f8eed", "#f2f3f4"]
   },
   "Callisto": {
-    "fanBase": "medium"
+    "fanBase": "medium",
+    "colors": ["#ffff40", "#080808"]
   },
   "Europa": {
-    "fanBase": "big"
+    "fanBase": "big",
+    "colors": ["#9f00ff", "#080808"]
   },
   "Pluto": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#A6874E", "#f2f3f4"]
   },
   "Ceres": {
-    "fanBase": "medium"
+    "fanBase": "medium",
+    "colors": ["#ffff40", "#4E5754"]
   },
   "Enceladus": {
-    "fanBase": "big"
+    "fanBase": "big",
+    "colors": ["#47402E", "#eaeef1"]
   },
   "Titan": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#eaeef1", "#212121"]
   },
   "Triton": {
-    "fanBase": "small"
+    "fanBase": "small",
+    "colors": ["#dfe6f0", "#2F4538"]
   },
   "Charon": {
-    "fanBase": "medium"
+    "fanBase": "medium",
+    "colors": ["#e1e5e6", "#641C34"]
   },
   "Pandora": {
-    "fanBase": "medium"
+    "fanBase": "medium",
+    "colors": ["#1D1E33", "#f5f5f5"]
   },
   "Oberon": {
-    "fanBase": "very small"
+    "fanBase": "very small",
+    "colors": ["#fef9f3", "#642424"]
   },
   "Ariel": {
-    "fanBase": "very small"
+    "fanBase": "very small",
+    "colors": ["#E4A010", "#317F43"]
   },
   "Deimos": {
-    "fanBase": "very small"
+    "fanBase": "very small",
+    "colors": ["#CBD0CC", "#1E213D"]
   }
 }

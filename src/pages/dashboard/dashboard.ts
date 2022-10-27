@@ -6,6 +6,7 @@ import { daysBetween } from "../../util/math";
 import "../tables/league-table.ts";
 import "../inbox/inbox.ts";
 import style from "./dashboard.css";
+import pImg from "../../asset/planet1.svg";
 
 class Dashboard extends HTMLElement {
   connectedCallback() {
@@ -96,8 +97,8 @@ class NextMatch extends HTMLElement {
     return html`
       <div class="team">
         <div>
-          <em>${team}</em>
-          <div class="team-logo">TODO: LOGO</div>
+          <h3>${team}</h3>
+          <img class="team-logo" src=${pImg} alt="a red planet" />
         </div>
         <div class="history-boxes" aria-label="previous games results">
           ${Array.from({ length: 5 }, (_, i) =>
@@ -123,7 +124,7 @@ class NextMatch extends HTMLElement {
     const days = next ? `(${daysBetween(next.date, this.gs!.date)} days)` : "";
 
     return html`
-      <h2>next game</h2>
+      <h2>Next Game</h2>
       <p>
         <time>
           ${next?.date.toLocaleDateString("en-US", { dateStyle: "full" })}
