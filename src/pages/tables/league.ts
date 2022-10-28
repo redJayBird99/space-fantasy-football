@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import style from "./league.css";
-import "../tables/league-table.ts";
+import "./league-table.ts";
+import "./league-fixtures.ts";
 
 class LeaguePage extends HTMLElement {
   private mql = window.matchMedia("screen and (max-width: 52rem)");
@@ -33,6 +34,7 @@ class LeaguePage extends HTMLElement {
             slot="in-main"
             data-mode=${this.tableMode}
           ></league-table>
+          <league-fixtures slot="in-main"></league-fixtures>
         </sff-game-page>
       `,
       this

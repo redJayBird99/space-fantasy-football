@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import { getNextFixtures } from "../../character/user";
 import style from "./fixtures.css";
 
+/** a preview of the next few matches for the user team */
 class Fixtures extends HTMLElement {
   constructor() {
     super();

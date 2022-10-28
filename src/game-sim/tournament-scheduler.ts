@@ -42,9 +42,12 @@ export class Schedule {
 // https://en.wikipedia.org/wiki/Round-robin_tournament
 // returns a double round-robin schedule of a tournament alternating away and home games
 export function createDoubleRoundsTournament(teams: string[]): MatchPair[][] {
-  const rounds = createTournamentRounds(teams);
-  return rounds.concat(
-    rounds.map((round) => round.map(([home, away]) => [away, home]))
+  // alternate the original rounds otherwise we have long sequence of away and home games
+  const schedule = createTournamentRounds(teams).map((rs, i) =>
+    i % 2 === 0 ? rs : rs.map(([home, away]) => [away, home] as MatchPair)
+  );
+  return schedule.concat(
+    schedule.map((round) => round.map(([home, away]) => [away, home]))
   );
 }
 
@@ -78,7 +81,7 @@ export function createRound(teams: string[]): MatchPair[] {
 
 // a bit different implementation of https://en.wikipedia.org/wiki/Round-robin_tournament#Scheduling_algorithm
 // return a new array with moving every team in circle to the next index
-// (loop back the last one), the only expection is array[0] remaining fixed
+// (loop back the last one), the only requirement is array[0] remaining fixed
 // exp: ["a", "b", "c", "d"] => ["a", "d", "b", "c"]
 export function rotate(teams: string[]): string[] {
   const rotated = [teams[0]];

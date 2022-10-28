@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+.rounds {
+  display: grid;
+  grid-auto-rows: max-content;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  height: 35rem;
+  gap: 1rem;
+  overflow: auto;
+  position: relative;
+}
+
+.round {
+  border: 3px solid var(--dk-bg-color-700);
+  box-shadow: 0px 2px 4px 0px hsla(0deg, 0%, 10%, 0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.round > h3 {
+  background-color: var(--dk-bg-color-750);
+  margin: 0;
+  padding: 0.3rem 0;
+  text-align: center;
+}
+
+.round-fixtures {
+  margin: 0;
+  padding: 0;
+}
+
+.round-fixtures > li {
+  display: flex;
+  list-style-type: none;
+  padding: 2px 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.round-fixtures > li:nth-of-type(even) {
+  background-color: var(--dk-bg-color-750);
+}
+
+.user-fixture.user-fixture.user-fixture {
+  background-color: var(--dk-bg-color-600);
+}
+
+.result {
+  width: 24%;
+}
+
+.round-fixtures > li > :first-child,
+.round-fixtures > li > :last-child {
+  width: 38%;
+}
