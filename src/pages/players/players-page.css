@@ -6,44 +6,107 @@ players-table {
   display: block;
 }
 
+players-table {
+  height: 90vh;
+  overflow: auto;
+}
+
 table {
+  border-collapse: collapse;
+  min-width: 30rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
 }
 
-thead tr {
-  background-color: var(--dk-bg-color-500, var(--lt-dg-color-300));
+tbody > tr {
+  border-bottom: 3px solid var(--dk-bg-color, var(--lt-bg-color));
 }
 
-tbody > tr:nth-of-type(odd) {
+tr > td {
+  background-color: var(--dk-bg-color-750, var(--lt-dg-color-100));
+}
+
+tr:nth-of-type(odd) > td {
   background-color: var(--dk-bg-color-700, var(--lt-dg-color-100));
 }
 
-tr > th:nth-of-type(1) {
-  width: 15%;
+sff-go > a {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }
 
 td,
 th {
+  height: 2.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0.15rem;
+}
+
+td:not(:first-child),
+th:not(:first-child) {
+  width: 4rem;
+}
+
+@media screen and (max-width: 64rem) {
+  td:not(:first-child),
+  th:not(:first-child) {
+    width: 7.5%;
+  }
+}
+
+td:first-child,
+th:first-child {
+  padding-left: 1%;
+  text-align: left;
+}
+
+th {
+  background-color: var(--dk-bg-color, var(--lt-dg-color));
+  position: sticky;
+  top: 0;
+}
+
+td:first-child {
+  background-clip: padding-box;
+  border-bottom-left-radius: 3px;
+  border-top-left-radius: 3px;
+}
+
+td:last-child {
+  background-clip: padding-box;
+  border-bottom-right-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.plr-pos {
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.rtg-cell {
+  align-items: center;
+  border-bottom: 1px solid;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  margin-top: 1px;
+  width: 100%;
 }
 
 abbr[title] {
-  text-decoration-thickness: 1px;
-}
-
-th.ascending,
-th.descending {
-  width: 6%;
+  text-decoration: none;
 }
 
 th > .btn-txt {
+  font-weight: bold;
+  font-size: clamp(0.9rem, 2vw, 1rem);
   text-transform: capitalize;
   width: 100%;
+}
+
+th:first-child > .btn-txt {
+  text-align: left;
 }
 
 .btn-txt.ascending::after {

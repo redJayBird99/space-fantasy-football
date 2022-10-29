@@ -82,6 +82,18 @@ export function sortBySkill(
   );
 }
 
+export function sortByMacroSkill(
+  m: _p.MacroSkill,
+  pls: _p.Player[],
+  ascending: boolean
+) {
+  pls.sort((p1, p2) =>
+    ascending
+      ? _p.Player.getMacroSkill(p1, m) - _p.Player.getMacroSkill(p2, m)
+      : _p.Player.getMacroSkill(p2, m) - _p.Player.getMacroSkill(p1, m)
+  );
+}
+
 export function sortByAge(pls: _p.Player[], ascending: boolean): void {
   pls.sort((p1, p2) =>
     ascending

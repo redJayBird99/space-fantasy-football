@@ -1,16 +1,31 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
 import { repeat } from "lit-html/directives/repeat.js";
-import { Player, POSITIONS, Skill, SKILLS } from "../../character/player";
+import {
+  MacroSkill,
+  MACRO_SKILLS,
+  Player,
+  POSITIONS,
+  Skill,
+  SKILLS,
+} from "../../character/player";
 import "../common/game-page.ts";
 import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import style from "./players-page.css";
-import { sortByInfo, sortBySkill, updateSort } from "../../character/util";
+import {
+  sortByInfo,
+  sortByMacroSkill,
+  sortBySkill,
+  updateSort,
+} from "../../character/util";
 import * as qsSync from "../util/query-string-sync";
 import {
+  estimateImprovabilityRating,
+  getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
 } from "../../character/user";
+import { GameState } from "../../game-state/game-state";
 
 /** filters applicable to players, when null or undefined the filter won't be applied */
 interface PlayersFilters {
@@ -34,7 +49,7 @@ interface PageGlobal {
   players: Player[]; // all players shown, get mutated according to the state (filters, order etc)
 }
 
-const TB_SIZE = 50;
+const TB_SIZE = 25;
 const AT = 0;
 /** the globals of this page is bound to the PlayersPage HTMLElement,
  * when it connects this variable is populated, when it disconnects this variable is cleared */
@@ -90,7 +105,9 @@ function onTbSizeChange(size: number): void {
 function sortPlayersBy(key: string, ascending: boolean) {
   const gs = window.$game.state!;
 
-  if (SKILLS.includes(key as Skill)) {
+  if (key in MACRO_SKILLS) {
+    sortByMacroSkill(key as MacroSkill, pgGb!.players, ascending);
+  } else if (SKILLS.includes(key as Skill)) {
     sortBySkill(key as Skill, pgGb!.players, ascending);
   } else {
     sortByInfo(key as keyof Player, pgGb!.players, ascending, gs);
@@ -169,11 +186,13 @@ class PlayersPage extends HTMLElement {
           ${style}
         </style>
         <sff-game-page>
-          <div class="cnt-filters" slot="in-main">
-            ${filterControls()}${filtersApplied()}
+          <div slot="in-main">
+            <div class="cnt-filters">
+              ${filterControls()}${filtersApplied()}
+            </div>
+            <div class="tb-controls">${tableControls()}</div>
+            <players-table></players-table>
           </div>
-          <div slot="in-main" class="tb-controls">${tableControls()}</div>
-          <players-table slot="in-main"></players-table>
         </sff-game-page>
       `,
       this
@@ -186,7 +205,7 @@ function tableControls(): TemplateResult {
   const c = pgGb!.state;
   const pages = Math.ceil((pgGb!.players.length ?? 0) / c.size);
   const page = Math.trunc(c.at / c.size) + 1;
-  const sizes = Array.from({ length: 5 }, (_, i) => 2 ** i * TB_SIZE);
+  const sizes = Array.from({ length: 8 }, (_, i) => 2 ** i * TB_SIZE);
   const onPrev = () => onTableTurn(c.at - c.size);
   const onNext = () => onTableTurn(c.at + c.size);
   const onSizeChange = (e: Event) =>
@@ -206,12 +225,14 @@ function tableControls(): TemplateResult {
       🡪
     </button>
     <label for="sizes">entries:</label>
-    <select id="sizes" @change=${onSizeChange}>
+    <select class="input-bg" id="sizes" @change=${onSizeChange}>
       ${sizes.map(
         (sz) => html`<option ?selected=${c.size === sz}>${sz}</option>`
       )}
     </select>
-    <label>search: <input type="search" @input=${onSearchChange} /></label>
+    <label
+      >search: <input class="input-bg" type="search" @input=${onSearchChange}
+    /></label>
   `;
 }
 
@@ -219,6 +240,7 @@ function tableControls(): TemplateResult {
 function inputAge(name: string, placeHld: string, lbl: string): TemplateResult {
   return html`
     <input
+      class="input-bg"
       name=${name}
       type="number"
       min="15"
@@ -260,11 +282,11 @@ function filterControls(): TemplateResult {
   };
   return html`
     <form id="js-filters" @submit=${onSummit} aria-label="filter players">
-      <select name="teams" aria-label="filter by team">
+      <select class="input-bg" name="teams" aria-label="filter by team">
         <option selected value="">Filter by team</option>
         ${pgGb!.teams.map((t) => html`<option>${t}</option>`)}
       </select>
-      <select name="pos" aria-label="filter by position">
+      <select class="input-bg" name="pos" aria-label="filter by position">
         <option selected value="">Filter by position</option>
         ${POSITIONS.map((p) => html`<option>${p}</option>`)}
       </select>
@@ -338,26 +360,26 @@ class PlayersTable extends HTMLElement {
 
   renderHead(): TemplateResult {
     const abbr = (v: string) =>
-      html`<abbr title=${v}>${v.substring(0, 3)}</abbr>`;
+      html`<abbr title=${v}>${v.substring(0, 3)}.</abbr>`;
 
     return html`<tr>
       <th class="${this.sortOrder("name")}">${this.headBtn("name", "name")}</th>
-      <th class="${this.sortOrder("birthday")}">
-        ${this.headBtn("birthday", "age")}
-      </th>
       <th class="${this.sortOrder("position")}">
         ${this.headBtn("position", abbr("position"))}
       </th>
-      ${SKILLS.map((sk) => {
-        const btn = this.headBtn(sk, abbr(sk));
-        return html`<th class="${this.sortOrder(sk)}">${btn}</th>`;
-      })}
       <th class="${this.sortOrder("rating")}">
         ${this.headBtn("rating", abbr("rating"))}
+      </th>
+      <th class="${this.sortOrder("birthday")}">
+        ${this.headBtn("birthday", "age")}
       </th>
       <th class="${this.sortOrder("improvability")}">
         ${this.headBtn("improvability", abbr("improvability"))}
       </th>
+      ${Object.keys(MACRO_SKILLS).map((sk) => {
+        const btn = this.headBtn(sk, abbr(sk));
+        return html`<th class="${this.sortOrder(sk)}">${btn}</th>`;
+      })}
     </tr>`;
   }
 
@@ -397,13 +419,37 @@ function renderRows(players: Player[]) {
     (p: Player) =>
       html`<tr>
         <td>${goLink(playerPath(p), p.name)}</td>
+        <td class="plr-pos">${p.position}</td>
+        ${ratingCell(p, gs)}
         <td>${Player.age(p, gs.date)}</td>
-        <td>${p.position}</td>
-        ${SKILLS.map(
-          (sk) => html`<td>${Math.round(Player.getSkill(p, sk))}</td>`
+        ${improvabilityCell(p, gs)}
+        ${Object.keys(MACRO_SKILLS).map(
+          (sk) =>
+            html`<td>
+              ${Math.round(Player.getMacroSkill(p, sk as MacroSkill))}
+            </td>`
         )}
-        <td>${getPlayerRatingSymbol(p, gs)}</td>
-        <td>${improvabilityRatingSymbol(p, gs.teams[gs.userTeam])}</td>
       </tr>`
   );
+}
+
+function improvabilityCell(p: Player, gs: GameState): TemplateResult {
+  const u = gs.teams[gs.userTeam];
+  return rtgCell(
+    improvabilityRatingSymbol(p, u),
+    estimateImprovabilityRating(p, u)
+  );
+}
+
+function ratingCell(p: Player, gs: GameState): TemplateResult {
+  return rtgCell(getPlayerRatingSymbol(p, gs), getPlayerRating(p, gs));
+}
+
+function rtgCell(symbol: string, rating: number): TemplateResult {
+  const s = `border-color: hsl(${rating * 120}deg 100% 60%)`;
+  return html`
+    <td>
+      <div class="rtg-cell" style=${s}><span>${symbol}</span></div>
+    </td>
+  `;
 }

@@ -28,6 +28,7 @@
   :root {
     --dk-bg-color: hsl(275deg, 4%, 16%);
     --dk-bg-color-750: hsl(275deg, 4%, 20%);
+    --dk-bg-color-725: hsl(275deg, 4%, 22%);
     --dk-bg-color-700: hsl(275deg, 4%, 24%);
     --dk-bg-color-650: hsl(275deg, 4%, 28%);
     --dk-bg-color-600: hsl(275deg, 4%, 32%);

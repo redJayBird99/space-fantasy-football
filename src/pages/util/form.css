@@ -16,7 +16,9 @@ input:out-of-range:focus {
   outline-color: var(--error-color);
 }
 
-select {
-  border: none;
-  border-radius: 1px;
+.input-bg {
+  border-radius: 2px;
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
 }
