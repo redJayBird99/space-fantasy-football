@@ -1,10 +1,10 @@
 :host {
   display: grid;
   grid-template-areas:
-    "head head head"
-    "navB main side"
-    "navB main side"
-    "foot foot foot";
+    "head head"
+    "navB main"
+    "navB main"
+    "foot foot";
   grid-template-columns: minmax(0px, auto) minmax(0px, 1fr) minmax(0px, auto);
 }
 
@@ -17,7 +17,6 @@
     grid-template-areas:
       "head head"
       "navB main"
-      "navB side"
       "foot foot";
     grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
   }
@@ -26,11 +25,10 @@
 nav {
   grid-area: navB;
   height: calc(100vh - var(--header-height));
-  overflow-y: auto;
   position: sticky;
   top: var(--header-height);
   transition: opacity 0.3s;
-  z-index: 1;
+  z-index: 2;
 }
 
 .btn-toggle-nav {
@@ -50,7 +48,6 @@ nav {
     grid-template-areas:
       "head"
       "main"
-      "side"
       "foot";
     grid-template-columns: minmax(0px, 1fr);
   }
@@ -59,6 +56,7 @@ nav {
     display: none;
     position: fixed;
     width: 100vw;
+    z-index: 3;
   }
 
   .btn-toggle-nav {
@@ -70,7 +68,7 @@ header {
   grid-area: head;
   height: var(--header-height);
   position: sticky;
-  z-index: 2;
+  z-index: 4;
   top: 0px;
 }
 
@@ -83,5 +81,7 @@ aside {
 }
 
 footer {
+  height: var(--footer-height);
   grid-area: foot;
+  z-index: 2;
 }

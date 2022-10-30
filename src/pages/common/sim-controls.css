@@ -35,9 +35,9 @@
 }
 
 .game-date {
-  background-color: var(--dk-bg-color-700, var(--lk-bg-color-100));
+  background-color: var(--dk-bg-color-600, var(--lk-bg-color-100));
   border-radius: 20px / 35px 0 0 15px;
-  border-right: none;
+  border: 1px solid var(--dk-bg-color-500, var(--lk-bg-color-200));
   display: flex;
   flex-direction: column;
   font-size: 0.85rem;
@@ -56,11 +56,12 @@ btn-sim-options > .btn {
 }
 
 btn-sim-options {
+  border: 1px solid var(--dk-bg-color-500, var(--lk-bg-color-200));
   position: relative;
 }
 
 btn-sim-options > .btn {
-  background-color: var(--dk-bg-color-700, var(--lk-bg-color-100));
+  background-color: var(--dk-bg-color-600, var(--lk-bg-color-100));
   border-left: none;
   border-right: none;
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));

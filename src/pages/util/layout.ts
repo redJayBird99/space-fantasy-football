@@ -57,9 +57,6 @@ class Layout extends HTMLElement {
         <main>
           <slot name="in-main"></slot>
         </main>
-        <aside>
-          <slot name="in-aside"></slot>
-        </aside>
         <footer>
           <slot name="in-footer"></slot>
         </footer>

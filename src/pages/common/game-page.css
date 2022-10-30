@@ -9,5 +9,16 @@
 }
 
 ::slotted([slot="in-main"]) {
-  padding: 0.33rem;
+  padding: 0.4rem;
+}
+
+/* ----------------- temporary stuff ---------------------- */
+[slot="in-footer"] {
+  background-color: var(--dk-bg-color-725, var(--lt-bg-color));
+  border-top: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-100));
+  height: 100%;
+}
+
+[slot="in-footer"] > * {
+  margin: 0;
 }

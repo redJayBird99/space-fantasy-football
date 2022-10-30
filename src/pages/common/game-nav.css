@@ -1,11 +1,13 @@
 :host {
-  background-color: var(--dk-bg-color, var(--lt-bg-color));
+  background-color: var(--dk-bg-color-725, var(--lt-bg-color));
+  border-right: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-100));
+  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   gap: 5px;
   height: 100%;
-  padding: 2rem 0;
-  border-right: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
+  overflow-y: auto;
+  padding: var(--footer-height) 0;
 }
 
 *,
@@ -39,7 +41,7 @@ sff-go {
 }
 
 .home > sff-go {
-  border-bottom: 1px solid var(--dk-bg-color-700);
+  border-bottom: 1px solid var(--dk-bg-color-500);
 }
 
 a {

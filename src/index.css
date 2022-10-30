@@ -1,5 +1,6 @@
 :root {
   --header-height: 3.5rem;
+  --footer-height: 2.5rem;
 
   --lt-bg-color: hsl(275deg, 4%, 100%);
   --lt-bg-color-100: hsl(275deg, 4%, 95%);
@@ -24,36 +25,11 @@
   font-size: clamp(13px, 2vw, 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --dk-bg-color: hsl(275deg, 4%, 16%);
-    --dk-bg-color-750: hsl(275deg, 4%, 20%);
-    --dk-bg-color-725: hsl(275deg, 4%, 22%);
-    --dk-bg-color-700: hsl(275deg, 4%, 24%);
-    --dk-bg-color-650: hsl(275deg, 4%, 28%);
-    --dk-bg-color-600: hsl(275deg, 4%, 32%);
-    --dk-bg-color-500: hsl(275deg, 4%, 40%);
-    --dk-on-bg-color: white;
-
-    /* TODO: pick a color for every one below */
-    --dk-primary-color: var(--lt-primary-color);
-    --dk-primary-color-700: var(--lt-primary-color-700);
-    --dk-primary-color-300: var(--lt-primary-color-300);
-    --dk-on-primary-color: var(--lt-on-bg-color);
-    --dk-secondary-color: var(--lt-secondary-color);
-    --dk-positive-color: var(--lt-positive-color);
-    --dk-on-positive-color: var(--lt-on-bg-color);
-    --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
-    --dk-error-color: var(--lt-error-color);
-    --dk-on-error-color: white;
-    --dk-neutral-color: var(--lt-neutral-color);
-  }
-}
-
 /* default mode */
 :root.dark {
   --dk-bg-color: hsl(275deg, 4%, 16%);
   --dk-bg-color-750: hsl(275deg, 4%, 20%);
+  --dk-bg-color-725: hsl(275deg, 4%, 22%);
   --dk-bg-color-700: hsl(275deg, 4%, 24%);
   --dk-bg-color-650: hsl(275deg, 4%, 28%);
   --dk-bg-color-600: hsl(275deg, 4%, 32%);

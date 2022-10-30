@@ -31,9 +31,6 @@ class GamePage extends HTMLElement {
             <menu-bar></menu-bar>
             <slot name="in-main"></slot>
           </div>
-          <div slot="in-aside">
-            <h2>TODO: aside</h2>
-          </div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
         </sff-layout>
       `,
