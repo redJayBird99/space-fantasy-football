@@ -48,7 +48,7 @@ class Draft extends HTMLElement {
     return html`
       <div class="cnt-season-sel">
         <label for="season">Season: </label>
-        <select id="season" @change=${this.onSeasonChange}>
+        <select class="input-bg" id="season" @change=${this.onSeasonChange}>
           ${Object.keys(window.$game.state!.drafts).map(
             (k) =>
               html`<option ?selected=${k === this.season} value=${k}>
@@ -146,6 +146,7 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
       <td ?data-user=${rec.team === gs.userTeam}>${teamLink}</td>
       <td>
         <button
+          class="btn-sml btn-acc"
           ?disabled=${!canDraft}
           @click=${canDraft ? onDraftClick : nothing}
           aria-label="draft player"

@@ -43,13 +43,13 @@ class LeagueFixtures extends HTMLElement {
         <style>
           ${style}
         </style>
-        <h2>League Fixtures</h2>
+        <h2>📆 League Fixtures</h2>
         <div class="rounds">
           ${shd?.map(
             (r, i) =>
               html`
                 <article
-                  class="round"
+                  class="round ${at === i ? "next-round" : ""}"
                   ${at === i ? ref(this.scrollToRound) : nothing}
                 >
                   <h3>Matchday ${i + 1}</h3>

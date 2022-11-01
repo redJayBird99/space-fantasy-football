@@ -218,11 +218,21 @@ function tableControls(): TemplateResult {
 
   return html`
     <span>page ${page} / ${pages}</span>
-    <button ?disabled=${page === 1} @click=${onPrev} aria-label="previous page">
-      🡨
+    <button
+      class="btn-sml arrow"
+      ?disabled=${page === 1}
+      @click=${onPrev}
+      aria-label="previous page"
+    >
+      🠔
     </button>
-    <button ?disabled=${page === pages} @click=${onNext} aria-label="next page">
-      🡪
+    <button
+      class="btn-sml arrow"
+      ?disabled=${page === pages}
+      @click=${onNext}
+      aria-label="next page"
+    >
+      🠖
     </button>
     <label for="sizes">entries:</label>
     <select class="input-bg" id="sizes" @change=${onSizeChange}>
@@ -294,7 +304,7 @@ function filterControls(): TemplateResult {
         age range ${inputAge("min-age", "min", "minimum age")} to
         ${inputAge("max-age", "max", "maximum age")}
       </div>
-      <button>Apply filters</button>
+      <button class="btn-sml">Apply filters</button>
     </form>
   `;
 }

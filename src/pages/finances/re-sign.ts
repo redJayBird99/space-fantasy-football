@@ -93,7 +93,7 @@ function expiringPlayer(r: SignRequest, sks: MacroSkill[]): TemplateResult {
       <td>${canSign ? `${frt.format(r.wage)}₡` : "-"}</td>
       <td>
         <button
-          class="btn btn--acc sign-btn"
+          class="btn-sml btn--acc sign-btn"
           ?disabled=${!canSign}
           @click=${canSign ? () => resignPlayer(r) : nothing}
         >

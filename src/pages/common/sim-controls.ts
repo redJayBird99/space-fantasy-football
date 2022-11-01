@@ -57,7 +57,7 @@ function gameDate(): TemplateResult {
 
   return html`
     <div class="game-date">
-      <div><span>Date</span> <time>${date}</time></div>
+      <div><time>${date}</time></div>
       <div>${dateEventInfo()}</div>
     </div>
   `;
@@ -295,14 +295,14 @@ function simOptions(onApply: () => void): TemplateResult {
   return html`
     <section class="sim-options">
       <label for="js-sim-duration">choose a simulation duration</label>
-      <select id="js-sim-duration">
+      <select class="input-bg" id="js-sim-duration">
         ${simSelectOptions(simDurationOptions())}
       </select>
       <label for="js-sim-speed">choose a simulation speed</label>
-      <select selected id="js-sim-speed">
+      <select class="input-bg" id="js-sim-speed">
         ${simSelectOptions(Object.entries(simOps.speed))}
       </select>
-      <button class="btn btn--acc" @click=${handleClickApply}>apply</button>
+      <button class="btn-sml btn--acc" @click=${handleClickApply}>apply</button>
     </section>
   `;
 }

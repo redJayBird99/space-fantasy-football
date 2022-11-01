@@ -1,0 +1,7 @@
+sff-go > a {
+  color: var(--dk-on-bg-color, initial);
+}
+
+abbr[title] {
+  text-decoration: none;
+}

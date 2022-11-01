@@ -6,7 +6,7 @@ input[type="text"],
 option,
 select {
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.94rem;
 }
 
 input:invalid:focus,
@@ -19,6 +19,7 @@ input:out-of-range:focus {
 .input-bg {
   border-radius: 2px;
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
-  border: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
+  border: 1px solid var(--dk-bg-color-300, var(--lt-bg-color-200));
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  outline-color: var(--dk-primary-color, var(--lt-primary-color));
 }

@@ -1,4 +1,6 @@
-@import url("../util/button.css");
+@import "../util/button.css";
+@import "../util/common.css";
+@import "../util/form.css";
 
 sff-team {
   display: block;
@@ -127,10 +129,6 @@ td.skill-score > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-abbr[title] {
-  text-decoration-thickness: 1px;
 }
 
 svg {

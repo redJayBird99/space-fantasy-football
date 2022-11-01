@@ -42,7 +42,7 @@ class Transactions extends HTMLElement {
     return html`
       <div class="cnt-season-sel">
         <label for="season">Season: </label>
-        <select id="season" @change=${this.onSeasonChange}>
+        <select class="input-bg" id="season" @change=${this.onSeasonChange}>
           ${Object.keys(window.$game.state!.transactions).map(
             (k) =>
               html`<option ?selected=${k === this.season} value=${k}>

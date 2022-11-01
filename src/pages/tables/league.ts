@@ -30,11 +30,10 @@ class LeaguePage extends HTMLElement {
           ${style}
         </style>
         <sff-game-page>
-          <league-table
-            slot="in-main"
-            data-mode=${this.tableMode}
-          ></league-table>
-          <league-fixtures slot="in-main"></league-fixtures>
+          <div slot="in-main">
+            <league-table data-mode=${this.tableMode}></league-table>
+            <league-fixtures></league-fixtures>
+          </div>
         </sff-game-page>
       `,
       this

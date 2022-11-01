@@ -3,23 +3,12 @@
   grid-template-areas:
     "head head"
     "navB main"
-    "navB main"
     "foot foot";
-  grid-template-columns: minmax(0px, auto) minmax(0px, 1fr) minmax(0px, auto);
+  grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
 }
 
 * {
   box-sizing: border-box;
-}
-
-@media screen and (max-width: 44rem) {
-  :host {
-    grid-template-areas:
-      "head head"
-      "navB main"
-      "foot foot";
-    grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
-  }
 }
 
 nav {
@@ -43,7 +32,7 @@ nav {
   position: absolute;
 }
 
-@media screen and (max-width: 31rem) {
+@media screen and (max-width: 36rem) {
   :host {
     grid-template-areas:
       "head"

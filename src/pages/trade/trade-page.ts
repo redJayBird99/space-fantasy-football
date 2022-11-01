@@ -67,12 +67,14 @@ class TradePage extends HTMLElement {
         <sff-game-page>
           <div slot="in-main">
             <button
+              class="btn-sml"
               ?disabled=${!this.onOffer}
               @click=${() => this.onBtnClick(false)}
             >
               trade
             </button>
             <button
+              class="btn-sml"
               ?disabled=${this.onOffer}
               @click=${() => this.onBtnClick(true)}
             >
@@ -206,6 +208,7 @@ class Trade extends PageContent {
         ${otherTeamSelector(this.onTeamSelect, team ?? "")}
         <div>
           <button
+            class="btn-sml"
             id="btn-offer"
             ?disabled=${!canMakeOffer}
             @click=${canMakeOffer ? this.onSummitTrade : nothing}
@@ -286,10 +289,18 @@ class Offers extends PageContent {
       html`
         ${offersSelector(this.onOfferSelect, this.offer)}
         <div>
-          <button ?disabled=${dis} @click=${() => this.onOfferResponse(true)}>
+          <button
+            class="btn-sml btn--acc"
+            ?disabled=${dis}
+            @click=${() => this.onOfferResponse(true)}
+          >
             accept
           </button>
-          <button ?disabled=${dis} @click=${() => this.onOfferResponse(false)}>
+          <button
+            class="btn-sml btn--err"
+            ?disabled=${dis}
+            @click=${() => this.onOfferResponse(false)}
+          >
             reject
           </button>
         </div>
@@ -359,7 +370,11 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
   return html`
     <label>
       select a received offer
-      <select @change="${dis ? nothing : onSelect}" ?disabled=${dis}>
+      <select
+        class="input-bg"
+        @change="${dis ? nothing : onSelect}"
+        ?disabled=${dis}
+      >
         <option ?selected=${!cur} value="">Select offer</option>
         ${offers.map(
           (o, i) =>
@@ -380,7 +395,7 @@ function otherTeamSelector(onSelect: hdl, cur: string): TemplateResult {
   return html`
     <label>
       select a team to trade with
-      <select @change="${onSelect}">
+      <select class="input-bg" @change="${onSelect}">
         <option ?selected=${!cur} value="">Select team</option>
         ${Object.keys(gs.teams)
           .filter((n) => n !== gs.userTeam)

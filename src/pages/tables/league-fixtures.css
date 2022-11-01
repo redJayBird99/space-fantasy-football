@@ -24,6 +24,10 @@
   overflow: hidden;
 }
 
+.next-round {
+  border: 1px solid var(--dk-primary-color-300, var(--lt-primary-color-300));
+}
+
 .round > h3 {
   background-color: var(--dk-bg-color-750);
   margin: 0;
@@ -45,11 +49,14 @@
 }
 
 .round-fixtures > li:nth-of-type(even) {
-  background-color: var(--dk-bg-color-750);
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
 }
 
 .user-fixture.user-fixture.user-fixture {
-  background-color: var(--dk-bg-color-600);
+  background-color: var(--dk-bg-color-600, var(--lt-bg-color-300));
+  border-bottom: 1px solid
+    var(--dk-primary-color-300, var(--lt-primary-color-300));
+  border-top: 1px solid var(--dk-primary-color-300, var(--lt-primary-color-300));
 }
 
 .result {
@@ -59,4 +66,8 @@
 .round-fixtures > li > :first-child,
 .round-fixtures > li > :last-child {
   width: 38%;
+}
+
+h2 {
+  text-align: center;
 }

@@ -1,13 +1,12 @@
+@import "../util/form.css";
+@import "../util/common.css";
+
 sff-transactions {
   display: block;
 }
 
 .cnt-season-sel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin: 0.5rem 0;
+  margin: 1rem 0.5rem;
 }
 
 .ctn-transactions {
@@ -106,10 +105,6 @@ sff-transactions {
 
 .cnt-pl-info {
   list-style-type: none;
-}
-
-abbr[title] {
-  text-decoration-thickness: 1px;
 }
 
 .plr-pos {

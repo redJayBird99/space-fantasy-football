@@ -1,5 +1,6 @@
-import { html, render } from "lit-html";
+import { html, render, TemplateResult } from "lit-html";
 import { getNextFixtures } from "../../character/user";
+import { Match } from "../../game-sim/tournament-scheduler";
 import style from "./fixtures.css";
 
 /** a preview of the next few matches for the user team */
@@ -35,19 +36,24 @@ class Fixtures extends HTMLElement {
         </style>
         <h3>${user} Fixtures</h3>
         <ul>
-          ${ms.map(
-            (m) =>
-              html`<li>
-                <span>🌗 ${m.away === user ? m.home : m.away}</span>
-                <span>${m.away === user ? "away" : "home"}</span>
-                <time>${new Date(m.date).toLocaleDateString()}</time>
-              </li>`
-          )}
+          ${ms.length > 0
+            ? ms.map((m) => fixture(m, user))
+            : html`<li>nothing to do</li>`}
         </ul>
       `,
       this.shadowRoot!
     );
   }
+}
+
+function fixture(m: Match, user: string): TemplateResult {
+  return html`
+    <li>
+      <span>🌗 ${m.away === user ? m.home : m.away}</span>
+      <span>${m.away === user ? "away" : "home"}</span>
+      <time>${new Date(m.date).toLocaleDateString()}</time>
+    </li>
+  `;
 }
 
 if (!customElements.get("sff-fixtures")) {

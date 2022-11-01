@@ -1,3 +1,7 @@
+@import "../util/button.css";
+@import "../util/form.css";
+@import "../util/common.css";
+
 sff-draft {
   display: block;
 }
@@ -13,17 +17,20 @@ sff-draft {
 
 .cnt-draft-players {
   flex-grow: 1;
-  max-width: 50rem;
+  overflow: auto;
 }
 
 table {
   border-collapse: collapse;
+  min-width: 27rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
 }
 
 .cnt-lottery {
+  flex-grow: 1;
+  max-width: 14rem;
   padding: 0 1rem;
 }
 
@@ -49,31 +56,27 @@ td:nth-of-type(1) {
   padding: 2px 0;
 }
 
+th:nth-of-type(1),
 th:nth-of-type(3),
 th:nth-of-type(4),
 th:nth-of-type(5),
-th:nth-of-type(6),
-td:nth-of-type(3),
-td:nth-of-type(4),
-td:nth-of-type(5),
-td:nth-of-type(6) {
-  width: 2.2rem;
-  font-size: 0.85rem;
-}
-
-th:nth-of-type(1) {
-  width: 3rem;
+th:nth-of-type(6) {
+  width: 3.4rem;
 }
 
 th:nth-of-type(8) {
-  width: 4.2rem;
+  width: 5rem;
 }
 
 th:nth-of-type(7) {
-  width: 7rem;
+  width: 8rem;
 }
 
-@media screen and (max-width: 52rem) {
+td > button {
+  width: 90%;
+}
+
+@media screen and (max-width: 58rem) {
   th:nth-of-type(1) {
     width: 10%;
   }
@@ -81,8 +84,13 @@ th:nth-of-type(7) {
   th:nth-of-type(3),
   th:nth-of-type(4),
   th:nth-of-type(5),
-  th:nth-of-type(6) {
-    width: 8%;
+  th:nth-of-type(6),
+  td:nth-of-type(3),
+  td:nth-of-type(4),
+  td:nth-of-type(5),
+  td:nth-of-type(6) {
+    font-size: 0.9rem;
+    width: 8.25%;
   }
 
   th:nth-of-type(7),
@@ -107,10 +115,6 @@ td:nth-of-type(2) {
   display: inline-block;
   font-weight: bold;
   width: 1.8rem;
-}
-
-sff-go > a {
-  color: var(--dk-on-bg-color, initial);
 }
 
 .cnt-lottery > h2 {

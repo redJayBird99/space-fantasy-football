@@ -1,4 +1,5 @@
-@import url("../util/button.css");
+@import "../util/button.css";
+@import "../util/common.css";
 
 sff-player {
   display: block;
@@ -86,8 +87,4 @@ sff-player {
   margin-right: 1rem;
   padding: 3px 0;
   width: 150px;
-}
-
-sff-go > a {
-  color: var(--dk-on-bg-color, initial);
 }

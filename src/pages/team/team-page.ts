@@ -312,7 +312,7 @@ function formationSelector(): TemplateResult {
   return html`
     <label>
       change formation
-      <select @change=${onChange}>
+      <select class="input-bg" @change=${onChange}>
         ${fms.map((f) => html`<option ?selected=${f === uFrm}>${f}</option>`)}
       </select>
     </label>

@@ -1,3 +1,5 @@
+@import "../util/common.css";
+
 sff-dashboard,
 dashboard-next-match {
   display: block;
@@ -6,7 +8,7 @@ dashboard-next-match {
 [slot="in-main"] {
   align-items: stretch;
   display: grid;
-  gap: 2px;
+  gap: 1rem;
   grid-template-areas: "fixs next iBox" "tbLg tbLg tbLg";
   grid-template-columns: repeat(3, minmax(0px, 1fr));
 }
@@ -39,13 +41,16 @@ dashboard-next-match {
 
 dashboard-next-match {
   grid-area: next;
+  margin-top: 1rem;
   text-align: center;
 }
 
 sff-fixtures {
+  align-self: center;
   grid-area: fixs;
-  padding: 0.3rem;
   justify-self: stretch;
+  min-height: 80%;
+  padding: 0.3rem 5%;
 }
 
 sff-inbox {
@@ -82,8 +87,10 @@ dashboard-next-match > p {
 }
 
 .history-boxes {
+  border-radius: 3px;
   display: flex;
   gap: 2px;
+  overflow: hidden;
   transform: translateY(-100%);
 }
 

@@ -1,5 +1,6 @@
 @import "../util/button.css";
 @import "../util/form.css";
+@import "../util/common.css";
 
 sff-players,
 players-table {
@@ -7,8 +8,10 @@ players-table {
 }
 
 players-table {
+  border-bottom: 1px solid var(--dk-bg-color-500, var(--lt-primary-color-300));
   height: 90vh;
   overflow: auto;
+  padding: 0 3px;
 }
 
 table {
@@ -23,8 +26,9 @@ tbody > tr {
   border-bottom: 3px solid var(--dk-bg-color, var(--lt-bg-color));
 }
 
-tr > td {
+td {
   background-color: var(--dk-bg-color-750, var(--lt-dg-color-100));
+  transition: background-color 0.25s, color 0.25s;
 }
 
 tr:nth-of-type(odd) > td {
@@ -32,11 +36,16 @@ tr:nth-of-type(odd) > td {
 }
 
 tr:hover > td {
-  background-color: var(--dk-bg-color-600, var(--lt-dg-color-100));
+  background-color: var(--dk-primary-color, var(--lt-primary-color));
+  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
 }
 
 sff-go > a {
-  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  transition: color 0.25s;
+}
+
+tr:hover a {
+  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
 }
 
 td,
@@ -69,6 +78,7 @@ th {
   background-color: var(--dk-bg-color, var(--lt-dg-color));
   position: sticky;
   top: 0;
+  vertical-align: bottom;
 }
 
 td:first-child {
@@ -96,10 +106,6 @@ td:last-child {
   justify-content: center;
   margin-top: 1px;
   width: 100%;
-}
-
-abbr[title] {
-  text-decoration: none;
 }
 
 th > .btn-txt {
@@ -154,4 +160,9 @@ th:first-child > .btn-txt {
 .filter-rst {
   display: inline-block;
   padding: 0px 4px;
+}
+
+.arrow {
+  background-color: var(--dk-primary-color-300);
+  padding: 0 0.5rem;
 }

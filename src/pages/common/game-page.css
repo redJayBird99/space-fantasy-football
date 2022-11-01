@@ -9,7 +9,9 @@
 }
 
 ::slotted([slot="in-main"]) {
-  padding: 0.4rem;
+  margin: 2rem auto;
+  max-width: 97rem;
+  padding: 0 2%;
 }
 
 /* ----------------- temporary stuff ---------------------- */

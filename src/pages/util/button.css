@@ -4,7 +4,8 @@ button {
   font-size: 1rem;
 }
 
-.btn {
+.btn,
+.btn-sml {
   background-color: var(--dk-primary-color, var(--lt-primary-color));
   border: none;
   border-radius: 2px;
@@ -12,6 +13,10 @@ button {
   font-weight: bold;
   padding: 0.7rem;
   text-align: center;
+}
+
+.btn-sml {
+  padding: 0.2rem 0.3rem;
 }
 
 .btn--err {
@@ -22,7 +27,8 @@ button {
   background-color: var(--dk-positive-color, var(--lt-positive-color));
 }
 
-.btn:hover:not(:disabled) {
+.btn:hover:not(:disabled),
+.btn-sml:hover:not(:disabled) {
   filter: brightness(1.2);
 }
 
@@ -49,7 +55,8 @@ button {
   filter: brightness(0.5);
 }
 
-.btn:disabled {
+.btn:disabled,
+.btn-sml:disabled {
   filter: brightness(0.5);
 }
 

@@ -1,5 +1,12 @@
+@import url("../util/common.css");
+
 :host {
+  background-color: var(--dk-bg-color-750);
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px 0px rgb(15, 15, 15, 0.3);
   display: block;
+  overflow: auto;
+  padding: 0.5rem 1%;
 }
 
 *,
@@ -10,71 +17,80 @@
 
 table {
   border-collapse: collapse;
-  box-shadow: 0px 2px 3px 0px hsla(0deg, 0%, 7%, 0.2);
+  min-width: 24rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
 }
 
+.compact {
+  min-width: 16rem;
+}
+
 td,
 th {
-  border: 1px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0.25rem 0;
 }
 
-th:first-child {
-  width: 30%;
+th {
+  text-transform: capitalize;
+  width: 6.5%;
 }
 
-.tb-complete th:first-child {
-  width: 20%;
+.compact th {
+  width: 9%;
 }
 
-abbr[title] {
-  text-decoration-thickness: 1px;
+@media screen and (max-width: 35rem) {
+  th {
+    width: 2rem;
+  }
 }
 
-tHead tr {
-  background-color: var(--dk-bg-color-500, var(--lt-bg-color-300));
-  font-size: 1.15rem;
+th:nth-child(1) {
+  width: 2.8rem;
+}
+
+td {
+  height: 2rem;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  text-align: left;
+  width: unset;
 }
 
 caption {
-  font-weight: bold;
-  background-color: var(--dk-bg-color-500, var(--lt-bg-color-300));
-  box-shadow: 0px 2px 3px 0px hsla(0deg, 0%, 7%, 0.2);
   padding: 0.25rem 0;
 }
 
 h2 {
-  margin: 0;
+  margin: 0 0 6px 0;
 }
 
-tr:nth-of-type(even) {
-  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
+tr {
+  border-bottom: 1px solid var(--dk-bg-color-600, var(--lt-bg-color-100));
 }
 
-col:first-child {
-  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+tr:last-child {
+  border-bottom: none;
 }
 
-tr:nth-of-type(2n + 2) td:first-child {
-  background-color: var(--dk-bg-color-500, var(--lt-bg-color-300));
+tr:nth-of-type(even) > td {
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
 }
 
-.tby > tr:hover > td {
-  background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
-  color: var(--dk-on-primary-color, var(--lt-on-primary-color));
+.user-row > td {
+  border-top: 1px solid var(--dk-primary-color-300, var(--lt-primary-color-300));
+  border-bottom: 1px solid
+    var(--dk-primary-color-300, var(--lt-primary-color-300));
 }
 
 td:first-child a {
   font-style: italic;
   font-weight: bold;
-}
-
-sff-go > a {
-  color: var(--dk-on-bg-color, initial);
 }
