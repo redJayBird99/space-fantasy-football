@@ -26,6 +26,7 @@ import {
   improvabilityRatingSymbol,
 } from "../../character/user";
 import { GameState } from "../../game-state/game-state";
+import { createRef, ref, Ref } from "lit-html/directives/ref.js";
 
 /** filters applicable to players, when null or undefined the filter won't be applied */
 interface PlayersFilters {
@@ -138,7 +139,7 @@ function onFilterChange(f: PlayersFilters) {
   pgGb!.players = getPlayers(f);
   const at =
     s.at >= pgGb!.players.length
-      ? Math.trunc(pgGb!.players.length / s.size) * s.size
+      ? Math.trunc(((pgGb!.players.length || 1) - 1) / s.size) * s.size // we need to subtract one because of the Zero-based indexing (25 players / size 25 should be at 0 not 1)
       : s.at;
   qsSync.save({ ...s, ...f, at, sortBy: null, sortAsc: false }); // clear the sorting order too (just a preference)
 }
@@ -176,6 +177,12 @@ class PlayersPage extends HTMLElement {
 
   gameStateUpdated() {
     pgGb!.players = getPlayers(pgGb!.state); // we don't want a stale players reference
+
+    // the new batch of players need to be re-sort
+    if (pgGb!.state.sortBy) {
+      sortPlayersBy(pgGb!.state.sortBy as string, pgGb!.state.sortAsc);
+    }
+
     this.render();
   }
 
@@ -187,9 +194,7 @@ class PlayersPage extends HTMLElement {
         </style>
         <sff-game-page>
           <div slot="in-main">
-            <div class="cnt-filters">
-              ${filterControls()}${filtersApplied()}
-            </div>
+            ${filters()}
             <div class="tb-controls">${tableControls()}</div>
             <players-table></players-table>
           </div>
@@ -198,6 +203,36 @@ class PlayersPage extends HTMLElement {
       this
     );
   }
+}
+
+/** customize and display the current filters applied to the players */
+function filters(): TemplateResult {
+  const dialogRef: Ref<HTMLDialogElement> = createRef();
+  const openControls = () => dialogRef.value?.show();
+  const closeControls = () => dialogRef.value?.close();
+  const onClearClick = () =>
+    onFilterChange({ team: null, pos: null, minAge: null, maxAge: null });
+
+  return html`
+    <div class="cnt-filters">
+      <button class="btn-sml filter-btn" @click=${openControls}>
+        💡 Filter features
+      </button>
+      <button class="btn-sml filter-btn" @click=${onClearClick}>
+        ⌫ Clear filters
+      </button>
+      <dialog class="filters-dialog" ${ref(dialogRef)}>
+        ${filterControls()}
+        <button class="modal-close" @click=${closeControls} aria-label="close">
+          ✘
+        </button>
+      </dialog>
+      <div class="rst-filters">
+        <h2>Filters:</h2>
+        ${filtersApplied()}
+      </div>
+    </div>
+  `;
 }
 
 /** control the current entry position and the table size */
@@ -217,31 +252,36 @@ function tableControls(): TemplateResult {
     });
 
   return html`
-    <span>page ${page} / ${pages}</span>
-    <button
-      class="btn-sml arrow"
-      ?disabled=${page === 1}
-      @click=${onPrev}
-      aria-label="previous page"
-    >
-      🠔
-    </button>
-    <button
-      class="btn-sml arrow"
-      ?disabled=${page === pages}
-      @click=${onNext}
-      aria-label="next page"
-    >
-      🠖
-    </button>
-    <label for="sizes">entries:</label>
-    <select class="input-bg" id="sizes" @change=${onSizeChange}>
-      ${sizes.map(
-        (sz) => html`<option ?selected=${c.size === sz}>${sz}</option>`
-      )}
-    </select>
+    <div>
+      <button
+        class="btn-sml arrow"
+        ?disabled=${page === 1}
+        @click=${onPrev}
+        aria-label="previous page"
+      >
+        Previous
+      </button>
+      <span class="tb-pos"> ${page} / ${pages}</span>
+      <button
+        class="btn-sml arrow"
+        ?disabled=${page === pages}
+        @click=${onNext}
+        aria-label="next page"
+      >
+        Next
+      </button>
+      <label class="tb-entries">
+        Show:
+        <select class="input-bg" id="sizes" @change=${onSizeChange}>
+          ${sizes.map(
+            (sz) => html`<option ?selected=${c.size === sz}>${sz}</option>`
+          )}
+        </select>
+        entries
+      </label>
+    </div>
     <label
-      >search: <input class="input-bg" type="search" @input=${onSearchChange}
+      >Search: <input class="input-bg" type="search" @input=${onSearchChange}
     /></label>
   `;
 }
@@ -250,7 +290,7 @@ function tableControls(): TemplateResult {
 function inputAge(name: string, placeHld: string, lbl: string): TemplateResult {
   return html`
     <input
-      class="input-bg"
+      class="input-bg age-input"
       name=${name}
       type="number"
       min="15"
@@ -269,11 +309,11 @@ function filtersApplied(): TemplateResult {
   const filter = (k: string, v: unknown) =>
     html`<span class="filter-rst">${k} ${v}</span>`;
   return html`<output form="js-filters">
+    ${filter("Resulting players:", pgGb!.players.length)}
     ${minAge ? filter("Age ≥", minAge) : nothing}
     ${maxAge ? filter("Age ≤", maxAge) : nothing}
     ${team ? filter("Team:", team) : nothing}
     ${pos ? filter("Position:", pos) : nothing}
-    ${filter("Players:", pgGb!.players.length)}
   </output>`;
 }
 
@@ -281,7 +321,6 @@ function filtersApplied(): TemplateResult {
 function filterControls(): TemplateResult {
   const onSummit = (e: Event) => {
     const form = e.currentTarget as HTMLFormElement;
-    e.preventDefault();
     onFilterChange({
       team: form.teams.value || null,
       pos: form.pos.value || null,
@@ -291,7 +330,12 @@ function filterControls(): TemplateResult {
     });
   };
   return html`
-    <form id="js-filters" @submit=${onSummit} aria-label="filter players">
+    <form
+      method="dialog"
+      id="js-filters"
+      @submit=${onSummit}
+      aria-label="filter players"
+    >
       <select class="input-bg" name="teams" aria-label="filter by team">
         <option selected value="">Filter by team</option>
         ${pgGb!.teams.map((t) => html`<option>${t}</option>`)}
@@ -304,7 +348,7 @@ function filterControls(): TemplateResult {
         age range ${inputAge("min-age", "min", "minimum age")} to
         ${inputAge("max-age", "max", "maximum age")}
       </div>
-      <button class="btn-sml">Apply filters</button>
+      <button class="btn-sml" autofocus>Apply filters</button>
     </form>
   `;
 }

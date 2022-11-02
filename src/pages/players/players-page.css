@@ -14,6 +14,26 @@ players-table {
   padding: 0 3px;
 }
 
+.tb-controls {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+  padding: 6px 0.5rem;
+}
+
+.tb-pos {
+  display: inline-block;
+  text-align: center;
+  width: 4rem;
+  white-space: nowrap;
+}
+
+.tb-entries {
+  padding-left: 0.5rem;
+}
+
 table {
   border-collapse: collapse;
   min-width: 30rem;
@@ -28,6 +48,7 @@ tbody > tr {
 
 td {
   background-color: var(--dk-bg-color-750, var(--lt-dg-color-100));
+  height: 2.8rem;
   transition: background-color 0.25s, color 0.25s;
 }
 
@@ -50,7 +71,6 @@ tr:hover a {
 
 td,
 th {
-  height: 2.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -128,33 +148,58 @@ th:first-child > .btn-txt {
 }
 
 #js-filters {
-  background-clip: border-box;
-  border: 2px solid var(--dk-bg-color-500, --dk-bg-color-500);
-  border-radius: 5px;
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding: 0.5rem;
-  width: max-content;
+  gap: 10px;
+  padding: 10px max(2%, 1rem);
+}
+
+#js-filters input,
+#js-filters > select {
+  background-color: var(--dk-bg-color-500, var(--lt-dg-color-100));
+}
+
+.age-input {
+  width: 5rem;
 }
 
 .cnt-filters {
+  align-items: center;
+  background-color: var(--dk-bg-color-725, var(--lt-bg-color-200));
+  background-clip: padding-box;
+  border: 1px solid var(--dk-primary-color, var(--lt-primary-color));
+  border-radius: 6px;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 4% / 30%);
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-bottom: 5px;
+  overflow: hidden;
 }
 
-.cnt-filters > :first-child {
-  flex-shrink: 0;
+.filters-dialog {
+  background-color: var(--dk-bg-color-650, var(--lt-bg-color-200));
+  border: 1px solid var(--dk-primary-color-300, var(--lt-primary-color-300));
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 30%);
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  overflow: hidden;
+  padding: 1.2rem 1rem;
+  z-index: 2;
+  top: calc(var(--header-height) + 3.2rem);
 }
 
-@media screen and (max-width: 28rem) {
-  .cnt-filters {
-    flex-wrap: wrap;
-  }
+.rst-filters {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 3px 1rem;
+  padding: 5px 0.5rem;
+}
 
-  .cnt-filters > :first-child {
-    flex-shrink: initial;
-  }
+.rst-filters > h2 {
+  margin: 0;
 }
 
 .filter-rst {
@@ -162,7 +207,18 @@ th:first-child > .btn-txt {
   padding: 0px 4px;
 }
 
+.filter-btn {
+  align-self: stretch;
+  border-radius: 0;
+  box-shadow: none;
+  padding-right: 1rem;
+}
+
+.cnt-filters > .filter-btn:nth-child(2) {
+  margin-left: 1px;
+}
+
 .arrow {
-  background-color: var(--dk-primary-color-300);
+  background-color: var(--dk-primary-color-300, var(--lt-bg-color-200));
   padding: 0 0.5rem;
 }

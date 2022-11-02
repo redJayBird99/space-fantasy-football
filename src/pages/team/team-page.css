@@ -75,7 +75,6 @@ table {
 }
 
 .plr-pos {
-  padding: 0.4rem 0;
   width: 2.5rem;
 }
 
@@ -83,6 +82,13 @@ td.plr-pos {
   background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
   border-radius: 8px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 15%);
+  height: 1.9rem;
+}
+
+td.plr-pos:first-child {
+  align-items: center;
+  display: flex;
+  justify-content: center;
 }
 
 .plr-at {

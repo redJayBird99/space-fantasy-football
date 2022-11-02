@@ -83,7 +83,7 @@ class NextMatch extends HTMLElement {
     return html`
       <div class="history-box ${symbol}">
         <abbr aria-label=${symbol} title=${symbol}>
-          <strong>${symbol[0]}</strong>
+          <strong class="rst-symbol">${symbol[0]}</strong>
         </abbr>
       </div>
     `;

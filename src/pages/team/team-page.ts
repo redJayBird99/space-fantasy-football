@@ -189,7 +189,7 @@ function teamPlayerRow(
 ): TemplateResult {
   const at = st?.sp.pos;
   return html`<tr class="plr ${st ? "starting" : ""}">
-    <td class="plr-pos">${p.position}</td>
+    <td class="plr-pos"><span>${p.position}</span></td>
     <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>
       <button
         ?disabled=${!openUpdateLineup}

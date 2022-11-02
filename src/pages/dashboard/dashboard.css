@@ -113,3 +113,8 @@ dashboard-next-match > p {
 .history-box.drawn {
   background-color: var(--dk-neutral-color, var(--lt-neutral-color));
 }
+
+.rst-symbol {
+  font-style: italic;
+  text-transform: uppercase;
+}

@@ -1,5 +1,6 @@
-input[type="text"] {
-  padding: 0.4rem;
+input[type="text"],
+input[type="search"] {
+  padding: 0.2rem;
 }
 
 input[type="text"],
@@ -22,4 +23,9 @@ input:out-of-range:focus {
   border: 1px solid var(--dk-bg-color-300, var(--lt-bg-color-200));
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   outline-color: var(--dk-primary-color, var(--lt-primary-color));
+}
+
+.input-bg::placeholder {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  opacity: 0.85;
 }

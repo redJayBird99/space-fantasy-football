@@ -1,3 +1,5 @@
+@import "../util/button.css";
+
 :host {
   display: block;
 }
@@ -22,25 +24,6 @@ dialog {
 
 dialog::backdrop {
   background-color: var(--backdrop-color, #464646bf);
-}
-
-.close-btn {
-  background-color: var(
-    --close-btn-bg-color,
-    var(--dk-error-color, var(--lt-error-color))
-  );
-  border: none;
-  box-shadow: 0px 1px 3px 0px hsla(0deg 0% 8% / 10%);
-  cursor: pointer;
-  color: var(
-    --close-btn-color,
-    var(--dk-on-error-color, var(--lt-on-error-color))
-  );
-  font-weight: bold;
-  padding: 2px 5px;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 .close-btn:hover {

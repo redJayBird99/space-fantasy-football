@@ -50,16 +50,36 @@ button {
   padding: 0;
 }
 
-.btn-link:disabled {
-  cursor: default;
-  filter: brightness(0.5);
+.modal-close {
+  background-color: var(
+    --close-btn-bg-color,
+    var(--dk-error-color, var(--lt-error-color))
+  );
+  border: none;
+  box-shadow: 0px 1px 3px 0px hsla(0deg 0% 8% / 10%);
+  cursor: pointer;
+  color: var(
+    --close-btn-color,
+    var(--dk-on-error-color, var(--lt-on-error-color))
+  );
+  font-weight: bold;
+  padding: 1px 5px;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .btn:disabled,
-.btn-sml:disabled {
+.btn-sml:disabled,
+.btn-link:disabled,
+.modal-close:disabled {
   filter: brightness(0.5);
 }
 
 button:disabled {
   cursor: not-allowed;
+}
+
+.btn-link:disabled {
+  cursor: default;
 }

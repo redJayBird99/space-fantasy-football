@@ -49,7 +49,7 @@ class Modal extends HTMLElement {
         <dialog ${ref(this.dialogRef)} @close=${this.handleClose}>
           <button
             autofocus
-            class="close-btn"
+            class="modal-close"
             aria-label="close modal"
             @click=${this.handleClose}
           >
