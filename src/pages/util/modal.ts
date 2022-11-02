@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { createRef, Ref, ref } from "lit-html/directives/ref.js";
 import style from "./modal.css";
 
 /**
@@ -7,14 +8,14 @@ import style from "./modal.css";
  * @param {(id?: string) => unknown} closeHandler called on close click
  *
  * the actual removal of this element should be handled by the parent node
- * @param css variable --modal-container-flex: set the container flex property
- * @param css variable --modal-bg-color: background color of the modal
- * @param css variable --modal-container-bg-color: background color of the content container
- * @param css variable --modal-close-btn-bg-color: close button background color
- * @param css variable --modal-close-btn-color: button color
+ * @param css variable --modal-bg-color: background color of the modal dialog
+ * @param css variable --backdrop-color: the backdrop color underneath the dialog
+ * @param css variable --close-btn-bg-color: close button background color
+ * @param css variable --close-btn-color: button color
  */
 class Modal extends HTMLElement {
   private closeHandler?: (id?: string) => unknown;
+  private dialogRef: Ref<HTMLDialogElement> = createRef();
 
   constructor() {
     super();
@@ -23,16 +24,12 @@ class Modal extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      document.body.style.overflow = "hidden";
       this.render();
     }
   }
 
-  disconnectedCallback() {
-    document.body.style.removeProperty("overflow");
-  }
-
   handleClose = () => {
+    this.dialogRef.value!.close();
     this.closeHandler?.(this.dataset.id);
     this.dispatchEvent(
       new CustomEvent("closeModal", {
@@ -43,25 +40,28 @@ class Modal extends HTMLElement {
     );
   };
 
-  private render() {
+  private render(): void {
     render(
       html`
         <style>
           ${style}
         </style>
-        <div class="container">
+        <dialog ${ref(this.dialogRef)} @close=${this.handleClose}>
           <button
+            autofocus
             class="close-btn"
             aria-label="close modal"
             @click=${this.handleClose}
           >
-            &#10008;
+            ✘
           </button>
           <slot></slot>
-        </div>
+        </dialog>
       `,
       this.shadowRoot!
     );
+
+    this.dialogRef.value!.showModal();
   }
 }
 

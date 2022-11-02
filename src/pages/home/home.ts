@@ -84,7 +84,7 @@ class Main extends HTMLElement {
 
   private renderNewGame(): TemplateResult {
     return html`
-      <sff-modal style="--modal-container-flex: 1">
+      <sff-modal>
         <home-new-game></home-new-game>
       </sff-modal>
     `;

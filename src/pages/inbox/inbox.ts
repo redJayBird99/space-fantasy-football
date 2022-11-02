@@ -111,10 +111,7 @@ class Inbox extends HTMLElement {
         </table>
         ${this.mail &&
         html`
-          <sff-modal
-            style="--modal-container-flex: 1"
-            .closeHandler=${this.handleCloseMail}
-          >
+          <sff-modal .closeHandler=${this.handleCloseMail}>
             ${readMail(this.mail)}
           </sff-modal>
         `}
@@ -127,7 +124,7 @@ class Inbox extends HTMLElement {
 /** show the mail content */
 function readMail(e: Mail): TemplateResult {
   return html`
-    <article>
+    <article class="open-mail">
       <div class="mail-info">
         <span>${e.sender}</span>
         <span>${e.sendDate}</span>

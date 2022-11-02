@@ -3,7 +3,8 @@
 
 :host,
 home-main,
-home-team-picker {
+home-team-picker,
+home-new-game {
   display: block;
 }
 
@@ -26,6 +27,7 @@ home-team-picker {
   display: grid;
   gap: 5px;
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  width: calc(100vw - 4rem);
 }
 
 .saves {
