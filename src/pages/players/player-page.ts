@@ -5,6 +5,7 @@ import {
   MACRO_SKILLS,
   MacroSkill,
   MAX_SKILL,
+  Skill,
 } from "../../character/player";
 import "./player-history.ts";
 import {
@@ -63,13 +64,12 @@ function getSearchParamPlayer(): Player | undefined {
 function playerCtn(p: Player): TemplateResult {
   return html`
     <section class="plr-info">
-      <div>
+      <div class="cnt-plr-img">
         <h3 class="plr-info__name">${p?.name}</h3>
         <img class="plr-img" src=${pImg} alt="a football player" />
       </div>
-      ${playerBio(p)}
+      ${playerBio(p)} ${signBtn(p)}
     </section>
-    ${signBtn(p)}
     <div class="plr-skills">${p && playersMacroSkills(p)}</div>
     <player-history data-pl-id=${p?.id ?? ""}></player-history>
   `;
@@ -90,38 +90,36 @@ function playerBio(p: Player): TemplateResult {
     : "";
 
   return html`
+    <div class="cnt-plr-high">
+      <div class="plr-high">
+        <div>Position</div>
+        <div class="plr-high__val">${p.position.toUpperCase()}</div>
+      </div>
+      <div class="plr-high">
+        <div>Rating</div>
+        <div class="plr-high__val-stl" style=${bgColor(rColor)}>
+          ${getPlayerRatingSymbol(p, gs)}
+        </div>
+      </div>
+      <div class="plr-high">
+        <div>
+          <abbr title="Improvability">Improv.</abbr>
+        </div>
+        <div class="plr-high__val-stl" style=${bgColor(iColor)}>
+          ${improvabilityRatingSymbol(p, t)}
+        </div>
+      </div>
+      <div class="plr-high">
+        <div>Team</div>
+        <div>${teamLink ? goLink(teamLink, p.team) : p.team}</div>
+      </div>
+    </div>
     <div class="plr-bio">
-      <div>
-        <div class="plr-high">
-          <div>Position</div>
-          <div class="plr-high__val">${p.position.toUpperCase()}</div>
-        </div>
-        <div class="plr-high">
-          <div>Rating</div>
-          <div class="plr-high__val-stl" style=${bgColor(rColor)}>
-            ${getPlayerRatingSymbol(p, gs)}
-          </div>
-        </div>
-        <div class="plr-high">
-          <div>
-            <abbr title="Improvability">Improv.</abbr>
-          </div>
-          <div class="plr-high__val-stl" style=${bgColor(iColor)}>
-            ${improvabilityRatingSymbol(p, t)}
-          </div>
-        </div>
-        <div class="plr-high">
-          <div>Team</div>
-          <div>${teamLink ? goLink(teamLink, p.team) : p.team}</div>
-        </div>
-      </div>
-      <div>
-        <div>${Player.age(p, gs.date)} y. o. ${p.birthday}</div>
-        <div>${Player.getHeightInCm(p)} cm</div>
-        <div>Preferred foot ${p.foot}</div>
-        <div>wage: ${wage}₡</div>
-        <div>contract: ${seasons ? `length ${seasons} seasons` : "free"}</div>
-      </div>
+      <div>${Player.age(p, gs.date)} y. o. ${p.birthday}</div>
+      <div>${Player.getHeightInCm(p)} cm</div>
+      <div>Preferred foot ${p.foot}</div>
+      <div>wage: ${wage}₡</div>
+      <div>contract: ${seasons ? `length ${seasons} seasons` : "free"}</div>
     </div>
   `;
 }
@@ -137,7 +135,7 @@ function signBtn(p: Player): TemplateResult {
   const sign = canSignPlayer(gs, uPayroll, p);
 
   return html`
-    <div>
+    <div class="cnt-plr-sign">
       <label>
         <button
           class="btn btn--acc sign-btn"
@@ -165,11 +163,25 @@ function playerMacroSkill(p: Player, m: MacroSkill): TemplateResult {
       <li>${playersSkillScore(Player.getMacroSkill(p, m))} ${m}</li>
       <ul>
         ${MACRO_SKILLS[m].map(
-          (s) => html`<li>${playersSkillScore(Player.getSkill(p, s))} ${s}</li>`
+          (s) =>
+            html`<li>
+              ${playersSkillScore(Player.getSkill(p, s))} ${skillString(s)}
+            </li>`
         )}
       </ul>
     </ul>
   `;
+}
+
+function skillString(s: Skill): string | TemplateResult {
+  switch (s) {
+    case "defensivePositioning":
+      return html`<abbr title="defensive positioning">Def. positioning</abbr>`;
+    case "offensivePositioning":
+      return html`<abbr title="offensive positioning">Off. positioning</abbr>`;
+    default:
+      return s;
+  }
 }
 
 function playersSkillScore(score: number): TemplateResult {

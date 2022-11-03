@@ -6,9 +6,26 @@ sff-player {
 }
 
 .plr-info {
-  align-items: flex-start;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-areas: "img high" "img info" "btn btn";
+  grid-template-columns: repeat(2, minmax(0rem, max-content));
+  gap: 0 1rem;
+}
+
+@media screen and (max-width: 25rem) {
+  .plr-info {
+    grid-template-areas: "high high" "img info" "btn btn";
+    gap: 0;
+    justify-content: center;
+  }
+
+  .cnt-plr-high {
+    margin-bottom: 0.5rem;
+  }
+
+  .plr-bio {
+    margin-top: 1.6rem;
+  }
 }
 
 .plr-info__name {
@@ -23,15 +40,23 @@ sff-player {
 }
 
 .plr-bio {
-  padding: 1rem;
-  padding-top: 0;
+  grid-area: info;
 }
 
-.plr-bio > :first-child {
+.cnt-plr-high {
   display: flex;
   gap: 3px 1.3rem;
-  margin-bottom: 0.65rem;
+  grid-area: high;
+  justify-self: center;
   text-align: center;
+}
+
+.cnt-plr-img {
+  grid-area: img;
+}
+
+.cnt-plr-sign {
+  grid-area: btn;
 }
 
 .plr-high {
@@ -49,9 +74,10 @@ sff-player {
 
 .plr-skills {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  margin-top: 1rem;
+  gap: 1rem 0;
+  grid-template-columns: repeat(auto-fit, 11rem);
+  justify-content: space-around;
+  margin-top: 2.4rem;
 }
 
 .skill-score {
@@ -63,7 +89,16 @@ sff-player {
 }
 
 .plr-skills > ul {
-  margin: 4px 0;
+  margin: 0;
+  padding: 0;
+}
+
+.plr-skills > ul > ul {
+  padding-left: 2rem;
+}
+
+.plr-skills > ul > :first-child {
+  font-weight: bold;
 }
 
 .plr-skills li {

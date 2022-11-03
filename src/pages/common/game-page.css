@@ -14,6 +14,10 @@
   padding: 0 2%;
 }
 
+div[slot="in-main"] {
+  min-height: calc(100vh - var(--header-height));
+}
+
 /* ----------------- temporary stuff ---------------------- */
 [slot="in-footer"] {
   background-color: var(--dk-bg-color-725, var(--lt-bg-color));
