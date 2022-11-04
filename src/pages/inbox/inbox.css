@@ -1,7 +1,11 @@
 @import url("../util/button.css");
 
 :host {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border-radius: 6px;
   display: block;
+  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 6% / 20%);
+  padding: 4px 6px;
 }
 
 *,
@@ -11,60 +15,79 @@
 }
 
 .open-mail {
-  width: calc(100vw - 8rem);
+  width: 80vw;
 }
 
-table {
-  border-collapse: collapse;
-  border-spacing: 10px 5px;
-  box-shadow: 0px 1px 3px 0px hsl(0deg 0% 6% / 20%);
-  overflow: hidden;
-  table-layout: fixed;
+@media screen and (max-width: 24rem) {
+  .open-mail {
+    width: calc(100vw - 4rem);
+  }
+}
+
+h2 {
+  margin: 8px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  background-color: var(--entry-bg, var(--dk-bg-color-750, var(--lt-bg-color)));
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: var(--entry-margin-btm, 2px);
+  padding: 0.4rem;
   width: 100%;
 }
 
-caption {
-  text-align: left;
-}
-
-caption > h2 {
-  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
-  margin: 0;
-  padding: 0.4rem 15px;
-}
-
-td {
-  overflow-x: hidden;
-  padding: 8px clamp(8px, calc(2vw), 1rem);
+li > span {
+  flex-shrink: 1;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-tr {
-  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
-  border: 1px solid var(--dk-bg-color, var(--lt-bg-color));
-  cursor: pointer;
+li > :first-child,
+li > span:nth-child(3) {
+  width: 9rem;
 }
 
-tr:first-child > td:nth-child(1),
-tr:first-child > td:nth-child(3) {
-  width: 25%;
+.close-cell {
+  flex-shrink: 0;
+  text-align: right;
+  width: 2.5rem;
 }
 
-tr:first-child > td:nth-child(4) {
-  width: 10%;
+li > span:nth-child(2) {
+  flex-grow: 1;
+  flex-shrink: 2;
 }
 
-td:last-child {
+.date-cell {
   text-align: right;
 }
 
-tr:first-child > td:nth-child(2) {
-  width: 40%;
+@media screen and (max-width: 32rem) {
+  .date-cell {
+    display: none;
+  }
 }
 
-.mail--opened {
-  font-weight: bold;
+@media screen and (max-width: 20rem) {
+  li {
+    flex-wrap: wrap;
+  }
+
+  li > :first-child {
+    width: 100%;
+  }
+}
+
+.mail--new {
+  font-weight: 600;
 }
 
 .mail-info {

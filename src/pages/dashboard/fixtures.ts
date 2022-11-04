@@ -2,31 +2,17 @@ import { html, render, TemplateResult } from "lit-html";
 import { getNextFixtures } from "../../character/user";
 import { Match } from "../../game-sim/tournament-scheduler";
 import style from "./fixtures.css";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 /** a preview of the next few matches for the user team */
-class Fixtures extends HTMLElement {
+class Fixtures extends HTMLSFFGameElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
 
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
   render(): void {
-    const ms = getNextFixtures().slice(0, 7);
+    const ms = getNextFixtures().slice(0, 8);
     const user = window.$game.state!.userTeam!;
 
     render(

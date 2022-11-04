@@ -5,13 +5,14 @@ import { goTo } from "../util/router";
 import { Mail } from "../../character/mail";
 import { classMap } from "lit-html/directives/class-map.js";
 import { GameState } from "../../game-state/game-state";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 /**
  * an inbox for listing and reading news feed, email etc, it has to mode
  * @param {attribute} data-compact - when the attribute exists the inbox
  * is limited only to redirecting to the inbox page
  */
-class Inbox extends HTMLElement {
+class Inbox extends HTMLSFFGameElement {
   /** the currently open mail */
   mail?: Mail;
 
@@ -20,24 +21,13 @@ class Inbox extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
 
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
   gameStateUpdated(): void {
     if (this.mail) {
       // remove the stale reference
       this.mail = window.$game.state?.mails.find((m) => this.mail!.id === m.id);
     }
 
-    this.render();
+    super.gameStateUpdated();
   }
 
   /** when the inbox is in compact mode redirect to the inbox page,
@@ -46,10 +36,9 @@ class Inbox extends HTMLElement {
     if (this.hasAttribute("data-compact")) {
       goTo(`${window.$PUBLIC_PATH}inbox`);
     } else {
-      // we don't need to notify the game handle of the mutation because nothing depend on mails
       e.opened = true;
       this.mail = e;
-      this.render();
+      window.$game.state = window.$game.state!; // need to notify the observers
     }
   };
 
@@ -64,34 +53,37 @@ class Inbox extends HTMLElement {
     }
 
     const gs = window.$game.state as GameState;
-    // we don't need to notify the game handle of the mutation because nothing depend on mails
     gs.mails = gs.mails.filter((m) => e.id !== m.id);
-    this.render();
+    window.$game.state = gs;
   };
 
   /** list all the emails */
   mailEntries(): TemplateResult[] {
+    const gs = window.$game.state!;
+    const mails = this.hasAttribute("data-compact")
+      ? gs.mails.slice(0, 6)
+      : gs.mails;
     const onClick = (m: Mail) => (e: Event) =>
       e.target instanceof HTMLButtonElement
         ? this.onDeleteMail(m)
         : this.handleOpenMail(m);
-    const noCompactCols = (e: Mail) => html`
-      <td>${e.sendDate}</td>
-      <td>
+    const fullCols = (e: Mail) => html`
+      <span class="date-cell">${e.sendDate}</span>
+      <span class="close-cell">
         <button class="btn btn--err" aria-label="delete mail">✘</button>
-      </td>
+      </span>
     `;
 
-    return window.$game.state!.mails.map(
+    return mails.map(
       (e) =>
-        html`<tr
-          class=${classMap({ "mail--opened": !e.opened })}
+        html`<li
+          class=${classMap({ "mail--new": !e.opened })}
           @click=${onClick(e)}
         >
-          <td>${e.sender}</td>
-          <td>${e.subject}</td>
-          ${this.hasAttribute("data-compact") ? nothing : noCompactCols(e)}
-        </tr>`
+          <span>${e.sender}</span>
+          <span>${e.subject}</span>
+          ${this.hasAttribute("data-compact") ? nothing : fullCols(e)}
+        </li>`
     );
   }
 
@@ -101,14 +93,10 @@ class Inbox extends HTMLElement {
         <style>
           ${style}
         </style>
-        <table>
-          <caption>
-            <h2>📬 Inbox</h2>
-          </caption>
-          <tbody>
-            ${this.mailEntries()}
-          </tbody>
-        </table>
+        <h2>📬 Inbox</h2>
+        <ul>
+          ${this.mailEntries()}
+        </ul>
         ${this.mail &&
         html`
           <sff-modal .closeHandler=${this.handleCloseMail}>

@@ -81,8 +81,8 @@ export function withdrawOffer(send: Date, t: TradeRecord, user: Team): Mail {
   return newMail(
     {
       sender: "Head Scout",
-      subject: `${offer.team} has withdrawn his offer`,
-      content: `${offer.team} has withdrawn his trading offer for ${pls
+      subject: `${offer.team} has withdrawn its offer`,
+      content: `${offer.team} has withdrawn its trading offer for ${pls
         .map((p) => p.name)
         .join(", ")}. The trading conditions aren't met anymore`,
     },

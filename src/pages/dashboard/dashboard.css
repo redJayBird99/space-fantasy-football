@@ -6,32 +6,69 @@ dashboard-next-match {
 }
 
 [slot="in-main"] {
-  align-items: stretch;
+  align-items: start;
   display: grid;
-  gap: 1rem;
-  grid-template-areas: "fixs next iBox" "tbLg tbLg tbLg";
-  grid-template-columns: repeat(3, minmax(0px, 1fr));
+  gap: 1rem 0;
+  grid-template-areas: "fx fx nx nx ix ix" "lg lg lg . . .";
+  grid-template-columns: repeat(6, 1fr);
+  justify-items: stretch;
 }
 
 .bg-grid1 {
+  align-self: stretch;
   background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
   box-shadow: 0px 1px 4px 0px hsl(0deg 0% 6% / 20%);
   border-radius: 10px;
   grid-column: 1 / -1;
   grid-row: 1 / 2;
+  justify-self: stretch;
 }
 
-@media screen and (max-width: 92rem) {
+dashboard-next-match {
+  margin-top: 1rem;
+  grid-area: nx;
+  text-align: center;
+}
+
+sff-fixtures {
+  font-size: 0.9rem;
+  grid-area: fx;
+  margin: 1rem 5%;
+}
+
+sff-inbox {
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
+  box-shadow: none;
+  --entry-bg: var(--dk-bg-color-700);
+  --entry-margin-btm: 5px;
+  font-size: 0.88rem;
+  grid-area: ix;
+  margin: 0.5rem 5%;
+}
+
+league-table {
+  grid-area: lg;
+}
+
+@media screen and (max-width: 85rem) {
   [slot="in-main"] {
-    grid-template-areas: "next fixs" "tbLg iBox";
-    grid-template-columns: repeat(2, minmax(0px, 1fr));
+    grid-template-areas: "nx fx" "lg ix";
+    grid-template-columns: minmax(0px, 9fr) minmax(0px, 7fr);
+  }
+
+  sff-inbox {
+    margin: 0 0 0 5%;
   }
 }
 
-@media screen and (max-width: 68rem) {
+@media screen and (max-width: 55rem) {
   [slot="in-main"] {
-    grid-template-areas: "next" "fixs" "tbLg" "iBox";
-    grid-template-columns: minmax(0px, 1fr);
+    grid-template-areas: "nx nx" "fx ix" "lg lg";
+    grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr);
+  }
+
+  sff-inbox {
+    margin: 0 5%;
   }
 
   .bg-grid1 {
@@ -39,28 +76,19 @@ dashboard-next-match {
   }
 }
 
-dashboard-next-match {
-  grid-area: next;
-  margin-top: 1rem;
-  text-align: center;
-}
+@media screen and (max-width: 32rem) {
+  [slot="in-main"] {
+    grid-template-areas: "nx" "fx" "ix" "lg";
+    grid-template-columns: 1fr;
+  }
 
-sff-fixtures {
-  align-self: center;
-  grid-area: fixs;
-  justify-self: stretch;
-  min-height: 80%;
-  padding: 0.3rem 5%;
-}
+  sff-inbox {
+    margin: 0 calc(5% - 6px);
+  }
 
-sff-inbox {
-  grid-area: iBox;
-  padding: 0.3rem;
-  justify-self: center;
-}
-
-league-table {
-  grid-area: tbLg;
+  .bg-grid1 {
+    grid-row: 1 / 4;
+  }
 }
 
 dashboard-next-match > h2 {

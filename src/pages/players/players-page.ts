@@ -222,10 +222,10 @@ function filters(): TemplateResult {
         ⌫ Clear filters
       </button>
       <dialog class="filters-dialog" ${ref(dialogRef)}>
-        ${filterControls()}
         <button class="modal-close" @click=${closeControls} aria-label="close">
           ✘
         </button>
+        ${filterControls()}
       </dialog>
       <div class="rst-filters">
         <h2>Filters:</h2>

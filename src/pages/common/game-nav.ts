@@ -1,27 +1,13 @@
 import style from "./game-nav.css";
-import { render, html, nothing } from "lit-html";
+import { render, html, nothing, TemplateResult } from "lit-html";
 import { goLink } from "../util/go-link";
+import { HTMLSFFGameElement } from "./html-game-element";
 
 /** the in game nav bar */
-class GameNav extends HTMLElement {
+class GameNav extends HTMLSFFGameElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-  }
-
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   render(): void {
@@ -32,7 +18,12 @@ class GameNav extends HTMLElement {
         </style>
         <ul>
           <li class="home">${goLink(`${window.$PUBLIC_PATH}`, "⌂ home")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}inbox`, "📬 inbox")}</li>
+          <li class="inbox">
+            ${goLink(
+              `${window.$PUBLIC_PATH}inbox`,
+              html`📬 inbox${mailBadge()}`
+            )}
+          </li>
           <li>${goLink(`${window.$PUBLIC_PATH}dashboard`, "🎮 dashboard")}</li>
           <li>${goLink(`${window.$PUBLIC_PATH}players`, "🏃 players")}</li>
           <li>${goLink(`${window.$PUBLIC_PATH}league`, "🏆 league")}</li>
@@ -53,6 +44,16 @@ class GameNav extends HTMLElement {
       this.shadowRoot!
     );
   }
+}
+
+function mailBadge(): TemplateResult | typeof nothing {
+  const newMails = window.$game.state!.mails.filter((m) => !m.opened).length;
+
+  if (newMails > 0) {
+    return html`<span class="badge">${newMails}</span>`;
+  }
+
+  return nothing;
 }
 
 if (!customElements.get("sff-game-nav")) {
