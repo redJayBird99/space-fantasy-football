@@ -1,7 +1,31 @@
-table {
-  text-align: center;
+@import "../util/common.css";
+
+.cnt-pls {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minMax(16rem, 1fr));
 }
 
-a {
-  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+.cnt-plr {
+  background-color: var(--dk-bg-color-750, var(--lt-bg-color-100));
+  border-radius: 5px;
+  box-shadow: 0px 1px 3px 0px rgb(15, 15, 15, 0.3);
+  padding: 1rem;
+}
+
+.user-plr {
+  border: 1px solid var(--dk-primary-color-300);
+}
+
+.cnt-plr:nth-of-type(even) {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-200));
+}
+
+.cnt-plr > h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.cnt-plr > :last-child {
+  display: flex;
+  gap: 1rem;
 }

@@ -5,6 +5,7 @@ import "../common/game-page.ts";
 import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { randomGauss } from "../../util/generator";
 
 class RetiringPlayers extends HTMLSFFGameElement {
   constructor() {
@@ -43,18 +44,10 @@ function players(): TemplateResult {
 
   // TODO in the future add some career stats
   return html`
-    <table>
-      <caption>
-        <h2>👋 Retiring Players</h2>
-      </caption>
-      <tr>
-        <th>name</th>
-        <th>team</th>
-        <th>age</th>
-        <th>games</th>
-      </tr>
-      ${gs.retiring.map((id) => player(id))}
-    </table>
+    <section class="retire-sec">
+      <h2>👋 Retiring Players</h2>
+      <div class="cnt-pls">${gs.retiring.map((id) => player(id))}</div>
+    </section>
   `;
 }
 
@@ -62,13 +55,17 @@ function player(plId: string): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[plId];
   const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
+  const teamPath =
+    p.team !== "free agent" ? `${window.$PUBLIC_PATH}team?team=${p.team}` : "";
 
   return html`
-    <tr>
-      <td>${goLink(playerPath, p.name)}</td>
-      <td>${p.team}</td>
-      <td>${Player.age(p, gs.date)}</td>
-      <td>${Math.floor(Math.random() * 450)}</td>
-    </tr>
+    <article class="cnt-plr ${gs.userTeam === p.team ? "user-plr" : ""}">
+      <h3>${goLink(playerPath, p.name)}</h3>
+      <div>
+        <span>${teamPath ? goLink(teamPath, p.team) : p.team}</span>
+        <span>${Player.age(p, gs.date)} y.o.</span>
+        <span>${Math.floor(randomGauss() * 450)} games</span>
+      </div>
+    </article>
   `;
 }
