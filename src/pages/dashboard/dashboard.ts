@@ -3,26 +3,19 @@ import { GameState } from "../../game-state/game-state";
 import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 import "../tables/league-table.ts";
 import "../inbox/inbox.ts";
 import style from "./dashboard.css";
 import pImg from "../../asset/planet1.svg";
 import "./fixtures";
 
-class Dashboard extends HTMLElement {
+class Dashboard extends HTMLSFFGameElement {
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `${window.$game.state?.userTeam} club dashboard - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated() {
-    this.render();
   }
 
   render(): void {
@@ -47,25 +40,7 @@ class Dashboard extends HTMLElement {
 }
 
 /** displays the user team next match and the last 5 results of both teams */
-class NextMatch extends HTMLElement {
-  private gs = window.$game.state;
-
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated(gs?: Readonly<GameState>): void {
-    this.gs = gs;
-    this.render();
-  }
-
+class NextMatch extends HTMLSFFGameElement {
   /** get the symbol of the given team result, returns "-" when no result was found */
   resultSymbol(team: string, m?: Match): "won" | "lost" | "drawn" | "-" {
     if (m && m.result) {
@@ -111,14 +86,15 @@ class NextMatch extends HTMLElement {
    * exist the informational content is empty
    */
   private renderNextMarch(next?: Match): TemplateResult {
+    const gs = window.$game.state!;
     const home = next?.home ?? "";
     const away = next?.away ?? "";
-    const matches = GameState.getSeasonMatches(this.gs!, "now").filter(
+    const matches = GameState.getSeasonMatches(gs, "now").filter(
       (m) => m.result
     );
     const homeHistory = matches.filter((m) => playing(m, home)).slice(-5);
     const awayHistory = matches.filter((m) => playing(m, away)).slice(-5);
-    const days = next ? `(${daysBetween(next.date, this.gs!.date)} days)` : "";
+    const days = next ? `(${daysBetween(next.date, gs.date)} days)` : "";
 
     return html`
       <h2>Next Game</h2>
@@ -135,20 +111,19 @@ class NextMatch extends HTMLElement {
   }
 
   private renderUserNextMatch(): TemplateResult {
-    const rnd = GameState.getNextRound(this.gs!);
+    const gs = window.$game.state!;
+    const rnd = GameState.getNextRound(gs);
 
     if (rnd !== undefined) {
       return this.renderNextMarch(
-        GameState.getRound(this.gs!, rnd, "now")?.find((m) =>
-          playing(m, this.gs?.userTeam)
-        )
+        GameState.getRound(gs, rnd, "now")?.find((m) => playing(m, gs.userTeam))
       );
     }
 
     return this.renderNextMarch();
   }
 
-  private render(): void {
+  render(): void {
     render(html`${this.renderUserNextMatch()}`, this);
   }
 }

@@ -6,6 +6,7 @@ import "../common/game-page.ts";
 class InboxPage extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
+      document.title = `${window.$game.state?.userTeam} club inbox - Space Fantasy Football`;
       this.render();
     }
   }

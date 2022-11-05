@@ -36,7 +36,6 @@ class LeagueFixtures extends HTMLElement {
   render(): void {
     const shd = GameState.getSeasonRounds(window.$game.state!, "now");
     const at = GameState.getNextRound(window.$game.state!);
-    console.log(at);
 
     render(
       html`

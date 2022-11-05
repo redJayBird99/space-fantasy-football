@@ -20,21 +20,16 @@ import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
 import { Team } from "../../character/team";
 import { goLink } from "../util/go-link";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
-class PlayerPage extends HTMLElement {
+class PlayerPage extends HTMLSFFGameElement {
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `Player overview ${
+        getSearchParamPlayer()?.name
+      } - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated() {
-    this.render();
   }
 
   render(): void {

@@ -150,6 +150,7 @@ class PlayersPage extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      document.title = `Players overview - Space Fantasy Football`;
       initPageGlobal();
       qsSync.addObserver(this);
       window.$game.addObserver(this);

@@ -26,28 +26,21 @@ import "../util/modal.ts";
 import { trade } from "../transactions/transactions";
 import { isEqual } from "lodash-es";
 import { tradeRequirements } from "../../game-sim/trade";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 type hdl = (e: Event) => unknown;
 type TradeSide = { get: Player[]; give: Player[]; team: Team };
 type TradeState = { user: Team } & TradeSide;
 
 /** render the root of the page for two modes trade and offers */
-class TradePage extends HTMLElement {
+class TradePage extends HTMLSFFGameElement {
   private onOffer = false;
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `${window.$game.state?.userTeam} club trade overview - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   onBtnClick = (toOffer: boolean) => {
@@ -92,25 +85,14 @@ class TradePage extends HTMLElement {
   }
 }
 
-abstract class PageContent extends HTMLElement {
+abstract class PageContent extends HTMLSFFGameElement {
   /** the resulting answer to trade or the offer */
   protected offerResult?: boolean;
 
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
   disconnectedCallback() {
-    window.$game.removeObserver(this);
     // we need to clean the modal when successful because can navigate to other pages
     this.offerResult && render(nothing, window.$modalRoot);
+    super.disconnectedCallback();
   }
 
   /** called when the modal showing the result is closed */
@@ -118,8 +100,6 @@ abstract class PageContent extends HTMLElement {
     this.offerResult = undefined;
     this.render();
   };
-
-  abstract render(): void;
 }
 
 /** render the user trade maker */

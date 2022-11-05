@@ -35,6 +35,7 @@ import {
 import "./change-spot";
 import "../util/modal";
 import { changeFormation } from "../../character/user";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 export const PITCH_WIDTH = 66;
 export const PITCH_HEIGHT = 52; // half pitch
@@ -49,7 +50,7 @@ function getSearchParamTeam(): Team | undefined {
   return name ? window.$game.state!.teams[name] : undefined;
 }
 
-class TeamPage extends HTMLElement {
+class TeamPage extends HTMLSFFGameElement {
   /** control the ui to change a starting player only for the user team */
   updateLineup: { open: boolean; plId?: string } = { open: false };
   /** if it doesn't exist default to the user */
@@ -59,17 +60,9 @@ class TeamPage extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `${window.$game.state?.userTeam} club team overview - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   closeUpdateLineup = () => {

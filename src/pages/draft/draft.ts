@@ -15,25 +15,18 @@ import {
   improvabilityRatingSymbol,
 } from "../../character/user";
 import { draftPlayer } from "../../game-sim/game-simulation";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 /** the page where all drafts are collected */
-class Draft extends HTMLElement {
+class Draft extends HTMLSFFGameElement {
   // remember at which season was when the user navigates back
   season = new URLSearchParams(location.search).get("season") ?? "now";
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `Draft overview - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   onSeasonChange = (e: Event): void => {

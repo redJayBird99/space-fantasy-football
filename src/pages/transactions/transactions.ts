@@ -9,25 +9,18 @@ import {
 } from "../../game-state/game-state";
 import { Player } from "../../character/player";
 import { goLink } from "../util/go-link";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 /** the page where all transactions (trades, new signing etc.) are collected */
-class Transactions extends HTMLElement {
+class Transactions extends HTMLSFFGameElement {
   // remember at which season was when the user navigates back
   season: string = new URLSearchParams(location.search).get("season") ?? "now";
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `Transactions history - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   onSeasonChange = (e: Event) => {

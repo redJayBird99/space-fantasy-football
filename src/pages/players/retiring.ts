@@ -4,8 +4,9 @@ import style from "./retiring.css";
 import "../common/game-page.ts";
 import "../util/router.ts";
 import { goLink } from "../util/go-link";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
-class RetiringPlayers extends HTMLElement {
+class RetiringPlayers extends HTMLSFFGameElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -13,17 +14,9 @@ class RetiringPlayers extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `Retiring players - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   render(): void {

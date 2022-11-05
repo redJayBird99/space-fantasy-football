@@ -14,6 +14,7 @@ import "./re-sign.ts";
 import "../common/game-page";
 import style from "./finances-page.css";
 import { goLink } from "../util/go-link";
+import { HTMLSFFGameElement } from "../common/html-game-element";
 
 type TeamInfo = { v: string; rank: number };
 type Teams = { all: Team[]; t: Team };
@@ -22,20 +23,12 @@ const frt = new Intl.NumberFormat("en-GB");
 const SEASONS = 4;
 
 /** the team finances page */
-class TeamFinances extends HTMLElement {
+class TeamFinances extends HTMLSFFGameElement {
   connectedCallback() {
     if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
+      document.title = `${window.$game.state?.userTeam} club financial overview - Space Fantasy Football`;
+      super.connectedCallback();
     }
-  }
-
-  gameStateUpdated() {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   render(): void {
