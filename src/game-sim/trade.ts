@@ -240,11 +240,21 @@ export function commitTrade(gs: GameState, t: Trade) {
   gs.transactions.now.trades.push(toTradeRecord(t, gs.date));
 }
 
-// just a wrapper around validTeamSize and affordable
-/** returns true if the team has the financial and size requirements to make the trade */
-export function tradeRequirements(t: Team, get: Player[], give: Player[]) {
-  const gs = window.$game.state!;
-  return validTeamSize(t, get, give) && affordable({ gs, t })(get, give);
+// it is just a wrapper around validTeamSize and affordable with some extra info
+/** returns ok setted to true  if the team has the financial and size
+ * requirements to make the trade, otherwise it is false with the a failing reason */
+export function tradeRequirements(
+  { gs, t }: GsTm,
+  get: Player[],
+  give: Player[]
+): { ok: boolean; why: string } {
+  if (!validTeamSize(t, get, give)) {
+    return { ok: false, why: "failing the squad size requirements" };
+  } else if (!affordable({ gs, t })(get, give)) {
+    return { ok: false, why: "failing the salary cap requirements" };
+  }
+
+  return { ok: true, why: "" };
 }
 
 export {

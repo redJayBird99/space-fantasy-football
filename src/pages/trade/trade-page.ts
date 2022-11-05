@@ -59,25 +59,27 @@ class TradePage extends HTMLSFFGameElement {
         </style>
         <sff-game-page>
           <div slot="in-main">
-            <button
-              class="btn-sml"
-              ?disabled=${!this.onOffer}
-              @click=${() => this.onBtnClick(false)}
-            >
-              trade
-            </button>
-            <button
-              class="btn-sml"
-              ?disabled=${this.onOffer}
-              @click=${() => this.onBtnClick(true)}
-            >
-              check offers
-            </button>
-            <span> The trade window is ${open ? "open" : "closed ⚠️"} </span>
+            <div>
+              <button
+                class="btn-sml"
+                ?disabled=${!this.onOffer}
+                @click=${() => this.onBtnClick(false)}
+              >
+                trade
+              </button>
+              <button
+                class="btn-sml"
+                ?disabled=${this.onOffer}
+                @click=${() => this.onBtnClick(true)}
+              >
+                check offers
+              </button>
+              <span> The trade window is ${open ? "open" : "closed ⚠️"} </span>
+            </div>
+            ${this.onOffer
+              ? html`<sff-Offers></sff-Offers>`
+              : html`<sff-trade></sff-trade>`}
           </div>
-          ${this.onOffer
-            ? html`<sff-Offers slot="in-main"></sff-Offers>`
-            : html`<sff-trade slot="in-main"></sff-trade>`}
         </sff-game-page>
       `,
       this
@@ -87,11 +89,11 @@ class TradePage extends HTMLSFFGameElement {
 
 abstract class PageContent extends HTMLSFFGameElement {
   /** the resulting answer to trade or the offer */
-  protected offerResult?: boolean;
+  protected offerResult?: { ok: boolean; why: string };
 
   disconnectedCallback() {
     // we need to clean the modal when successful because can navigate to other pages
-    this.offerResult && render(nothing, window.$modalRoot);
+    this.offerResult?.ok && render(nothing, window.$modalRoot);
     super.disconnectedCallback();
   }
 
@@ -166,7 +168,7 @@ class Trade extends PageContent {
       const gt = get.map((id) => gs.players[id]);
       this.offerResult = canTrade(other, gt, gv);
 
-      if (this.offerResult) {
+      if (this.offerResult.ok) {
         makeTrade(other, gt, gv); // on the mutation notification clean the offer and re-render
       } else {
         this.render();
@@ -185,8 +187,8 @@ class Trade extends PageContent {
 
     render(
       html`
-        ${otherTeamSelector(this.onTeamSelect, team ?? "")}
-        <div>
+        <div class="trade-ctrl">
+          ${otherTeamSelector(this.onTeamSelect, team ?? "")}
           <button
             class="btn-sml"
             id="btn-offer"
@@ -243,10 +245,10 @@ class Offers extends PageContent {
     // only valid offers are kept in the gs.tradeOffer so no other check is needed
     // the game handler will take care of the remaining trades validity after the mutation
     if (accept) {
-      this.offerResult = true;
+      this.offerResult = { ok: true, why: "" };
       makeTrade(other, get, give);
     } else {
-      this.offerResult = false;
+      this.offerResult = { ok: false, why: "the user refused the offer" };
       window.$game.state = gs; // mutation notification
     }
   };
@@ -267,8 +269,8 @@ class Offers extends PageContent {
 
     render(
       html`
-        ${offersSelector(this.onOfferSelect, this.offer)}
-        <div>
+        <div class="trade-ctrl">
+          ${offersSelector(this.onOfferSelect, this.offer)}
           <button
             class="btn-sml btn--acc"
             ?disabled=${dis}
@@ -311,23 +313,24 @@ function toTradeState(t: TradeRecord): TradeState {
  * render a modal with the result of the offer when rst is defined
  *  @param onClose called when the close button is clicked
  */
-function outputRst(onClose: () => void, rst?: boolean) {
+function outputRst(onClose: () => void, rst?: { ok: boolean; why: string }) {
   const trades = window.$game.state!.transactions.now.trades;
-  const txt =
-    rst === undefined
-      ? null
-      : rst
-      ? "The offer was accepted!"
-      : "The offer was rejected!";
 
-  if (txt) {
+  if (rst) {
+    const htmlRst = rst.ok
+      ? html`
+          <h3 class="rst-h3">The offer was successful!</h3>
+          ${rst ? trade(trades[trades.length - 1]) : nothing}
+        `
+      : html`
+          <h3 class="rst-h3">"The offer was unsuccessful!"</h3>
+          <p class="rst-p">${rst.why}</p>
+        `;
+
     // if the trade was successful it is added as last trade operation
     return html`
       <sff-modal .handleClose=${onClose}>
-        <output aria-label="trade result">
-          <h3>${txt}</h3>
-          ${rst ? trade(trades[trades.length - 1]) : nothing}
-        </output>
+        <output aria-label="trade result"> ${htmlRst} </output>
       </sff-modal>
     `;
   }
@@ -396,7 +399,7 @@ function tradingTeam(side: TradeSide, readonly = false): TemplateResult {
 
   return html`
     <section>
-      <h2>🌕 ${t.name}</h2>
+      <h2 class="team-name">🌕 ${t.name}</h2>
       ${finance(side)}
       <ul class="roster">
         ${repeat(
@@ -419,7 +422,7 @@ function finance({ team, get, give }: TradeSide): TemplateResult {
   const nFm = new Intl.NumberFormat("en-GB");
   const color =
     incoming !== 0 || outgoing !== 0
-      ? tradeRequirements(team, get, give)
+      ? tradeRequirements({ gs, t: team }, get, give).ok
         ? "fin-good"
         : "fin-bad"
       : "";

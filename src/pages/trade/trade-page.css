@@ -19,9 +19,19 @@ sff-offers {
   max-width: 52rem;
 }
 
+.trade-ctrl {
+}
+
+.team-name {
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-300));
+  margin: 0;
+  padding: 4px 0;
+  text-align: center;
+}
+
 .fin-preview {
   display: block;
-  margin-right: 2.2rem;
 }
 
 .fin-preview__status {
@@ -105,11 +115,11 @@ sff-offers {
   align-items: center;
   background-color: var(--dk-primary-color, var(--lt-primary-color));
   border-left: 2px dashed var(--dk-bg-color-500, var(--lt-bg-color-500));
-  border-radius: 0 14px 14px 0px / 25px;
+  border-radius: 0 3px 3px 0px;
   display: flex;
   flex-shrink: 0;
   justify-content: center;
-  width: 2.2rem;
+  width: 2rem;
 }
 
 .cnt-checkbox--on {
@@ -153,6 +163,11 @@ input[type="checkbox"] {
 }
 
 /* ----------- Content of the offer result modal ------------------ */
+.rst-h3,
+.rst-p {
+  text-align: center;
+}
+
 .transaction-summary {
   padding: 0.6rem 1rem;
 }

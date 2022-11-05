@@ -2,6 +2,7 @@ import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
 import * as _trd from "../../src/game-sim/trade";
 import {
+  canTrade,
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
@@ -12,7 +13,11 @@ import { MAX_GROWTH_RATE, Player } from "../../src/character/player";
 import { Team } from "../../src/character/team";
 jest.mock("../../src/game-sim/sim-worker-interface");
 jest.mock("../../src/game-sim/trade");
-(_trd.tradeRequirements as jest.Mock) = jest.fn(() => true);
+
+(_trd.tradeRequirements as jest.Mock) = jest.fn(() => ({ ok: true }));
+const mockTradeRequirements = _trd.tradeRequirements as jest.Mock;
+(_trd.acceptable as jest.Mock) = jest.fn();
+const mockTradeAcceptable = _trd.acceptable as jest.Mock;
 
 Player.getScore = jest.fn();
 const mockPlrGetScore = Player.getScore as jest.Mock;
@@ -117,5 +122,41 @@ describe("tradeOfferIsStillValid()", () => {
     mockGs.teams.a.playerIds = [];
     (window.$game as any) = { state: mockGs };
     expect(tradeOfferIsStillValid(mockGs, mockGs.tradeOffers[0])).toBe(false);
+  });
+});
+
+describe("canTrade()", () => {
+  const gs = _gs.GameState.init(["a", "b"]);
+  gs.userTeam = "a";
+  const user = gs.teams.a;
+  const other = gs.teams.b;
+  const get = gs.teams.b.playerIds.slice(0, 3).map((id) => gs.players[id]);
+  const give = gs.teams.a.playerIds.slice(0, 3).map((id) => gs.players[id]);
+  gs.flags.openTradeWindow = true;
+
+  describe("when the user team fail the trade requirements should return false", () => {
+    mockTradeRequirements.mockImplementation(({ t }) => ({ ok: t !== user }));
+    (window.$game as any) = { state: gs };
+    expect(canTrade(other, get, give).ok).toBe(false);
+  });
+
+  describe("when the other team fail the trade requirements should return false", () => {
+    mockTradeRequirements.mockImplementation(({ t }) => ({ ok: t === user }));
+    (window.$game as any) = { state: gs };
+    expect(canTrade(other, get, give).ok).toBe(false);
+  });
+
+  describe("when the other team doesn't accept the offer should return false", () => {
+    mockTradeRequirements.mockImplementation(() => ({ ok: true }));
+    mockTradeAcceptable.mockImplementation(() => false);
+    (window.$game as any) = { state: gs };
+    expect(canTrade(other, get, give).ok).toBe(false);
+  });
+
+  describe("when the requirements are fine and the other team accept the offer should return true", () => {
+    mockTradeRequirements.mockImplementation(() => ({ ok: true }));
+    mockTradeAcceptable.mockImplementation(() => true);
+    (window.$game as any) = { state: gs };
+    expect(canTrade(other, get, give).ok).toBe(true);
   });
 });

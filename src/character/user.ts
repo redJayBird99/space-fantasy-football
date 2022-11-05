@@ -173,21 +173,42 @@ export function resignPlayer(r: SignRequest): void {
   });
   window.$game.state = gs; // mutation notification
 }
+
 /**
- * check if the given trade by the user is possible
+ * check if the given trade by the user is possible and if not return the reason
  * @param other the trading partner
  * @param get what the user team would receive from the other team
  * @param give what the user give to the other team
  */
-export function canTrade(other: Team, get: Player[], give: Player[]): boolean {
+export function canTrade(
+  other: Team,
+  get: Player[],
+  give: Player[]
+): { ok: boolean; why: string } {
   const gs = window.$game.state!;
   const user = gs.teams[gs.userTeam];
 
-  return (
-    gs.flags.openTradeWindow &&
-    tradeRequirements(user, get, give) &&
-    acceptable({ gs, t: other }, give, get)
-  );
+  if (!gs.flags.openTradeWindow) {
+    return { ok: false, why: "the trade window is close" };
+  }
+  if (get.length === 0 || give.length === 0) {
+    return { ok: false, why: "the trade offer can't have an empty side" };
+  }
+
+  const userReqs = tradeRequirements({ gs, t: user }, get, give);
+  const otherReqs = tradeRequirements({ gs, t: other }, give, get);
+
+  if (!userReqs.ok) {
+    return { ok: false, why: `your team is ${userReqs.why}` };
+  }
+  if (!otherReqs.ok) {
+    return { ok: false, why: `${other.name} is ${otherReqs.why}` };
+  }
+  if (!acceptable({ gs, t: other }, give, get)) {
+    return { ok: false, why: `${other.name} refused your offer` };
+  }
+
+  return { ok: true, why: "" };
 }
 
 /**
@@ -229,8 +250,8 @@ export function tradeOfferIsStillValid(gs: GameState, t: TradeRecord): boolean {
     const t2Give = t.sides[1].plIds.map((id) => gs.players[id]);
 
     return (
-      tradeRequirements(t1, t2Give, t1Give) &&
-      tradeRequirements(t2, t1Give, t2Give)
+      tradeRequirements({ gs, t: t1 }, t2Give, t1Give).ok &&
+      tradeRequirements({ gs, t: t2 }, t1Give, t2Give).ok
     );
   }
 
