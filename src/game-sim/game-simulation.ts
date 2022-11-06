@@ -275,7 +275,7 @@ async function handleSimRound(gs: GameState, r: SimRound): PEventRst {
     return { stop: true, done: false };
   }
 
-  await updateFormations(gs, true); // TODO add auto option
+  await updateFormations(gs, !window.$appState.userSettings.autoFormation);
   simulateRound(gs, r.round);
   enqueueSimRoundEvent(gs, r.round + 1);
   return { stop: endSimOnEvent.simRound ?? false, done: true };
@@ -301,7 +301,7 @@ function handleSeasonEnd(gs: GameState): EventRst {
 async function handleSeasonStart(gs: GameState): PEventRst {
   prepareSeasonStart(gs);
   gs.flags.signLimit = false;
-  await setNewFormations(gs, true); // TODO add auto option
+  await setNewFormations(gs, !window.$appState.userSettings.autoFormation);
   return { stop: endSimOnEvent.seasonStart ?? false, done: true };
 }
 
@@ -822,6 +822,7 @@ function checkUserLineup(gs: GameState): boolean {
     !e ||
     e.type !== "simRound" ||
     e.date.getTime() - gs.date.getTime() > hour ||
+    window.$appState.userSettings.autoFormation ||
     Boolean(u.formation && !u.formation.lineup.some((s) => !s.plID));
 
   if (!gs.flags.canSimRound && gs.flags.whyIsSimDisabled !== "missingLineup") {

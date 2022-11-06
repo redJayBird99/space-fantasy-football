@@ -1,4 +1,5 @@
 // a series of utils for the user interaction with the games
+import { fetchUpdatedFormations } from "../game-sim/sim-worker-interface";
 import {
   acceptable,
   tradeRequirements,
@@ -19,6 +20,7 @@ import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
 import {
   MAX_TEAM_SIZE,
   removeLineupDepartures,
+  setFormation,
   subLineupDepartures,
   Team,
 } from "./team";
@@ -285,6 +287,13 @@ export function changeFormation(to: Formations): void {
     subLineupDepartures({ gs, t: user });
     window.$game.state = gs;
   }
+}
+
+/** call the fetchUpdatedFormations function to do a complete update of the user formation */
+export async function updateUserFormation(gs: GameState) {
+  const res = await fetchUpdatedFormations({ gs, teams: [gs.userTeam] });
+  setFormation(gs.teams[res[0].team], res[0].f);
+  window.$game.state = gs;
 }
 
 /** get all not yet played matches by the user team */

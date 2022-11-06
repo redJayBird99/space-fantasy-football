@@ -34,8 +34,10 @@ import {
 } from "../../character/team";
 import "./change-spot";
 import "../util/modal";
-import { changeFormation } from "../../character/user";
+import { changeFormation, updateUserFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { setAutoOptions } from "../../app-state/app-state";
+import { goLink } from "../util/go-link";
 
 export const PITCH_WIDTH = 66;
 export const PITCH_HEIGHT = 52; // half pitch
@@ -120,20 +122,33 @@ function teamMain(
 ): TemplateResult {
   const gs = window.$game.state!;
   const pls = GameState.getTeamPlayers(gs, t.name);
+
   // lazily filling empty spots (sometimes when not needed the formation is incomplete)
-  gs.userTeam !== t.name && fillLineupMissingSpot({ gs, t });
+  if (gs.userTeam !== t.name || window.$appState.userSettings.autoFormation) {
+    fillLineupMissingSpot({ gs, t });
+  }
+
   const starters = getFormation({ gs, t })?.lineup ?? [];
 
   return html`
     <section slot="in-main" class="team-main">
       <div>${pitch(starters)}</div>
-      <div class="controls">
-        <h2>TODO: controls ${t.name}</h2>
-        <p>formation: ${t.formation?.name}</p>
-        ${gs.userTeam === t.name ? formationSelector() : nothing}
+      <div class="cnt-controls">
+        <h3>formation: ${t.formation?.name}</h3>
+        ${gs.userTeam === t.name ? userControls() : nothing}
       </div>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
+  `;
+}
+
+/** control options to customize the formation */
+function userControls(): TemplateResult | void {
+  return html`
+    <menu class="controls">
+      <li>${autoUpdateFormation()}</li>
+      <li>${formationSelector()}</li>
+    </menu>
   `;
 }
 
@@ -180,7 +195,9 @@ function teamPlayerRow(
   openUpdateLineup?: (id: string) => void,
   st?: Starter
 ): TemplateResult {
+  const link = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
   const at = st?.sp.pos;
+
   return html`<tr class="plr ${st ? "starting" : ""}">
     <td class="plr-pos"><span>${p.position}</span></td>
     <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>
@@ -193,7 +210,7 @@ function teamPlayerRow(
         ${at}
       </button>
     </td>
-    <td class="plr-name">${p.name}</td>
+    <td class="plr-name">${goLink(link, p.name)}</td>
     ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
   </tr>`;
 }
@@ -308,6 +325,28 @@ function formationSelector(): TemplateResult {
       <select class="input-bg" @change=${onChange}>
         ${fms.map((f) => html`<option ?selected=${f === uFrm}>${f}</option>`)}
       </select>
+    </label>
+  `;
+}
+
+/** handle the automatization option for updating the user formation before a match usually */
+function autoUpdateFormation(): TemplateResult {
+  const onChange = (e: Event) => {
+    if ((e.target as HTMLInputElement).checked) {
+      updateUserFormation(window.$game.state!);
+    }
+
+    setAutoOptions({ autoFormation: (e.target as HTMLInputElement).checked });
+  };
+
+  return html`
+    <label>
+      auto update formation
+      <input
+        type="checkbox"
+        @change=${onChange}
+        ?checked=${window.$appState.userSettings.autoFormation}
+      />
     </label>
   `;
 }

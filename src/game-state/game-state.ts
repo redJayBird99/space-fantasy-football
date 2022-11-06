@@ -354,7 +354,10 @@ class GameStateHandle {
     this._state = gs;
     this.saveNewGSOnDB();
     // we need to set the formation because they don't get saved in a json file except for the user
-    setNewFormations(this._state, true).then(() => (this.state = this._state)); // set just to notify everyone
+    setNewFormations(
+      this._state,
+      !window.$appState.userSettings.autoFormation
+    ).then(() => (this.state = this._state)); // set just to notify everyone
   }
 
   /** try to save the current gameState as a new entry on the db, if a game name is provided */
@@ -386,9 +389,10 @@ class GameStateHandle {
         this.state = s;
         onLoad();
         // we don't know if the formations were saved except for the user, set to notify
-        setNewFormations(this.state, true).then(
-          () => (this.state = this._state)
-        );
+        setNewFormations(
+          this.state,
+          !window.$appState.userSettings.autoFormation
+        ).then(() => (this.state = this._state));
       },
       onErr
     );

@@ -1,3 +1,4 @@
+import "../mock/app-state.mock";
 import "../../src/game-sim/sim-worker-interface";
 import "../mock/broadcast-channel.mock";
 import * as _pl from "../../src/character/player";
