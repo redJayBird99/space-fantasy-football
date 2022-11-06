@@ -20,6 +20,13 @@ sff-offers {
 }
 
 .trade-ctrl {
+  margin-bottom: 3px;
+}
+
+.trade-ctrl > button {
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  vertical-align: bottom;
 }
 
 .team-name {
@@ -84,7 +91,7 @@ sff-offers {
 }
 
 .plr-entry {
-  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 7%, 0.15);
+  box-shadow: 0px 1px 3px 0px hsla(0deg, 0%, 5%, 0.25);
   display: flex;
   list-style-type: none;
   margin: 4px 0;
@@ -113,13 +120,13 @@ sff-offers {
 
 .cnt-checkbox {
   align-items: center;
-  background-color: var(--dk-primary-color, var(--lt-primary-color));
-  border-left: 2px dashed var(--dk-bg-color-500, var(--lt-bg-color-500));
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
+  border-left: 1px dashed var(--dk-bg-color-300, var(--lt-bg-color-200));
   border-radius: 0 3px 3px 0px;
   display: flex;
   flex-shrink: 0;
   justify-content: center;
-  width: 2rem;
+  width: 32px;
 }
 
 .cnt-checkbox--on {
@@ -145,7 +152,7 @@ input[type="checkbox"] {
 
 .plr-skills {
   background-color: var(--dk-bg-color-750, var(--lt-bg-color-300));
-  border-top: 1px dashed var(--dk-bg-color-500, var(--lt-bg-color-500));
+  border-top: 1px dashed var(--dk-bg-color-300, var(--lt-bg-color-200));
   display: flex;
   flex-wrap: wrap;
   font-size: 0.85rem;

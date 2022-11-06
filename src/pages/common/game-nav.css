@@ -55,7 +55,8 @@ li:hover > sff-go {
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
 }
 
-.inbox a {
+.inbox a,
+.offers a {
   position: relative;
 }
 

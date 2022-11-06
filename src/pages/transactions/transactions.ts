@@ -215,7 +215,7 @@ function signing(r: SigningRecord): TemplateResult {
 function renewals(rs: SigningRecord[]): TemplateResult {
   return html`
     <section class="signings">
-      <h2>🗃 Re-signings:</h2>
+      <h2>✍ Re-signings:</h2>
       ${collectByDate(rs).map((r) => signingsBlock(r))}
     </section>
   `;

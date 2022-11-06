@@ -84,7 +84,11 @@ new Router(root, "<div>404 page no found</div>")
     },
     {
       path: `${window.$PUBLIC_PATH}trade`,
-      page: "<sff-trade-page></sff-trade-page>",
+      page: "<sff-trade></sff-trade>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}trade-offers`,
+      page: "<sff-trade data-offers=''></sff-trade>",
     },
   ])
   .renderPage();

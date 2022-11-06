@@ -423,6 +423,7 @@ function handleDraft(gs: GameState): EventRst {
  * and remove traded players from the lineups */
 function handleTrade(gs: GameState): EventRst {
   const user = gs.teams[gs.userTeam];
+  const offers = gs.tradeOffers.length;
 
   if (gs.flags.openTradeWindow) {
     findTrades(gs).forEach((t) => {
@@ -439,7 +440,11 @@ function handleTrade(gs: GameState): EventRst {
     enqueueEventFor(gs, gs.date, "trade", { days: 1 });
   }
 
-  return { stop: endSimOnEvent.trade ?? false, done: true };
+  // TODO until auto trade option is added we just stop when an offer for the user team was made
+  return {
+    stop: offers !== gs.tradeOffers.length || (endSimOnEvent.trade ?? false),
+    done: true,
+  };
 }
 
 /** open the trade window and enqueue a trade event */

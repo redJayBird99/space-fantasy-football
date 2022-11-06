@@ -11,6 +11,8 @@ class GameNav extends HTMLSFFGameElement {
   }
 
   render(): void {
+    const gs = window.$game.state!;
+
     render(
       html`
         <style>
@@ -34,7 +36,15 @@ class GameNav extends HTMLSFFGameElement {
           </li>
           <li>${goLink(`${window.$PUBLIC_PATH}draft`, "🥇 draft")}</li>
           <li>${goLink(`${window.$PUBLIC_PATH}trade`, "⚖ trade")}</li>
-          ${window.$game.state?.flags.onGameEvent === "retiring"
+          ${gs.tradeOffers.length > 0
+            ? html`<li class="offers">
+                ${goLink(
+                  `${window.$PUBLIC_PATH}trade-offers`,
+                  html`📲 offers${offerBadge()}`
+                )}
+              </li>`
+            : nothing}
+          ${gs.flags.onGameEvent === "retiring"
             ? html`<li>
                 ${goLink(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
               </li>`
@@ -54,6 +64,12 @@ function mailBadge(): TemplateResult | typeof nothing {
   }
 
   return nothing;
+}
+
+function offerBadge(): TemplateResult {
+  return html`<span class="badge"
+    >${window.$game.state?.tradeOffers.length ?? 0}</span
+  >`;
 }
 
 if (!customElements.get("sff-game-nav")) {

@@ -32,26 +32,21 @@ type hdl = (e: Event) => unknown;
 type TradeSide = { get: Player[]; give: Player[]; team: Team };
 type TradeState = { user: Team } & TradeSide;
 
-/** render the root of the page for two modes trade and offers */
-class TradePage extends HTMLSFFGameElement {
-  private onOffer = false;
-
+/** it is the root element for both the trade page and the offer page,
+ * the rendering page is control by the boolean attribute data-offer */
+class TradeRoot extends HTMLSFFGameElement {
   connectedCallback() {
     if (this.isConnected) {
-      document.title = `${window.$game.state?.userTeam} club trade overview - Space Fantasy Football`;
+      if (this.hasAttribute("data-offers")) {
+        document.title = `${window.$game.state?.userTeam} club overview of the trade offers received - Space Fantasy Football`;
+      } else {
+        document.title = `${window.$game.state?.userTeam} club trade overview - Space Fantasy Football`;
+      }
       super.connectedCallback();
     }
   }
 
-  onBtnClick = (toOffer: boolean) => {
-    if (this.onOffer !== toOffer) {
-      this.onOffer = toOffer;
-      this.render();
-    }
-  };
-
   render(): void {
-    const open = window.$game.state?.flags.openTradeWindow;
     render(
       html`
         <style>
@@ -59,26 +54,9 @@ class TradePage extends HTMLSFFGameElement {
         </style>
         <sff-game-page>
           <div slot="in-main">
-            <div>
-              <button
-                class="btn-sml"
-                ?disabled=${!this.onOffer}
-                @click=${() => this.onBtnClick(false)}
-              >
-                trade
-              </button>
-              <button
-                class="btn-sml"
-                ?disabled=${this.onOffer}
-                @click=${() => this.onBtnClick(true)}
-              >
-                check offers
-              </button>
-              <span> The trade window is ${open ? "open" : "closed ⚠️"} </span>
-            </div>
-            ${this.onOffer
-              ? html`<sff-Offers></sff-Offers>`
-              : html`<sff-trade></sff-trade>`}
+            ${this.hasAttribute("data-offers")
+              ? html`<sff-trade-offers-page></sff-trade-offers-page>`
+              : html`<sff-trade-page></sff-trade-page>`}
           </div>
         </sff-game-page>
       `,
@@ -104,8 +82,14 @@ abstract class PageContent extends HTMLSFFGameElement {
   };
 }
 
+function windowStatus() {
+  return window.$game.state?.flags.openTradeWindow
+    ? nothing
+    : " ⚠ The trade window is closed";
+}
+
 /** render the user trade maker */
-class Trade extends PageContent {
+class TradePage extends PageContent {
   /** from the user prospective, this is a Controlled Components (as react call it), get and give are ids */
   private offer: { get: string[]; give: string[]; team?: string } = {
     get: [],
@@ -197,6 +181,7 @@ class Trade extends PageContent {
           >
             Make offer
           </button>
+          ${windowStatus()}
         </div>
         <section class="cnt-traders">
           ${tradingTeam({ team: user, get, give })}
@@ -212,11 +197,14 @@ class Trade extends PageContent {
 }
 
 /** render the received trade offer fot the user team */
-class Offers extends PageContent {
+class OffersPage extends PageContent {
   private offer?: TradeRecord = window.$game.state!.tradeOffers[0] ?? undefined;
 
   gameStateUpdated() {
-    if (!window.$game.state!.tradeOffers.some((o) => isEqual(o, this.offer))) {
+    if (
+      this.offer &&
+      !window.$game.state!.tradeOffers.some((o) => isEqual(o, this.offer))
+    ) {
       this.offer = undefined;
     }
     super.gameStateUpdated();
@@ -248,7 +236,7 @@ class Offers extends PageContent {
       this.offerResult = { ok: true, why: "" };
       makeTrade(other, get, give);
     } else {
-      this.offerResult = { ok: false, why: "the user refused the offer" };
+      this.offerResult = { ok: false, why: "the user rejected the offer" };
       window.$game.state = gs; // mutation notification
     }
   };
@@ -285,6 +273,7 @@ class Offers extends PageContent {
           >
             reject
           </button>
+          ${windowStatus()}
         </div>
         ${dis ? nothing : this.renderOffer()}
       `,
@@ -350,15 +339,20 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
   const by = (t: TradeRecord) =>
     t.sides[0].team === gs.userTeam ? t.sides[1].team : t.sides[0].team;
 
+  // we use keyed (line doesn't work with selected) because firefox doesn't
+  // update the selected element after the offer was processed
   return html`
     <label>
-      select a received offer
+      select an offer
       <select
         class="input-bg"
         @change="${dis ? nothing : onSelect}"
         ?disabled=${dis}
       >
-        <option ?selected=${!cur} value="">Select offer</option>
+        ${keyed(
+          !cur,
+          html`<option ?selected=${!cur} value="">Select offer</option>`
+        )}
         ${offers.map(
           (o, i) =>
             html`<option ?selected=${cur === o} value=${i}>by ${by(o)}</option>`
@@ -564,8 +558,8 @@ function playerSkill(key: string, val: string, rating: number): TemplateResult {
   </div>`;
 }
 
-if (!customElements.get("sff-trade-page")) {
+if (!customElements.get("sff-trade")) {
+  customElements.define("sff-trade", TradeRoot);
   customElements.define("sff-trade-page", TradePage);
-  customElements.define("sff-trade", Trade);
-  customElements.define("sff-offers", Offers);
+  customElements.define("sff-trade-offers-page", OffersPage);
 }
