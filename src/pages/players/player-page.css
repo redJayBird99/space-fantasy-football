@@ -10,6 +10,13 @@ sff-player {
   grid-template-areas: "img high" "img info" "btn btn";
   grid-template-columns: repeat(2, minmax(0rem, max-content));
   gap: 0 1rem;
+  position: relative;
+}
+
+.info-link {
+  position: absolute;
+  right: 4px;
+  top: 4px;
 }
 
 @media screen and (max-width: 25rem) {

@@ -15,6 +15,16 @@ sff-team-finances {
   min-width: 0;
 }
 
+.cnt-fin {
+  position: relative;
+}
+
+.info-link {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+}
+
 .cnt-fin > *,
 .fin-liquidity > p,
 .fin-expenses > p,

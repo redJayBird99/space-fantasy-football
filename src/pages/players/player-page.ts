@@ -59,6 +59,13 @@ function getSearchParamPlayer(): Player | undefined {
 function playerCtn(p: Player): TemplateResult {
   return html`
     <section class="plr-info">
+      <sff-go href="${window.$PUBLIC_PATH}game-manual#players" class="info-link"
+        ><a
+          aria-label="manual about finances"
+          href="${window.$PUBLIC_PATH}game-manual#players"
+          >🛈</a
+        ></sff-go
+      >
       <div class="cnt-plr-img">
         <h3 class="plr-info__name">${p?.name}</h3>
         <img class="plr-img" src=${pImg} alt="a football player" />

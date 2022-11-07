@@ -134,6 +134,15 @@ function teamMain(
     <section slot="in-main" class="team-main">
       <div>${pitch(starters)}</div>
       <div class="cnt-controls">
+        <sff-go
+          href="${window.$PUBLIC_PATH}game-manual#players"
+          class="info-link"
+          ><a
+            aria-label="manual about finances"
+            href="${window.$PUBLIC_PATH}game-manual#players"
+            >🛈</a
+          ></sff-go
+        >
         <h3>formation: ${t.formation?.name}</h3>
         ${gs.userTeam === t.name ? userControls() : nothing}
       </div>

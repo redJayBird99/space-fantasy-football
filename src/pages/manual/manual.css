@@ -1,0 +1,15 @@
+.cnt-about > h3 {
+  border-bottom: 1px solid var(--dk-bg-color-300, var(--lt-bg-color-300));
+}
+
+.cnt-about > div {
+  margin-left: 1rem;
+}
+
+a {
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+}
+
+.cnt-sub {
+  overflow: hidden;
+}

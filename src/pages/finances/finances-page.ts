@@ -77,6 +77,13 @@ function teamFinances(t: Team): TemplateResult {
 
   return html`
     <div class="cnt-fin">
+      <sff-go href="${window.$PUBLIC_PATH}game-manual#team" class="info-link"
+        ><a
+          aria-label="manual about finances"
+          href="${window.$PUBLIC_PATH}game-manual#team"
+          >🛈</a
+        ></sff-go
+      >
       <h2>💰 team finances:</h2>
       <div class="fin-liquidity">
         <h3>team liquidity:</h3>

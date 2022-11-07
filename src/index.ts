@@ -14,6 +14,7 @@ import "./pages/transactions/transactions.ts";
 import "./pages/draft/draft.ts";
 import "./pages/players/retiring.ts";
 import "./pages/trade/trade-page.ts";
+import "./pages/manual/manual-in-game.ts";
 import style from "./index.css";
 
 declare global {
@@ -89,6 +90,10 @@ new Router(root, "<div>404 page no found</div>")
     {
       path: `${window.$PUBLIC_PATH}trade-offers`,
       page: "<sff-trade data-offers=''></sff-trade>",
+    },
+    {
+      path: `${window.$PUBLIC_PATH}game-manual`,
+      page: "<sff-game-manual></sff-game-manual>",
     },
   ])
   .renderPage();

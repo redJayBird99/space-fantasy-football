@@ -49,6 +49,7 @@ class GameNav extends HTMLSFFGameElement {
                 ${goLink(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
               </li>`
             : nothing}
+          <li>${goLink(`${window.$PUBLIC_PATH}game-manual`, "📘 manual")}</li>
         </ul>
       `,
       this.shadowRoot!
