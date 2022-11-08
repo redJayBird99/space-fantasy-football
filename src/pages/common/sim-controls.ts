@@ -378,8 +378,10 @@ function sortSimDurationOps(ops: durOps): durOps {
   return sortOps.map((o) => o.op);
 }
 
-if (!customElements.get("sim-controls")) {
-  customElements.define("sim-controls", SimControls);
-  customElements.define("play-sim", PlaySim);
-  customElements.define("btn-sim-options", BtnSimOptions);
+export default function define() {
+  if (!customElements.get("sim-controls")) {
+    customElements.define("sim-controls", SimControls);
+    customElements.define("play-sim", PlaySim);
+    customElements.define("btn-sim-options", BtnSimOptions);
+  }
 }

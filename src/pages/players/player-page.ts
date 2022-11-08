@@ -7,7 +7,6 @@ import {
   MAX_SKILL,
   Skill,
 } from "../../character/player";
-import "./player-history.ts";
 import {
   canSignPlayer,
   estimateImprovabilityRating,
@@ -21,6 +20,8 @@ import pImg from "../../asset/player.svg";
 import { Team } from "../../character/team";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import definePlayerHistory from "./player-history";
+definePlayerHistory();
 
 class PlayerPage extends HTMLSFFGameElement {
   connectedCallback() {
@@ -200,6 +201,8 @@ export function skillData(score: number): { color: string; score: string } {
   };
 }
 
-if (!customElements.get("sff-player")) {
-  customElements.define("sff-player", PlayerPage);
+export default function define() {
+  if (!customElements.get("sff-player")) {
+    customElements.define("sff-player", PlayerPage);
+  }
 }

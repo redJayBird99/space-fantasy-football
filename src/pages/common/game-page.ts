@@ -1,9 +1,11 @@
 import { html, render } from "lit-html";
-import "../util/layout.ts";
-import "./menu-bar.ts";
-import "./game-header.ts";
-import "./game-nav.ts";
 import style from "./game-page.css";
+import defineMenuBar from "./menu-bar";
+import defineGameHeader from "./game-header";
+import defineGameNav from "./game-nav";
+defineMenuBar();
+defineGameHeader();
+defineGameNav();
 
 /** the reusable page when in game with a in-main slot */
 class GamePage extends HTMLElement {
@@ -39,6 +41,8 @@ class GamePage extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-game-page")) {
-  customElements.define("sff-game-page", GamePage);
+export default function define() {
+  if (!customElements.get("sff-game-page")) {
+    customElements.define("sff-game-page", GamePage);
+  }
 }

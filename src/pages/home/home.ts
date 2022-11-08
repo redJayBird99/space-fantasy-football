@@ -1,9 +1,7 @@
-import { html, render, TemplateResult } from "lit-html";
+import { html, nothing, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
 import { getSavesNames, SAVES_PREFIX } from "../../game-state/game-db";
 import { GameState } from "../../game-state/game-state";
-import "../util/layout.ts";
-import "../util/modal.ts";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
 
@@ -26,10 +24,8 @@ class Home extends HTMLElement {
           ${style}
         </style>
         <sff-layout>
-          <div slot="in-header"><h1>TODO: header</h1></div>
-          <div slot="in-nav"><h2>TODO: nav bar</h2></div>
+          <div slot="in-header"><h1>Space Fantasy Football</h1></div>
           <home-main slot="in-main"></home-main>
-          <div slot="in-aside"><h2>TODO: aside</h2></div>
           <div slot="in-footer"><h2>TODO: footer</h2></div>
         </sff-layout>
       `,
@@ -38,10 +34,10 @@ class Home extends HTMLElement {
   }
 }
 
+type MainState = "newGame" | "loadFile" | "loadGame" | "";
+
 class Main extends HTMLElement {
-  private openNewGame = false;
-  private openLoadFile = false;
-  private openLoadGame = false;
+  private state: MainState = "";
 
   connectedCallback() {
     if (this.isConnected) {
@@ -54,61 +50,44 @@ class Main extends HTMLElement {
     this.removeEventListener("closeModal", this.handleCloseModal);
   }
 
-  closeAll(): void {
-    this.openNewGame = false;
-    this.openLoadFile = false;
-    this.openLoadGame = false;
-  }
-
-  private updateState = (update?: () => unknown): void => {
-    this.closeAll();
-    update?.();
-    this.render();
+  private stateUpdater = (to: MainState): (() => void) => {
+    return () => {
+      this.state = to;
+      this.render();
+    };
   };
 
-  private handleCloseModal = () => {
-    this.updateState();
-  };
+  private handleCloseModal = this.stateUpdater("");
 
-  private handleOpenNewGame = (): void => {
-    this.updateState(() => (this.openNewGame = true));
-  };
+  renderState(): TemplateResult | typeof nothing {
+    if (this.state === "loadFile") {
+      return html`<sff-modal><home-file-picker></home-file-picker></sff-modal>`;
+    }
+    if (this.state === "loadGame") {
+      return html`<sff-modal><home-load-game></home-load-game></sff-modal>`;
+    }
+    if (this.state === "newGame") {
+      return html`<sff-modal><home-new-game></home-new-game></sff-modal>`;
+    }
 
-  private handleOpenFile = (): void => {
-    this.updateState(() => (this.openLoadFile = true));
-  };
-
-  private handleLoadGame = (): void => {
-    this.updateState(() => (this.openLoadGame = true));
-  };
-
-  private renderNewGame(): TemplateResult {
-    return html`
-      <sff-modal>
-        <home-new-game></home-new-game>
-      </sff-modal>
-    `;
-  }
-
-  private renderFilePicker(): TemplateResult {
-    return html`<sff-modal><home-file-picker></home-file-picker></sff-modal>`;
-  }
-
-  private renderLoadGame(): TemplateResult {
-    return html`<sff-modal><home-load-game></home-load-game></sff-modal>`;
+    return nothing;
   }
 
   render(): void {
     render(
       html`
         <div>
-          <button class="btn" @click=${this.handleOpenNewGame}>new game</button>
-          <button class="btn" @click=${this.handleOpenFile}>load file</button>
-          <button class="btn" @click=${this.handleLoadGame}>load game</button>
+          <button class="btn" @click=${this.stateUpdater("newGame")}>
+            new game
+          </button>
+          <button class="btn" @click=${this.stateUpdater("loadFile")}>
+            load file
+          </button>
+          <button class="btn" @click=${this.stateUpdater("loadGame")}>
+            load game
+          </button>
         </div>
-        ${this.openNewGame ? this.renderNewGame() : ""}
-        ${this.openLoadFile ? this.renderFilePicker() : ""}
-        ${this.openLoadGame ? this.renderLoadGame() : ""}
+        ${this.renderState()}
       `,
       this
     );
@@ -293,10 +272,12 @@ class LoadGame extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-home")) {
-  customElements.define("sff-home", Home);
-  customElements.define("home-main", Main);
-  customElements.define("home-new-game", NewGame);
-  customElements.define("home-file-picker", FilePicker);
-  customElements.define("home-load-game", LoadGame);
+export default function define() {
+  if (!customElements.get("sff-home")) {
+    customElements.define("sff-home", Home);
+    customElements.define("home-main", Main);
+    customElements.define("home-new-game", NewGame);
+    customElements.define("home-file-picker", FilePicker);
+    customElements.define("home-load-game", LoadGame);
+  }
 }

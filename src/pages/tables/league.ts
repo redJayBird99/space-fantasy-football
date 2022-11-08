@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import style from "./league.css";
-import "./league-table.ts";
-import "./league-fixtures.ts";
+import defineLeagueFixtures from "./league-fixtures";
+defineLeagueFixtures();
 
 class LeaguePage extends HTMLElement {
   private mql = window.matchMedia("screen and (max-width: 52rem)");
@@ -41,6 +41,8 @@ class LeaguePage extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-league")) {
-  customElements.define("sff-league", LeaguePage);
+export default function define() {
+  if (!customElements.get("sff-league")) {
+    customElements.define("sff-league", LeaguePage);
+  }
 }

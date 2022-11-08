@@ -42,6 +42,8 @@ function fixture(m: Match, user: string): TemplateResult {
   `;
 }
 
-if (!customElements.get("sff-fixtures")) {
-  customElements.define("sff-fixtures", Fixtures);
+export default function define() {
+  if (!customElements.get("sff-fixtures")) {
+    customElements.define("sff-fixtures", Fixtures);
+  }
 }

@@ -10,11 +10,11 @@ import {
 } from "../../character/team";
 import { sortByFinances, sortTeamsBy } from "../../character/util";
 import { GameState } from "../../game-state/game-state";
-import "./re-sign.ts";
-import "../common/game-page";
+import defineReSign from "./re-sign";
 import style from "./finances-page.css";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+defineReSign();
 
 type TeamInfo = { v: string; rank: number };
 type Teams = { all: Team[]; t: Team };
@@ -278,6 +278,8 @@ function maxSalaryCapSpaceCell(wages: number): TemplateResult {
   `;
 }
 
-if (!customElements.get("sff-team-finances")) {
-  customElements.define("sff-team-finances", TeamFinances);
+export default function define() {
+  if (!customElements.get("sff-team-finances")) {
+    customElements.define("sff-team-finances", TeamFinances);
+  }
 }

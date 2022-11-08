@@ -111,6 +111,8 @@ function playersSkillScore(score: number): TemplateResult {
   </td>`;
 }
 
-if (!customElements.get("re-sign")) {
-  customElements.define("re-sign", ReSign);
+export default function define() {
+  if (!customElements.get("re-sign")) {
+    customElements.define("re-sign", ReSign);
+  }
 }

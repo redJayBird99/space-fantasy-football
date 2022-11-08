@@ -73,6 +73,8 @@ function offerBadge(): TemplateResult {
   >`;
 }
 
-if (!customElements.get("sff-game-nav")) {
-  customElements.define("sff-game-nav", GameNav);
+export default function define() {
+  if (!customElements.get("sff-game-nav")) {
+    customElements.define("sff-game-nav", GameNav);
+  }
 }

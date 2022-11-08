@@ -1,6 +1,5 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
 import style from "./draft.css";
-import "../common/game-page.ts";
 import {
   DraftPickRecord,
   DraftRecord,
@@ -200,6 +199,8 @@ function lottery(order: string[]): TemplateResult {
   `;
 }
 
-if (!customElements.get("sff-draft")) {
-  customElements.define("sff-draft", Draft);
+export default function define() {
+  if (!customElements.get("sff-draft")) {
+    customElements.define("sff-draft", Draft);
+  }
 }

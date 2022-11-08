@@ -4,11 +4,10 @@ import { Match, playing } from "../../game-sim/tournament-scheduler";
 import { processResult } from "../../game-state/league-table";
 import { daysBetween } from "../../util/math";
 import { HTMLSFFGameElement } from "../common/html-game-element";
-import "../tables/league-table.ts";
-import "../inbox/inbox.ts";
 import style from "./dashboard.css";
 import pImg from "../../asset/planet1.svg";
-import "./fixtures";
+import defineFixtures from "./fixtures";
+defineFixtures();
 
 class Dashboard extends HTMLSFFGameElement {
   connectedCallback() {
@@ -70,7 +69,13 @@ class NextMatch extends HTMLSFFGameElement {
       <div class="team">
         <div>
           <h3>${team}</h3>
-          <img class="team-logo" src=${pImg} alt="a red planet" />
+          <img
+            width="150"
+            height="150"
+            class="team-logo"
+            src=${pImg}
+            alt="a red planet"
+          />
         </div>
         <div class="history-boxes" aria-label="previous games results">
           ${Array.from({ length: 5 }, (_, i) =>
@@ -128,7 +133,9 @@ class NextMatch extends HTMLSFFGameElement {
   }
 }
 
-if (!customElements.get("sff-dashboard")) {
-  customElements.define("sff-dashboard", Dashboard);
-  customElements.define("dashboard-next-match", NextMatch);
+export default function define() {
+  if (!customElements.get("sff-dashboard")) {
+    customElements.define("sff-dashboard", Dashboard);
+    customElements.define("dashboard-next-match", NextMatch);
+  }
 }

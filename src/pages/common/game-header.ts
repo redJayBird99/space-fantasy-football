@@ -1,7 +1,8 @@
 import { html, render } from "lit-html";
-import "../common/sim-controls";
 import style from "./game-header.css";
 import teams from "../../asset/teams.json";
+import defineSimControls from "./sim-controls";
+defineSimControls();
 
 /** the header of the pages when in game */
 class GameHeader extends HTMLElement {
@@ -52,6 +53,8 @@ function userTeamColor() {
   `;
 }
 
-if (!customElements.get("sff-game-header")) {
-  customElements.define("sff-game-header", GameHeader);
+export default function define() {
+  if (!customElements.get("sff-game-header")) {
+    customElements.define("sff-game-header", GameHeader);
+  }
 }

@@ -14,7 +14,6 @@ import {
   MACRO_SKILLS,
   Player,
 } from "../../character/player";
-import "../common/game-page.ts";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
 import { sortByPosition } from "../../character/util";
@@ -32,12 +31,12 @@ import {
   getFormation,
   Team,
 } from "../../character/team";
-import "./change-spot";
-import "../util/modal";
+import defineChangeSpot from "./change-spot";
 import { changeFormation, updateUserFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
+defineChangeSpot();
 
 export const PITCH_WIDTH = 66;
 export const PITCH_HEIGHT = 52; // half pitch
@@ -360,6 +359,8 @@ function autoUpdateFormation(): TemplateResult {
   `;
 }
 
-if (!customElements.get("sff-team")) {
-  customElements.define("sff-team", TeamPage);
+export default function define() {
+  if (!customElements.get("sff-team")) {
+    customElements.define("sff-team", TeamPage);
+  }
 }

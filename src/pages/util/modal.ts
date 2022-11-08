@@ -65,6 +65,8 @@ class Modal extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-modal")) {
-  customElements.define("sff-modal", Modal);
+export default function define(): void {
+  if (!customElements.get("sff-modal")) {
+    customElements.define("sff-modal", Modal);
+  }
 }

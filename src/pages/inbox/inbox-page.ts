@@ -1,7 +1,5 @@
 import { render, html } from "lit-html";
 import style from "./inbox-page.css";
-import "./inbox.ts";
-import "../common/game-page.ts";
 
 class InboxPage extends HTMLElement {
   connectedCallback() {
@@ -28,6 +26,8 @@ class InboxPage extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-inbox-page")) {
-  customElements.define("sff-inbox-page", InboxPage);
+export default function define() {
+  if (!customElements.get("sff-inbox-page")) {
+    customElements.define("sff-inbox-page", InboxPage);
+  }
 }

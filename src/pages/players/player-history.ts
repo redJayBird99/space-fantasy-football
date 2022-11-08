@@ -106,6 +106,8 @@ function getTransactionsOrder(r: TransRecord): Ts[] {
   return rst.sort((t0, t1) => t0.when - t1.when);
 }
 
-if (!customElements.get("player-history")) {
-  customElements.define("player-history", PlayerHistory);
+export default function define() {
+  if (!customElements.get("player-history")) {
+    customElements.define("player-history", PlayerHistory);
+  }
 }

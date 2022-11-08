@@ -118,7 +118,7 @@ class SaveGameJson extends HTMLElement {
   }
 
   gameStateUpdated(): void {
-    // when the gamestate update we need a new json referece for the new state
+    // when the gameState update we need a new json reference for the new state
     URL.revokeObjectURL(this.json ?? "");
     this.json = window.$game.getStateAsJsonUrl();
     this.render();
@@ -176,10 +176,12 @@ class SaveOnDB extends HTMLElement {
   }
 }
 
-if (!customElements.get("menu-bar")) {
-  customElements.define("menu-bar", MenuBar);
-  customElements.define("autosave-led", AutosaveLed);
-  customElements.define("menu-save-file", SaveGameJson);
-  customElements.define("menu-save", SaveOnDB);
-  customElements.define("saved-signal", SavedSignal);
+export default function define() {
+  if (!customElements.get("menu-bar")) {
+    customElements.define("menu-bar", MenuBar);
+    customElements.define("autosave-led", AutosaveLed);
+    customElements.define("menu-save-file", SaveGameJson);
+    customElements.define("menu-save", SaveOnDB);
+    customElements.define("saved-signal", SavedSignal);
+  }
 }

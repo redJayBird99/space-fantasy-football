@@ -1,7 +1,6 @@
 import { render, html, TemplateResult } from "lit-html";
 import { groupBy } from "lodash-es";
 import style from "./transactions.css";
-import "../common/game-page.ts";
 import {
   SigningRecord,
   TradeRecord,
@@ -225,6 +224,8 @@ function teamLink(name: string): TemplateResult {
   return goLink(`${window.$PUBLIC_PATH}team?team=${name}`, name);
 }
 
-if (!customElements.get("sff-transactions")) {
-  customElements.define("sff-transactions", Transactions);
+export default function define() {
+  if (!customElements.get("sff-transactions")) {
+    customElements.define("sff-transactions", Transactions);
+  }
 }

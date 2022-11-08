@@ -16,13 +16,10 @@ import {
   makeTrade,
 } from "../../character/user";
 import { GameState, TradeRecord } from "../../game-state/game-state";
-import "../common/game-page.ts";
-import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
 import { keyed } from "lit-html/directives/keyed.js";
-import "../util/modal.ts";
 import { trade } from "../transactions/transactions";
 import { isEqual } from "lodash-es";
 import { tradeRequirements } from "../../game-sim/trade";
@@ -558,8 +555,10 @@ function playerSkill(key: string, val: string, rating: number): TemplateResult {
   </div>`;
 }
 
-if (!customElements.get("sff-trade")) {
-  customElements.define("sff-trade", TradeRoot);
-  customElements.define("sff-trade-page", TradePage);
-  customElements.define("sff-trade-offers-page", OffersPage);
+export default function define() {
+  if (!customElements.get("sff-trade")) {
+    customElements.define("sff-trade", TradeRoot);
+    customElements.define("sff-trade-page", TradePage);
+    customElements.define("sff-trade-offers-page", OffersPage);
+  }
 }

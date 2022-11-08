@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "football",
   "private": true,
+  "sideEffects": false,
   "scripts": {
     "test": "jest",
     "dev": "webpack --config webpack.dev.js",

@@ -113,6 +113,8 @@ function spotSelector(
   return html`<div class="pitch"></div>`;
 }
 
-if (!customElements.get("change-spot")) {
-  customElements.define("change-spot", ChangeSpot);
+export default function define() {
+  if (!customElements.get("change-spot")) {
+    customElements.define("change-spot", ChangeSpot);
+  }
 }

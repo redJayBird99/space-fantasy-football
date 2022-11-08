@@ -2,20 +2,9 @@ import appState from "./app-state/app-state";
 import script from "./util/script";
 import { GameStateHandle } from "./game-state/game-state";
 import { Router } from "./pages/util/router";
-import "./pages/home/home.ts";
-import "./pages/dashboard/dashboard.ts";
-import "./pages/players/players-page.ts";
-import "./pages/players/player-page.ts";
-import "./pages/tables/league.ts";
-import "./pages/inbox/inbox-page.ts";
-import "./pages/team/team-page.ts";
-import "./pages/finances/finances-page.ts";
-import "./pages/transactions/transactions.ts";
-import "./pages/draft/draft.ts";
-import "./pages/players/retiring.ts";
-import "./pages/trade/trade-page.ts";
-import "./pages/manual/manual-in-game.ts";
+import defineComponents from "./pages/define-components";
 import style from "./index.css";
+defineComponents();
 
 declare global {
   // eslint-disable-next-line no-unused-vars
@@ -30,7 +19,7 @@ declare global {
 
 window.$appState = appState;
 window.$game = new GameStateHandle();
-window.$PUBLIC_PATH = "/github/";
+window.$PUBLIC_PATH = "/space-fantasy-football/";
 window.$script = script;
 
 document.documentElement.classList.add("dark");

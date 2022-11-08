@@ -1,5 +1,6 @@
-# space fantasy football
-This is a football (soccer) management game running entirely on the browser, but with some different rules taken from the NBA system, like:
+# Space Fantasy Football
+
+[Space fantasy football](https://redandblu.github.io/space-fantasy-football/) is a football (soccer) management game running entirely on the browser, but with some different rules taken from the NBA system, like:
 * roughly the NBA contractual system, so yes, you can't buy players
 * the draft system with some differences
 of course being this a fantasy game, all players are randomly generated for each new game.

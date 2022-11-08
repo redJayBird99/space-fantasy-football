@@ -66,6 +66,8 @@ class Layout extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-layout")) {
-  customElements.define("sff-layout", Layout);
+export default function define(): void {
+  if (!customElements.get("sff-layout")) {
+    customElements.define("sff-layout", Layout);
+  }
 }

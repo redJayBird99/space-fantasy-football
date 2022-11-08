@@ -1,8 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
 import { Player } from "../../character/player";
 import style from "./retiring.css";
-import "../common/game-page.ts";
-import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { randomGauss } from "../../util/generator";
@@ -35,10 +33,6 @@ class RetiringPlayers extends HTMLSFFGameElement {
   }
 }
 
-if (!customElements.get("retiring-players")) {
-  customElements.define("retiring-players", RetiringPlayers);
-}
-
 function players(): TemplateResult {
   const gs = window.$game.state!;
 
@@ -68,4 +62,10 @@ function player(plId: string): TemplateResult {
       </div>
     </article>
   `;
+}
+
+export default function define() {
+  if (!customElements.get("retiring-players")) {
+    customElements.define("retiring-players", RetiringPlayers);
+  }
 }

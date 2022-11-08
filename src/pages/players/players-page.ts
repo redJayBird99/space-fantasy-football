@@ -8,8 +8,6 @@ import {
   Skill,
   SKILLS,
 } from "../../character/player";
-import "../common/game-page.ts";
-import "../util/router.ts";
 import { goLink } from "../util/go-link";
 import style from "./players-page.css";
 import {
@@ -457,11 +455,6 @@ class PlayersTable extends HTMLElement {
   }
 }
 
-if (!customElements.get("sff-players")) {
-  customElements.define("sff-players", PlayersPage);
-  customElements.define("players-table", PlayersTable);
-}
-
 /** render table rows with the given players as entries */
 function renderRows(players: Player[]) {
   const gs = window.$game.state!;
@@ -507,4 +500,11 @@ function rtgCell(symbol: string, rating: number): TemplateResult {
       <div class="rtg-cell" style=${s}><span>${symbol}</span></div>
     </td>
   `;
+}
+
+export default function define() {
+  if (!customElements.get("sff-players")) {
+    customElements.define("sff-players", PlayersPage);
+    customElements.define("players-table", PlayersTable);
+  }
 }

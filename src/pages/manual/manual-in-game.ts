@@ -1,6 +1,5 @@
 import { render, html } from "lit-html";
 import style from "./manual.css";
-import "../common/game-page.ts";
 import { manualContent } from "./manual";
 
 import { HTMLSFFGameElement } from "../common/html-game-element";
@@ -29,6 +28,8 @@ class ManualInGame extends HTMLSFFGameElement {
   }
 }
 
-if (!customElements.get("sff-game-manual")) {
-  customElements.define("sff-game-manual", ManualInGame);
+export default function define() {
+  if (!customElements.get("sff-game-manual")) {
+    customElements.define("sff-game-manual", ManualInGame);
+  }
 }

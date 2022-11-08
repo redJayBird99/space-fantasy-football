@@ -133,6 +133,8 @@ class LeagueTable extends HTMLElement {
   }
 }
 
-if (!customElements.get("league-table")) {
-  customElements.define("league-table", LeagueTable);
+export default function define() {
+  if (!customElements.get("league-table")) {
+    customElements.define("league-table", LeagueTable);
+  }
 }

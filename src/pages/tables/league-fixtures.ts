@@ -80,6 +80,8 @@ function match(m: Match): TemplateResult {
   `;
 }
 
-if (!customElements.get("league-fixtures")) {
-  customElements.define("league-fixtures", LeagueFixtures);
+export default function define() {
+  if (!customElements.get("league-fixtures")) {
+    customElements.define("league-fixtures", LeagueFixtures);
+  }
 }

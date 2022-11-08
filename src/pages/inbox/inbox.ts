@@ -1,6 +1,5 @@
 import style from "./inbox.css";
 import { html, nothing, render, TemplateResult } from "lit-html";
-import "../util/modal.ts";
 import { goTo } from "../util/router";
 import { Mail } from "../../character/mail";
 import { classMap } from "lit-html/directives/class-map.js";
@@ -123,6 +122,8 @@ function readMail(e: Mail): TemplateResult {
   `;
 }
 
-if (!customElements.get("sff-inbox")) {
-  customElements.define("sff-inbox", Inbox);
+export default function define() {
+  if (!customElements.get("sff-inbox")) {
+    customElements.define("sff-inbox", Inbox);
+  }
 }
