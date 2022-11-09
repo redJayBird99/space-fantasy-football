@@ -1,6 +1,6 @@
 import style from "./game-nav.css";
 import { render, html, nothing, TemplateResult } from "lit-html";
-import { goLink } from "../util/go-link";
+import { handleLinkClick } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";
 
 /** the in game nav bar */
@@ -12,6 +12,10 @@ class GameNav extends HTMLSFFGameElement {
 
   render(): void {
     const gs = window.$game.state!;
+    const link = (href: string, content: string | TemplateResult) =>
+      html`<a @click=${handleLinkClick} href=${href} class="rt-link"
+        ><span>${content}</span></a
+      >`;
 
     render(
       html`
@@ -19,26 +23,23 @@ class GameNav extends HTMLSFFGameElement {
           ${style}
         </style>
         <ul>
-          <li class="home">${goLink(`${window.$PUBLIC_PATH}`, "⌂ home")}</li>
+          <li class="home">${link(window.$PUBLIC_PATH, "⌂ home")}</li>
           <li class="inbox">
-            ${goLink(
-              `${window.$PUBLIC_PATH}inbox`,
-              html`📬 inbox${mailBadge()}`
-            )}
+            ${link(`${window.$PUBLIC_PATH}inbox`, html`📬 inbox${mailBadge()}`)}
           </li>
-          <li>${goLink(`${window.$PUBLIC_PATH}dashboard`, "🎮 dashboard")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}players`, "🏃 players")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}league`, "🏆 league")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}team`, "🏟 team")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}finances`, "🏦 finances")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}dashboard`, "🎮 dashboard")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}players`, "🏃 players")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}league`, "🏆 league")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}team`, "🏟 team")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}finances`, "🏦 finances")}</li>
           <li>
-            ${goLink(`${window.$PUBLIC_PATH}transactions`, "🧳 transactions")}
+            ${link(`${window.$PUBLIC_PATH}transactions`, "🧳 transactions")}
           </li>
-          <li>${goLink(`${window.$PUBLIC_PATH}draft`, "🥇 draft")}</li>
-          <li>${goLink(`${window.$PUBLIC_PATH}trade`, "⚖ trade")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}draft`, "🥇 draft")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}trade`, "⚖ trade")}</li>
           ${gs.tradeOffers.length > 0
             ? html`<li class="offers">
-                ${goLink(
+                ${link(
                   `${window.$PUBLIC_PATH}trade-offers`,
                   html`📲 offers${offerBadge()}`
                 )}
@@ -46,10 +47,10 @@ class GameNav extends HTMLSFFGameElement {
             : nothing}
           ${gs.flags.onGameEvent === "retiring"
             ? html`<li>
-                ${goLink(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
+                ${link(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
               </li>`
             : nothing}
-          <li>${goLink(`${window.$PUBLIC_PATH}game-manual`, "📘 manual")}</li>
+          <li>${link(`${window.$PUBLIC_PATH}game-manual`, "📘 manual")}</li>
         </ul>
       `,
       this.shadowRoot!

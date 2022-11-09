@@ -1,26 +1,116 @@
 @import "../util/button.css";
 @import "../util/form.css";
 
-:host,
+sff-home,
 home-main,
 home-team-picker,
 home-new-game {
   display: block;
 }
 
+:root,
+body {
+  height: 100%;
+}
+
+body {
+  background-image: linear-gradient(
+    180deg,
+    var(--dk-bg-color-600, var(--lt-bg-color)),
+    var(--dk-bg-color, var(--lt-bg-color))
+  );
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.bg-wave {
+  background: url("../../asset/wavesOpacity.svg");
+  background-size: 100% 200px;
+  background-repeat: no-repeat;
+  height: 200px;
+}
+
 home-team-picker {
   text-align: center;
 }
 
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
+.cnt-content {
+  text-align: center;
 }
 
-[slot="in-nav"],
-[slot="in-aside"] {
-  writing-mode: vertical-lr;
+.head {
+  font-style: italic;
+}
+
+.head > h1 {
+  font-size: 70px;
+  margin-bottom: 25px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.head > h1 > :first-child {
+  opacity: 0.4;
+}
+
+.head > h1 > :last-child {
+  bottom: 0;
+  left: 50%;
+  opacity: 1;
+  position: absolute;
+  transform: translate(-50%, 40%);
+}
+
+.hm-btn {
+  background-color: var(--dk-bg-color-750);
+  color: var(--dk-on-bg-color);
+  font-size: 24px;
+  height: 85px;
+  width: 160px;
+}
+
+.hm-btn:hover {
+  border: 1px solid var(--dk-primary-color-300);
+}
+
+.fork-gh {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+
+.fork-gh:hover a {
+  filter: brightness(1.4);
+}
+
+@media (max-width: 1200px) {
+  .bg-wave {
+    background-size: 100% max(15vw, 70px);
+    height: max(15vw, 70px);
+  }
+}
+
+@media (max-width: 520px) {
+  .bg-wave {
+    background-size: 600px 75px;
+  }
+
+  home-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .head > h1 {
+    font-size: calc(8px + 10vw);
+  }
+
+  .hm-btn {
+    width: 90%;
+    margin: auto;
+  }
 }
 
 .teams {

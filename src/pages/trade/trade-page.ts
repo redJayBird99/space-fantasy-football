@@ -21,7 +21,7 @@ import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
 import { keyed } from "lit-html/directives/keyed.js";
 import { trade } from "../transactions/transactions";
-import { isEqual } from "lodash-es";
+import isEqual from "lodash-es/isEqual";
 import { tradeRequirements } from "../../game-sim/trade";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 

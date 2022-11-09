@@ -4,13 +4,9 @@ import { getSavesNames, SAVES_PREFIX } from "../../game-state/game-db";
 import { GameState } from "../../game-state/game-state";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
+import ghLogo from "../../asset/github-mark.svg";
 
 class Home extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-  }
-
   connectedCallback() {
     if (this.isConnected) {
       this.render();
@@ -23,13 +19,25 @@ class Home extends HTMLElement {
         <style>
           ${style}
         </style>
-        <sff-layout>
-          <div slot="in-header"><h1>Space Fantasy Football</h1></div>
-          <home-main slot="in-main"></home-main>
-          <div slot="in-footer"><h2>TODO: footer</h2></div>
-        </sff-layout>
+        <div class="bg-wave"></div>
+        <div class="cnt-content">
+          <header class="head">
+            <h1><span>Space Fantasy</span> <span>Football</span></h1>
+            <p>An atypical football management game</p>
+          </header>
+          <home-main></home-main>
+          <p class="fork-gh">
+            <span>fork me on</span>
+            <a
+              target="_blank"
+              href="https://github.com/RedAndBlu/space-fantasy-football"
+            >
+              <img src=${ghLogo} alt="gitHub logo" width="20" height="20" />
+            </a>
+          </p>
+        </div>
       `,
-      this.shadowRoot!
+      this
     );
   }
 }
@@ -76,17 +84,15 @@ class Main extends HTMLElement {
   render(): void {
     render(
       html`
-        <div>
-          <button class="btn" @click=${this.stateUpdater("newGame")}>
-            new game
-          </button>
-          <button class="btn" @click=${this.stateUpdater("loadFile")}>
-            load file
-          </button>
-          <button class="btn" @click=${this.stateUpdater("loadGame")}>
-            load game
-          </button>
-        </div>
+        <button class="btn hm-btn" @click=${this.stateUpdater("newGame")}>
+          New Game
+        </button>
+        <button class="btn hm-btn" @click=${this.stateUpdater("loadFile")}>
+          Load File
+        </button>
+        <button class="btn hm-btn" @click=${this.stateUpdater("loadGame")}>
+          Load Game
+        </button>
         ${this.renderState()}
       `,
       this

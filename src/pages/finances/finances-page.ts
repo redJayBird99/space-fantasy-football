@@ -14,6 +14,7 @@ import defineReSign from "./re-sign";
 import style from "./finances-page.css";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { handleLinkClick } from "../util/router";
 defineReSign();
 
 type TeamInfo = { v: string; rank: number };
@@ -77,12 +78,12 @@ function teamFinances(t: Team): TemplateResult {
 
   return html`
     <div class="cnt-fin">
-      <sff-go href="${window.$PUBLIC_PATH}game-manual#team" class="info-link"
-        ><a
-          aria-label="manual about finances"
-          href="${window.$PUBLIC_PATH}game-manual#team"
-          >🛈</a
-        ></sff-go
+      <a
+        aria-label="manual about finances"
+        @click=${handleLinkClick}
+        href="${window.$PUBLIC_PATH}game-manual#players"
+        class="info-link"
+        >🛈</a
       >
       <h2>💰 team finances:</h2>
       <div class="fin-liquidity">

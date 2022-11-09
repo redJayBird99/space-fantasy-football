@@ -21,6 +21,7 @@ import { Team } from "../../character/team";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
+import { handleLinkClick } from "../util/router";
 definePlayerHistory();
 
 class PlayerPage extends HTMLSFFGameElement {
@@ -60,12 +61,12 @@ function getSearchParamPlayer(): Player | undefined {
 function playerCtn(p: Player): TemplateResult {
   return html`
     <section class="plr-info">
-      <sff-go href="${window.$PUBLIC_PATH}game-manual#players" class="info-link"
-        ><a
-          aria-label="manual about finances"
-          href="${window.$PUBLIC_PATH}game-manual#players"
-          >🛈</a
-        ></sff-go
+      <a
+        aria-label="manual about finances"
+        @click=${handleLinkClick}
+        href="${window.$PUBLIC_PATH}game-manual#players"
+        class="info-link"
+        >🛈</a
       >
       <div class="cnt-plr-img">
         <h3 class="plr-info__name">${p?.name}</h3>

@@ -36,6 +36,7 @@ import { changeFormation, updateUserFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
+import { handleLinkClick } from "../util/router";
 defineChangeSpot();
 
 export const PITCH_WIDTH = 66;
@@ -133,14 +134,12 @@ function teamMain(
     <section slot="in-main" class="team-main">
       <div>${pitch(starters)}</div>
       <div class="cnt-controls">
-        <sff-go
+        <a
+          aria-label="manual about finances"
+          @click=${handleLinkClick}
           href="${window.$PUBLIC_PATH}game-manual#players"
           class="info-link"
-          ><a
-            aria-label="manual about finances"
-            href="${window.$PUBLIC_PATH}game-manual#players"
-            >🛈</a
-          ></sff-go
+          >🛈</a
         >
         <h3>formation: ${t.formation?.name}</h3>
         ${gs.userTeam === t.name ? userControls() : nothing}

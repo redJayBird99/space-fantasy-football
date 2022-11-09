@@ -5,33 +5,15 @@ export function goTo(href: URL | string): void {
   history.back();
 }
 
-/**
- * add the url as a href attribute,
- * for accessibility add an <a> element as child (with the same href)
- */
-export class Go extends HTMLElement {
-  connectedCallback() {
-    if (this.isConnected) {
-      this.addEventListener("click", this.handleClick);
-    }
+/** handle the clicking of an anchor element with the client side router  */
+export function handleLinkClick(e: Event): void {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (e.target instanceof HTMLElement) {
+    const a = e.target.closest("a");
+    a?.hasAttribute("href") && goTo(a.getAttribute("href")!);
   }
-
-  disconnectedCallback() {
-    this.removeEventListener("click", this.handleClick);
-  }
-
-  handleClick = (e: Event) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (this.hasAttribute("href")) {
-      goTo(this.getAttribute("href")!);
-    }
-  };
-}
-
-if (!customElements.get("sff-go")) {
-  customElements.define("sff-go", Go);
 }
 
 export type Route = { path: string; page: string };

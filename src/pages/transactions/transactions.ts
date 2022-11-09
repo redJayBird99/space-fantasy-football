@@ -1,5 +1,5 @@
 import { render, html, TemplateResult } from "lit-html";
-import { groupBy } from "lodash-es";
+import groupBy from "lodash-es/groupBy";
 import style from "./transactions.css";
 import {
   SigningRecord,
