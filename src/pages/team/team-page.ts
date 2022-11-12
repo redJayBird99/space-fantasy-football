@@ -67,6 +67,11 @@ class TeamPage extends HTMLSFFGameElement {
     }
   }
 
+  disconnectedCallback() {
+    render(nothing, window.$modalRoot);
+    super.disconnectedCallback();
+  }
+
   closeUpdateLineup = () => {
     this.updateLineup = { open: false };
     this.render();

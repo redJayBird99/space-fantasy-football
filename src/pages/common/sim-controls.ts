@@ -11,26 +11,12 @@ import {
 } from "../../game-sim/game-simulation";
 import style from "./sim-controls.css";
 import { goTo } from "../util/router";
+import { HTMLSFFGameElement } from "./html-game-element";
 
-class SimControls extends HTMLElement {
+class SimControls extends HTMLSFFGameElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-  }
-
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
-  gameStateUpdated(): void {
-    this.render();
-  }
-
-  disconnectedCallback() {
-    window.$game.removeObserver(this);
   }
 
   render(): void {
@@ -90,25 +76,15 @@ function dateEventInfo(): string {
 }
 
 /** the play button to start the game simulation and customizable options */
-class PlaySim extends HTMLElement {
+class PlaySim extends HTMLSFFGameElement {
   private simCloser: ReturnType<typeof simulate> | undefined;
   private state = _ps.newState({} as { simGs?: Readonly<GameState> }, () =>
     this.render()
   );
 
-  connectedCallback() {
-    if (this.isConnected) {
-      window.$game.addObserver(this);
-      this.render();
-    }
-  }
-
   disconnectedCallback() {
-    window.$game.removeObserver(this);
-  }
-
-  gameStateUpdated(): void {
-    this.render();
+    this.handleCloseModal();
+    super.disconnectedCallback();
   }
 
   handleCloseModal = () => {
