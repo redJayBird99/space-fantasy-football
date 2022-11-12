@@ -222,7 +222,7 @@ function filters(): TemplateResult {
       </button>
       <dialog class="filters-dialog" ${ref(dialogRef)}>
         <button class="modal-close" @click=${closeControls} aria-label="close">
-          ✘
+          𐄂
         </button>
         ${filterControls()}
       </dialog>

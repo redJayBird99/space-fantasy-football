@@ -11,21 +11,46 @@
 dialog {
   background-color: var(
     --modal-bg-color,
-    var(--dk-bg-color, var(--lt-bg-color))
+    var(--dk-bg-color-725, var(--lt-bg-color))
   );
-  border: none;
+  border: 2px solid var(--dk-bg-color-700);
   border-radius: 5px;
-  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 8% / 30%);
+  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 40%);
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
-  padding: 1.5rem 1rem;
-  max-width: calc(100% - 1rem);
-  max-height: calc(100% - 1rem);
+  max-width: 100%;
+  max-height: 100%;
+  padding: 5px 1rem 1rem 1rem;
+  transition: opacity 0.4s;
 }
 
 dialog::backdrop {
-  background-color: var(--backdrop-color, #464646bf);
+  background-color: var(--backdrop-color, #0f0f0fcc);
+  transition: opacity 0.4s;
 }
 
-.close-btn:hover {
-  filter: brightness(1.2);
+.opening-dig,
+.opening-dig::backdrop {
+  opacity: 0;
+}
+
+.dig-head {
+  border-bottom: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
+  display: flex;
+  gap: 2rem;
+  min-height: 30px;
+  margin-bottom: 1rem;
+}
+
+.modal-close {
+  align-self: start;
+  margin-left: auto;
+}
+
+::slotted(:not([slot])) {
+  padding: 0 1rem;
+}
+
+::slotted([slot="title"]) {
+  margin: 0;
+  padding-left: 5px;
 }

@@ -6,10 +6,6 @@ sff-team {
   display: block;
 }
 
-.update-modal {
-  padding: 0;
-}
-
 .team-main {
   align-items: flex-start;
   display: flex;

@@ -80,13 +80,11 @@ class TeamPage extends HTMLSFFGameElement {
   /** show the ui to change a staring player */
   renderUpdateLineup(): TemplateResult {
     return html`
-      <sff-modal class="update-modal" .closeHandler=${this.closeUpdateLineup}>
-        <change-spot
-          data-pl-id=${this.updateLineup.plId!}
-          .onUpdateSpot=${this.closeUpdateLineup}
-        >
-        </change-spot>
-      </sff-modal>
+      <change-spot
+        data-pl-id=${this.updateLineup.plId!}
+        .onDone=${this.closeUpdateLineup}
+      >
+      </change-spot>
     `;
   }
 

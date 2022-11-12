@@ -176,6 +176,7 @@ class PlaySim extends HTMLElement {
   renderSim(): TemplateResult {
     return html`
       <sff-modal .closeHandler=${this.handleCloseModal}>
+        <h2 slot="title">Simulating</h2>
         ${visualSim(this.state.simGs)}
       </sff-modal>
     `;
@@ -225,7 +226,7 @@ class PlaySim extends HTMLElement {
         <button
           @click=${this.handlePlayClick}
           ?disabled=${dis}
-          class="btn btn--acc"
+          class="btn btn--acc play-btn"
           aria-label="play the simulation"
           aria-describedby=${dis ? "play-disabled-desc" : nothing}
         >

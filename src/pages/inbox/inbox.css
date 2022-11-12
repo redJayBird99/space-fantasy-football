@@ -91,19 +91,16 @@ li > span:nth-child(2) {
 }
 
 .mail-info {
-  border-bottom: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
+  align-items: baseline;
   display: flex;
+  flex-wrap: wrap;
+  gap: 1px 6px;
   justify-content: space-between;
-  margin: auto;
-  width: 98%;
+  width: 100%;
 }
 
-.mail-info > span:first-child {
-  margin-left: 1rem;
-}
-
-.mail-info > span:last-child {
-  margin-right: 1rem;
+.mail-info > :first-child {
+  margin: 0;
 }
 
 .btn--err {

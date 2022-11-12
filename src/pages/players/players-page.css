@@ -184,9 +184,10 @@ th:first-child > .btn-txt {
   box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 30%);
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   overflow: hidden;
-  padding: 1.2rem 1rem;
-  z-index: 2;
+  padding: 1rem;
+  padding-top: 28px;
   top: calc(var(--header-height) + 3.2rem);
+  z-index: 2;
 }
 
 .rst-filters {
@@ -221,4 +222,10 @@ th:first-child > .btn-txt {
 .arrow {
   background-color: var(--dk-primary-color-300, var(--lt-bg-color-200));
   padding: 0 0.5rem;
+}
+
+.modal-close {
+  position: absolute;
+  right: 8px;
+  top: 5px;
 }

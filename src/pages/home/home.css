@@ -81,7 +81,7 @@ home-team-picker {
   padding-bottom: 10px;
 }
 
-.fork-gh:hover a {
+.fork-gh > a:hover {
   filter: brightness(1.4);
 }
 
@@ -121,14 +121,13 @@ home-team-picker {
 }
 
 .saves {
-  margin: 0;
-  padding: 0;
-  width: clamp(20rem, 50vw, 40rem);
+  margin-bottom: 0;
+  min-width: clamp(21rem, 50vw, 40rem);
 }
 
 .saves > li {
   align-items: baseline;
-  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
+  background-color: var(--dk-bg-color-650, var(--lt-bg-color-200));
   border-radius: 2px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
   display: flex;
@@ -139,16 +138,38 @@ home-team-picker {
 }
 
 .saves > li > em {
-  display: inline-block;
   flex-grow: 1;
   font-weight: bold;
   overflow: hidden;
-  padding-left: 0.5rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .saves > li > button {
+  flex-shrink: 0;
+  width: clamp(4rem, 15%, 6rem);
+}
+
+[for="game-file"] {
+  color: var(--dk-on-primary-color);
+  cursor: pointer;
   display: inline-block;
-  width: clamp(4.2rem, 15%, 6rem);
+  width: 100%;
+}
+
+#game-file {
+  position: absolute;
+  top: -9999rem;
+  width: 1px;
+  height: 1px;
+}
+
+.cnt-new-game-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cnt-new-game-name > .input-bg {
+  background-color: var(--dk-bg-color-500);
 }

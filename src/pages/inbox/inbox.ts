@@ -96,12 +96,7 @@ class Inbox extends HTMLSFFGameElement {
         <ul>
           ${this.mailEntries()}
         </ul>
-        ${this.mail &&
-        html`
-          <sff-modal .closeHandler=${this.handleCloseMail}>
-            ${readMail(this.mail)}
-          </sff-modal>
-        `}
+        ${this.mail && readMail(this.mail, this.handleCloseMail)}
       `,
       this.shadowRoot!
     );
@@ -109,16 +104,18 @@ class Inbox extends HTMLSFFGameElement {
 }
 
 /** show the mail content */
-function readMail(e: Mail): TemplateResult {
+function readMail(e: Mail, onCloseMail: () => void): TemplateResult {
   return html`
-    <article class="open-mail">
-      <div class="mail-info">
-        <span>${e.sender}</span>
+    <sff-modal .closeHandler=${onCloseMail}>
+      <div slot="title" class="mail-info">
+        <h2>${e.sender}</h2>
         <span>${e.sendDate}</span>
       </div>
-      <p>${e.subject}</p>
-      <p>${e.content}</p>
-    </article>
+      <article class="open-mail">
+        <p>${e.subject}</p>
+        <p>${e.content}</p>
+      </article>
+    </sff-modal>
   `;
 }
 

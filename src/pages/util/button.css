@@ -11,7 +11,7 @@ button {
   border-radius: 2px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 20%);
   font-weight: bold;
-  padding: 0.7rem;
+  padding: 0.5rem;
   text-align: center;
 }
 
@@ -56,17 +56,16 @@ button {
     var(--dk-error-color, var(--lt-error-color))
   );
   border: none;
-  box-shadow: 0px 1px 3px 0px hsla(0deg 0% 8% / 10%);
+  border-radius: 50%;
+  box-shadow: 0px 1px 3px 0px hsla(0deg 0% 8% / 15%);
   cursor: pointer;
   color: var(
     --close-btn-color,
     var(--dk-on-error-color, var(--lt-on-error-color))
   );
+  font-size: 15px;
   font-weight: bold;
-  padding: 1px 5px;
-  position: absolute;
-  right: 0;
-  top: 0;
+  padding: 2px 8px;
 }
 
 .btn:disabled,

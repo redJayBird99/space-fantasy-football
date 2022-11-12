@@ -44,6 +44,7 @@ class Home extends HTMLElement {
 
 type MainState = "newGame" | "loadFile" | "loadGame" | "";
 
+/** handle the opening or loading game options */
 class Main extends HTMLElement {
   private state: MainState = "";
 
@@ -69,13 +70,13 @@ class Main extends HTMLElement {
 
   renderState(): TemplateResult | typeof nothing {
     if (this.state === "loadFile") {
-      return html`<sff-modal><home-file-picker></home-file-picker></sff-modal>`;
+      return html`<sff-load-file></sff-load-file> `;
     }
     if (this.state === "loadGame") {
-      return html`<sff-modal><home-load-game></home-load-game></sff-modal>`;
+      return html` <sff-load-game></sff-load-game> `;
     }
     if (this.state === "newGame") {
-      return html`<sff-modal><home-new-game></home-new-game></sff-modal>`;
+      return html` <sff-open-new-game></sff-open-new-game> `;
     }
 
     return nothing;
@@ -100,7 +101,8 @@ class Main extends HTMLElement {
   }
 }
 
-/** it dispatch a newGame Event when a team was picked and a new game loaded */
+/** open a modal to select a team and a game name
+ * it can dispatch a newGame Event when the selection is ended, or a closeModal event */
 class NewGame extends HTMLElement {
   private pickedTeam?: string;
 
@@ -141,34 +143,48 @@ class NewGame extends HTMLElement {
       `
     );
 
-    return html`<div class="teams">${bts}</div>`;
+    return html`
+      <h2 slot="title">Choose a team</h2>
+      <div class="teams">${bts}</div>
+    `;
   }
 
   private gameName(): TemplateResult {
     return html`
-      <label for="game-name">
-        name of the new game (between 4 to 14 alphanumeric characters):
-      </label>
-      <input
-        type="text"
-        id="game-name"
-        pattern="^\\w{4,14}$"
-        size="14"
-        required
-      />
-      <button @click=${this.handleGameNameClick} class="btn btn-acc">
-        apply
-      </button>
+      <h2 slot="title">Choose a game name</h2>
+      <div class="cnt-new-game-name">
+        <label for="game-name">Game name (between 4 and 14 characters)</label>
+        <input
+          class="input-bg"
+          type="text"
+          id="game-name"
+          pattern="^\\w{4,14}$"
+          size="14"
+          required
+          placeholder="Name"
+        />
+        <button @click=${this.handleGameNameClick} class="btn btn-acc">
+          Apply
+        </button>
+      </div>
     `;
   }
 
   private render(): void {
-    render(html`${this.pickedTeam ? this.gameName() : this.teams()}`, this);
+    render(
+      html`
+        <sff-modal>
+          ${this.pickedTeam ? this.gameName() : this.teams()}
+        </sff-modal>
+      `,
+      this
+    );
   }
 }
 
-/** it dispatch a filePicked Event when the file was successfully picked and loaded */
-class FilePicker extends HTMLElement {
+/** open a modal to select a game file, it can dispatch a filePicked Event
+ * when the file was successfully selected and loaded, or a closeModal */
+class LoadFile extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
       this.render();
@@ -201,23 +217,40 @@ class FilePicker extends HTMLElement {
     }
   };
 
+  onLabelPressEnter = (e: KeyboardEvent) => {
+    if (e.code === "Enter") {
+      (this.querySelector("#game-file") as HTMLInputElement).click();
+    }
+  };
+
   render() {
     render(
       html`
-        <label for="file">pick your saved game</label>
-        <input
-          type="file"
-          accept=".json"
-          id="file"
-          @change=${this.onFileLoad}
-        />
+        <sff-modal>
+          <h2 slot="title">Select a game file</h2>
+          <div>
+            <label
+              for="game-file"
+              tabindex="0"
+              class="btn-sml"
+              @keydown=${this.onLabelPressEnter}
+              >Select Game File</label
+            >
+            <input
+              type="file"
+              accept=".json"
+              id="game-file"
+              @change=${this.onFileLoad}
+            />
+          </div>
+        </sff-modal>
       `,
       this
     );
   }
 }
 
-/** load the game from the local machine database, or delete a game */
+/** open a modal when the user can load the game from the local machine database, or delete a game */
 class LoadGame extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
@@ -235,7 +268,7 @@ class LoadGame extends HTMLElement {
     );
   };
 
-  /** ask for confirmation before deleting the clicked game from from the saved ones */
+  /** ask for confirmation before deleting the clicked game save */
   private handleDeleteGame = (e: Event): void => {
     const v = (e.target as HTMLButtonElement).value;
     const name = v.substring(SAVES_PREFIX.length);
@@ -245,6 +278,7 @@ class LoadGame extends HTMLElement {
     }
   };
 
+  /** list of all the available game saves */
   private saves(): TemplateResult[] {
     return getSavesNames().map((s) => {
       const name = s.substring(SAVES_PREFIX.length);
@@ -269,9 +303,12 @@ class LoadGame extends HTMLElement {
   private render(): void {
     render(
       html`
-        <ul class="saves">
-          ${this.saves()}
-        </ul>
+        <sff-modal>
+          <h2 slot="title">Select a game save</h2>
+          <ul class="saves">
+            ${this.saves()}
+          </ul>
+        </sff-modal>
       `,
       this
     );
@@ -282,8 +319,8 @@ export default function define() {
   if (!customElements.get("sff-home")) {
     customElements.define("sff-home", Home);
     customElements.define("home-main", Main);
-    customElements.define("home-new-game", NewGame);
-    customElements.define("home-file-picker", FilePicker);
-    customElements.define("home-load-game", LoadGame);
+    customElements.define("sff-open-new-game", NewGame);
+    customElements.define("sff-load-file", LoadFile);
+    customElements.define("sff-load-game", LoadGame);
   }
 }

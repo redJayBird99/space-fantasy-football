@@ -85,3 +85,8 @@ btn-sim-options > .btn {
   position: absolute;
   top: -100%;
 }
+
+.play-btn {
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}

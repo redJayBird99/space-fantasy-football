@@ -7,6 +7,8 @@ import style from "./modal.css";
  * the given data-id attribute is added to the detail property
  * @param {(id?: string) => unknown} closeHandler called on close click
  *
+ * there are two slot one named title and another without any name for the content
+ *
  * the actual removal of this element should be handled by the parent node
  * @param css variable --modal-bg-color: background color of the modal dialog
  * @param css variable --backdrop-color: the backdrop color underneath the dialog
@@ -47,21 +49,35 @@ class Modal extends HTMLElement {
           ${style}
         </style>
         <dialog ${ref(this.dialogRef)} @close=${this.handleClose}>
-          <button
-            autofocus
-            class="modal-close"
-            aria-label="close modal"
-            @click=${this.handleClose}
-          >
-            ✘
-          </button>
+          <header class="dig-head">
+            <slot name="title"></slot>
+            <button
+              autofocus
+              class="modal-close"
+              aria-label="close modal"
+              @click=${this.handleClose}
+            >
+              𐄂
+            </button>
+          </header>
           <slot></slot>
         </dialog>
       `,
       this.shadowRoot!
     );
+    this.openDialog();
+  }
 
-    this.dialogRef.value!.showModal();
+  openDialog(): void {
+    const dig = this.dialogRef.value!;
+
+    if (!dig.open) {
+      dig.classList.add("opening-dig");
+      dig.showModal();
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => dig.classList.remove("opening-dig"))
+      );
+    }
   }
 }
 

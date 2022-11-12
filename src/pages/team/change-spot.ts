@@ -9,15 +9,14 @@ import { LineupSpot } from "../../character/team";
 import { GameState } from "../../game-state/game-state";
 import { styleMap } from "lit-html/directives/style-map.js";
 import style from "./change-spot.css";
-import { Player } from "../../character/player";
 
 /**
  * render th ui to change the staring player, has two arguments:
  * - attribute data-pl-id: the id of the player adding (or moving) to the lineup spot
- * - property onUpdateSpot: called when the change was made
+ * - property onDone: called when the change was made or the close btn was clicked
  */
 class ChangeSpot extends HTMLElement {
-  onUpdateSpot?: () => unknown;
+  onDone?: () => unknown;
 
   constructor() {
     super();
@@ -35,7 +34,7 @@ class ChangeSpot extends HTMLElement {
   onSpotClick = (n: LineupSpot) => {
     const gs = window.$game.state! as GameState;
     const plId = this.getAttribute("data-pl-id");
-    this.onUpdateSpot?.(); // we can close before updating
+    this.onDone?.(); // we can close before updating
 
     if (plId && gs.players[plId]) {
       const oldSpot = gs.teams[gs.userTeam].formation?.lineup.find(
@@ -59,7 +58,13 @@ class ChangeSpot extends HTMLElement {
         <style>
           ${style}
         </style>
-        ${spotSelector(this.onSpotClick, sub)}
+        <sff-modal .closeHandler=${this.onDone}>
+          <h2 slot="title">
+            Positioning <span class="sub-name">${sub?.name}</span>
+            <span class="sub-pos">${sub?.position}</span>
+          </h2>
+          ${spotSelector(this.onSpotClick)}
+        </sff-modal>
       `,
       this.shadowRoot!
     );
@@ -70,23 +75,13 @@ class ChangeSpot extends HTMLElement {
  * render all the available spot options where to insert the staring player
  * @param onSpotClick an handler for when a spot is selected
  */
-function spotSelector(
-  onSpotClick: (s: LineupSpot) => void,
-  sub?: Player
-): TemplateResult {
+function spotSelector(onSpotClick: (s: LineupSpot) => void): TemplateResult {
   const gs = window.$game.state!;
   const line = gs.teams[gs.userTeam].formation?.lineup;
 
   if (line) {
     return html`
       <div class="pitch">
-        <div class="sub">
-          substitute with
-          <div>
-            <span class="sub-name">${sub?.name}</span>
-            <span class="sub-pos">${sub?.position}</span>
-          </div>
-        </div>
         ${line.map((n) => {
           const p = gs.players[n.plID ?? ""];
           const style = {

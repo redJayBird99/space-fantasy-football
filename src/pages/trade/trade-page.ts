@@ -305,20 +305,20 @@ function outputRst(onClose: () => void, rst?: { ok: boolean; why: string }) {
   if (rst) {
     const htmlRst = rst.ok
       ? html`
-          <h3 class="rst-h3">The offer was successful!</h3>
-          ${rst ? trade(trades[trades.length - 1]) : nothing}
+          <h2 slot="title">The offer was successful!</h2>
+          <output aria-label="trade result">
+            ${rst ? trade(trades[trades.length - 1]) : nothing}
+          </output>
         `
       : html`
-          <h3 class="rst-h3">"The offer was unsuccessful!"</h3>
-          <p class="rst-p">${rst.why}</p>
+          <h2 slot="title">The offer was unsuccessful!</h2>
+          <output aria-label="trade result">
+            <p class="rst-p">${rst.why}</p>
+          </output>
         `;
 
     // if the trade was successful it is added as last trade operation
-    return html`
-      <sff-modal .handleClose=${onClose}>
-        <output aria-label="trade result"> ${htmlRst} </output>
-      </sff-modal>
-    `;
+    return html`<sff-modal .handleClose=${onClose}>${htmlRst}</sff-modal>`;
   }
 
   return nothing;
