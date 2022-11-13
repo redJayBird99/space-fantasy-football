@@ -229,3 +229,8 @@ th:first-child > .btn-txt {
   right: 8px;
   top: 5px;
 }
+
+#filters-dialog-title {
+  margin: 0;
+  text-align: center;
+}

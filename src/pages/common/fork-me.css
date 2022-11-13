@@ -1,0 +1,11 @@
+.fork-gh {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+
+.fork-gh > a:hover {
+  filter: brightness(1.4);
+}

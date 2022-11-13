@@ -59,7 +59,7 @@ class ChangeSpot extends HTMLElement {
           ${style}
         </style>
         <sff-modal .closeHandler=${this.onDone}>
-          <h2 slot="title">
+          <h2 slot="title" class="dig-label">
             Positioning <span class="sub-name">${sub?.name}</span>
             <span class="sub-pos">${sub?.position}</span>
           </h2>

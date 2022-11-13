@@ -7,7 +7,9 @@ import style from "./modal.css";
  * the given data-id attribute is added to the detail property
  * @param {(id?: string) => unknown} closeHandler called on close click
  *
- * there are two slot one named title and another without any name for the content
+ * there are two slot one named title and another without any name for the content,
+ *
+ * if there is any child with the class "dig-label" its text content will be used as the dialog label
  *
  * the actual removal of this element should be handled by the parent node
  * @param css variable --modal-bg-color: background color of the modal dialog
@@ -70,6 +72,10 @@ class Modal extends HTMLElement {
 
   openDialog(): void {
     const dig = this.dialogRef.value!;
+    dig.setAttribute(
+      "aria-label",
+      this.querySelector(".dig-label")?.textContent ?? ""
+    );
 
     if (!dig.open) {
       dig.classList.add("opening-dig");

@@ -105,6 +105,5 @@ li > span:nth-child(2) {
 
 .btn--err {
   border-radius: 50%;
-  color: var(--dk-on-bg-color);
   padding: 1px 5px;
 }

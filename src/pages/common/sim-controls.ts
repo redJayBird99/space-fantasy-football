@@ -152,7 +152,7 @@ class PlaySim extends HTMLSFFGameElement {
   renderSim(): TemplateResult {
     return html`
       <sff-modal .closeHandler=${this.handleCloseModal}>
-        <h2 slot="title">Simulating</h2>
+        <h2 class="dig-label" slot="title">Simulating</h2>
         ${visualSim(this.state.simGs)}
       </sff-modal>
     `;

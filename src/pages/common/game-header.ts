@@ -44,6 +44,8 @@ function userTeamColor() {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 100 100"
       class="team-svg"
+      role="img"
+      aria-label="Lines with your Club colors"
     >
       <line style=${prClr} class="primary" x1="5" x2="60" y1="104" y2="-4" />
       <line style=${seClr} class="secondary" x1="16" x2="71" y1="104" y2="-4" />

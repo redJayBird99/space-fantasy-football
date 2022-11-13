@@ -107,7 +107,7 @@ class Inbox extends HTMLSFFGameElement {
 function readMail(e: Mail, onCloseMail: () => void): TemplateResult {
   return html`
     <sff-modal .closeHandler=${onCloseMail}>
-      <div slot="title" class="mail-info">
+      <div slot="title" class="mail-info dig-label">
         <h2>${e.sender}</h2>
         <span>${e.sendDate}</span>
       </div>

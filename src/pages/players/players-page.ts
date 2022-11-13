@@ -220,8 +220,18 @@ function filters(): TemplateResult {
       <button class="btn-sml filter-btn" @click=${onClearClick}>
         ⌫ Clear filters
       </button>
-      <dialog class="filters-dialog" ${ref(dialogRef)}>
-        <button class="modal-close" @click=${closeControls} aria-label="close">
+      <dialog
+        class="filters-dialog"
+        ${ref(dialogRef)}
+        aria-labelledby="filters-dialog-title"
+      >
+        <h2 id="filters-dialog-title">Customize filters</h2>
+        <button
+          autofocus
+          class="modal-close"
+          @click=${closeControls}
+          aria-label="close"
+        >
           𐄂
         </button>
         ${filterControls()}

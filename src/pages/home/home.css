@@ -1,5 +1,6 @@
 @import "../util/button.css";
 @import "../util/form.css";
+@import "../common/fork-me.css";
 
 sff-home,
 home-main,
@@ -71,18 +72,6 @@ home-team-picker {
 
 .hm-btn:hover {
   border: 1px solid var(--dk-primary-color-300);
-}
-
-.fork-gh {
-  align-items: center;
-  display: flex;
-  gap: 5px;
-  justify-content: center;
-  padding-bottom: 10px;
-}
-
-.fork-gh > a:hover {
-  filter: brightness(1.4);
 }
 
 @media (max-width: 1200px) {

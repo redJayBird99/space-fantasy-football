@@ -207,7 +207,7 @@ export function canTrade(
     return { ok: false, why: `${other.name} is ${otherReqs.why}` };
   }
   if (!acceptable({ gs, t: other }, give, get)) {
-    return { ok: false, why: `${other.name} refused your offer` };
+    return { ok: false, why: `${other.name} rejected your offer` };
   }
 
   return { ok: true, why: "" };

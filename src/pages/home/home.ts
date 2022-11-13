@@ -4,7 +4,7 @@ import { getSavesNames, SAVES_PREFIX } from "../../game-state/game-db";
 import { GameState } from "../../game-state/game-state";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
-import ghLogo from "../../asset/github-mark.svg";
+import { forkMe } from "../common/fork-me";
 
 class Home extends HTMLElement {
   connectedCallback() {
@@ -26,15 +26,7 @@ class Home extends HTMLElement {
             <p>An atypical football management game</p>
           </header>
           <home-main></home-main>
-          <p class="fork-gh">
-            <span>fork me on</span>
-            <a
-              target="_blank"
-              href="https://github.com/RedAndBlu/space-fantasy-football"
-            >
-              <img src=${ghLogo} alt="gitHub logo" width="20" height="20" />
-            </a>
-          </p>
+          ${forkMe()}
         </div>
       `,
       this
@@ -144,14 +136,14 @@ class NewGame extends HTMLElement {
     );
 
     return html`
-      <h2 slot="title">Choose a team</h2>
+      <h2 class="dig-label" slot="title">Choose a team</h2>
       <div class="teams">${bts}</div>
     `;
   }
 
   private gameName(): TemplateResult {
     return html`
-      <h2 slot="title">Choose a game name</h2>
+      <h2 class="dig-label" slot="title">Choose a game name</h2>
       <div class="cnt-new-game-name">
         <label for="game-name">Game name (between 4 and 14 characters)</label>
         <input
@@ -227,7 +219,7 @@ class LoadFile extends HTMLElement {
     render(
       html`
         <sff-modal>
-          <h2 slot="title">Select a game file</h2>
+          <h2 class="dig-label" slot="title">Select a game file</h2>
           <div>
             <label
               for="game-file"
@@ -304,7 +296,7 @@ class LoadGame extends HTMLElement {
     render(
       html`
         <sff-modal>
-          <h2 slot="title">Select a game save</h2>
+          <h2 class="dig-label" slot="title">Select a game save</h2>
           <ul class="saves">
             ${this.saves()}
           </ul>

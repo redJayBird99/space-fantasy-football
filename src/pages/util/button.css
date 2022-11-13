@@ -21,6 +21,7 @@ button {
 
 .btn--err {
   background-color: var(--dk-error-color, var(--lt-error-color));
+  color: var(--dk-on-error-color, var(--lt-on-error-color));
 }
 
 .btn--acc {
@@ -65,7 +66,7 @@ button {
   );
   font-size: 15px;
   font-weight: bold;
-  padding: 2px 8px;
+  padding: 0 6px;
 }
 
 .btn:disabled,

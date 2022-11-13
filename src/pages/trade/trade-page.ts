@@ -305,13 +305,13 @@ function outputRst(onClose: () => void, rst?: { ok: boolean; why: string }) {
   if (rst) {
     const htmlRst = rst.ok
       ? html`
-          <h2 slot="title">The offer was successful!</h2>
+          <h2 class="dig-label" slot="title">The offer was successful!</h2>
           <output aria-label="trade result">
             ${rst ? trade(trades[trades.length - 1]) : nothing}
           </output>
         `
       : html`
-          <h2 slot="title">The offer was unsuccessful!</h2>
+          <h2 class="dig-label" slot="title">The offer was unsuccessful!</h2>
           <output aria-label="trade result">
             <p class="rst-p">${rst.why}</p>
           </output>
