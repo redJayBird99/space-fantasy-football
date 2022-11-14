@@ -12,3 +12,8 @@ export function interpolate(tx: string, subs: { [k: string]: string }): string {
     return subs[p] ?? "";
   });
 }
+
+/** get the date part of the ISO format */
+export function toISODateString(d: Date): string {
+  return d.toISOString().split("T")[0];
+}

@@ -1,4 +1,5 @@
 import names from "../asset/names.json";
+import { toISODateString } from "./util";
 
 // return true when more is more frequent in sample than less
 function isMoreFrequent<T>(more: T, less: T, sample: T[]): boolean {
@@ -37,7 +38,7 @@ function createName(): string {
 // returns a random birthday date for the given age
 function createBirthdayDate(age: number, now: Date): Date {
   if (age < 0) {
-    throw new Error("age argument can't be negatite");
+    throw new Error("age argument can't be negative");
   }
 
   const days = 365;
@@ -45,16 +46,15 @@ function createBirthdayDate(age: number, now: Date): Date {
   return new Date(now.getFullYear() - age, now.getMonth(), now.getDate() - day);
 }
 
-// returns a random birthday dateString (can construct a new Date) for the given age
+// returns a random birthday iso date string (can construct a new Date) for the given age
 function createBirthday(age: number, now: Date): string {
-  const d = createBirthdayDate(age, now);
-  return `${d.toDateString()}`;
+  return toISODateString(createBirthdayDate(age, now));
 }
 
 // returns the age at now for the given birthday
 // code reference: https://stackoverflow.com/questions/4060004/calculate-age-given-the-birth-date-in-the-format-yyyymmdd
-function getAgeAt(birthdayDateString: string, now: Date) {
-  const birthDate = new Date(birthdayDateString);
+function getAgeAt(birthday: string, now: Date) {
+  const birthDate = new Date(birthday);
   const mth = now.getMonth() - birthDate.getMonth();
   let age = now.getFullYear() - birthDate.getFullYear();
 

@@ -119,7 +119,9 @@ function playerBio(p: Player): TemplateResult {
       </div>
     </div>
     <div class="plr-bio">
-      <div>${Player.age(p, gs.date)} y. o. ${p.birthday}</div>
+      <div>
+        ${Player.age(p, gs.date)} y. o. ${new Date(p.birthday).toDateString()}
+      </div>
       <div>${Player.getHeightInCm(p)} cm</div>
       <div>Preferred foot ${p.foot}</div>
       <div>wage: ${wage}₡</div>

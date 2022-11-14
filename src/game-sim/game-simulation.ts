@@ -29,6 +29,7 @@ import {
   tradeOffer,
 } from "../character/mail";
 import { updateTradeOffers } from "../character/user";
+import { toISODateString } from "../util/util";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -518,7 +519,7 @@ function updateContracts(gs: GameState): void {
  * @param skipUser when true the user team is skipped
  */
 function renewExpiringContracts(gs: GameState, skipUser = false): void {
-  const when = gs.date.toDateString();
+  const when = toISODateString(gs.date);
   Object.values(gs.teams).forEach((t) => {
     if (!skipUser || t.name !== gs.userTeam) {
       Team.renewExpiringContracts({ gs, t }).forEach((p) =>
@@ -610,7 +611,7 @@ function teamsSignFreeAgents(gs: GameState, skipUser = false): void {
 
     if (signed) {
       free = free.filter((p) => p !== signed);
-      const when = gs.date.toDateString();
+      const when = toISODateString(gs.date);
       const record = { when, plId: signed.id, team: team.name };
       gs.transactions.now.signings.push(record);
     }
@@ -722,7 +723,7 @@ function prepareDraft(gs: GameState): void {
 
   if (date) {
     gs.drafts.now = {
-      when: date?.toDateString(),
+      when: toISODateString(date),
       lottery: shuffle(Object.keys(gs.teams)), // show the lottery only before the draft day
       picks: createDraftPlayers(gs).map((p) => ({
         team: "",

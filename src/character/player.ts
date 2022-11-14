@@ -246,7 +246,7 @@ class Player {
   name: string;
   team: string;
   position: Position;
-  birthday: string; // a valid date string
+  birthday: string; // a iso date string
   foot: Foot;
   growthRate: number; // monthly growth rate of growthState
   growthState: number; // (percentage 0-1) applying it: skillValue * growthState
@@ -258,7 +258,7 @@ class Player {
     this.team = "free agent";
     this.position = pos;
     this.birthday = createBirthday(age ?? createAge(), now);
-    this.id = createId() + this.birthday.split(" ").join(""); // you never know...
+    this.id = createId();
     this.foot = createPreferredFoot(pos);
     this.skills = createSkills(pos);
     this.growthRate =

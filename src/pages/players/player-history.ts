@@ -80,7 +80,9 @@ function renderTransaction(trs: TransRecord, plId: string): TemplateResult[] {
 /** render information about the given sign record */
 function renderSign(r: SigningRecord, renewal: boolean): TemplateResult {
   const str = renewal ? "Re-signed" : "Signed";
-  return html`<li>On ${r.when} ${str} for ${r.team}</li>`;
+  return html`<li>
+    On ${new Date(r.when).toDateString()} ${str} for ${r.team}
+  </li>`;
 }
 
 /** render information about the given trades where the player was involved */
@@ -89,7 +91,9 @@ function renderTrade(r: TradeRecord, plId: string): TemplateResult {
   const giver = plInS1 ? r.sides[0].team : r.sides[1].team;
   const receiver = plInS1 ? r.sides[1].team : r.sides[0].team;
 
-  return html`<li>On ${r.when} was traded by ${giver} to ${receiver}</li>`;
+  return html`<li>
+    On ${new Date(r.when).toDateString()} was traded by ${giver} to ${receiver}
+  </li>`;
 }
 
 type Ts = { key: keyof TransRecord; i: number };

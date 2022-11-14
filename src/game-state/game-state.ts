@@ -15,6 +15,7 @@ import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
 import { sendSyncUpdatedGame } from "./game-sync";
 import { Trade } from "../game-sim/trade";
+import { toISODateString } from "../util/util";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;
@@ -234,7 +235,7 @@ class GameState {
 /** convert the given trade to a tradeRecord */
 export function toTradeRecord(t: Trade, when: Date): TradeRecord {
   return {
-    when: when.toDateString(),
+    when: toISODateString(when),
     sides: [
       { team: t.side1.by.name, plIds: t.side1.content.map((p) => p.id) },
       { team: t.side2.by.name, plIds: t.side2.content.map((p) => p.id) },

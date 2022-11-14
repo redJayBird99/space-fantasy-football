@@ -14,6 +14,7 @@ import {
   TransRecord,
 } from "../game-state/game-state";
 import { within } from "../util/math";
+import { toISODateString } from "../util/util";
 import { Formations, FORMATIONS } from "./formation";
 import { withdrawOffer } from "./mail";
 import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
@@ -154,7 +155,7 @@ export function signPlayer(p: Player): void {
   Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
   gs.flags.signedNewPlayer = true;
   gs.transactions.now.signings.push({
-    when: gs.date.toDateString(),
+    when: toISODateString(gs.date),
     plId: p.id,
     team: t.name,
   });
@@ -169,7 +170,7 @@ export function resignPlayer(r: SignRequest): void {
   Team.signPlayer({ gs, t, p }, r.wage, r.seasons);
   gs.reSigning = gs.reSigning?.filter((rq) => rq !== r);
   gs.transactions.now.renewals.push({
-    when: gs.date.toDateString(),
+    when: toISODateString(gs.date),
     plId: p.id,
     team: t.name,
   });
@@ -229,7 +230,7 @@ export function makeTrade(other: Team, get: Player[], give: Player[]) {
   removeLineupDepartures({ gs, t: other });
   removeLineupDepartures({ gs, t: user });
   gs.transactions.now.trades.push({
-    when: gs.date.toDateString(),
+    when: toISODateString(gs.date),
     sides: [
       { team: user.name, plIds: give.map((p) => p.id) },
       { team: other.name, plIds: get.map((p) => p.id) },

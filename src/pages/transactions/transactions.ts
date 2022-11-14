@@ -127,7 +127,7 @@ function trades(rs: TradeRecord[]) {
 /** returns a collection of trades block from the given ones */
 function tradesBlocks(ts: TradeRecord[]): TemplateResult {
   return transactions(
-    ts[0].when,
+    new Date(ts[0].when).toDateString(),
     ts.map((t) => trade(t))
   );
 }
@@ -195,7 +195,7 @@ function signings(sr: SigningRecord[]): TemplateResult {
 /** returns a collection of signings block from the given ones */
 function signingsBlock(sr: SigningRecord[]): TemplateResult {
   return transactions(
-    sr[0].when,
+    new Date(sr[0].when).toDateString(),
     sr.map((r) => html`<div class="transaction-summary">${signing(r)}</div>`)
   );
 }
