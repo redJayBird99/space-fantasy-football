@@ -43,7 +43,13 @@ function player(): TemplateResult {
           are mobility, physic, goalkeeper, defense, ability and offense) and
           skills. The macro skill is just a category for a set of skills, its
           value is just the mean of that set. The skill instead is a rating
-          value between 0 (very bad) and 100 (very good)
+          value between 0 (very bad) and 100 (very good).
+        </p>
+        <p>
+          When a player isn't positioned in his natural position a penalty will
+          be applied to some skills, the severity of the penalty is depend on
+          position. the penalty for a cb playing as a cf is more severe than
+          paying as a rb
         </p>
       </div>
       <div>

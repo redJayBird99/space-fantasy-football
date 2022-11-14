@@ -140,6 +140,7 @@ home-team-picker {
 }
 
 [for="game-file"] {
+  background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
   color: var(--dk-on-primary-color);
   cursor: pointer;
   display: inline-block;
@@ -160,5 +161,19 @@ home-team-picker {
 }
 
 .cnt-new-game-name > .input-bg {
-  background-color: var(--dk-bg-color-500);
+  background-color: var(--dk-bg-color-500, var(--lt-bg-color-200));
+}
+
+.pick-team-btn {
+  background-color: var(--dk-bg-color-600, var(--lt-bg-color-300));
+  border: 1px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
+  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.team-name {
+  font-style: italic;
+  font-size: 1.3rem;
 }

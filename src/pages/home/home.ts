@@ -105,7 +105,7 @@ class NewGame extends HTMLElement {
   }
 
   private handleTeamClick = (e: Event): void => {
-    this.pickedTeam = (e.target as HTMLButtonElement).value;
+    this.pickedTeam = (e.currentTarget as HTMLButtonElement).value;
     this.render();
   };
 
@@ -122,18 +122,19 @@ class NewGame extends HTMLElement {
   };
 
   private teams(): TemplateResult {
-    const bts = Object.keys(teams).map(
-      (n) => html`
+    const bts = (Object.keys(teams) as (keyof typeof teams)[]).map((t) => {
+      return html`
         <button
-          class="btn"
-          aria-label=${`pick team ${n}`}
+          class="btn pick-team-btn"
+          aria-label=${`pick team ${t}`}
           @click=${this.handleTeamClick}
-          .value=${n}
+          value=${t}
         >
-          ${n}
+          <span class="team-name"> ${t}</span>
+          <span>${teams[t].fanBase} fanbase</span>
         </button>
-      `
-    );
+      `;
+    });
 
     return html`
       <h2 class="dig-label" slot="title">Choose a team</h2>
