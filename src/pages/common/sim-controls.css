@@ -1,5 +1,6 @@
 @import "../util/button.css";
 @import "../util/form.css";
+@import "../util/dialog.css";
 
 :host {
   border-radius: 20px / 35px 0 0 15px;
@@ -57,7 +58,6 @@ btn-sim-options > .btn {
 
 btn-sim-options {
   border: 1px solid var(--dk-bg-color-500, var(--lk-bg-color-200));
-  position: relative;
 }
 
 btn-sim-options > .btn {
@@ -68,25 +68,21 @@ btn-sim-options > .btn {
 }
 
 .sim-options {
-  background-color: var(--dk-bg-color-600, var(--lt-bg-color-200));
-  border-radius: 5px;
-  border: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
-  box-shadow: 0px 2px 4px 0px hsla(0deg, 0%, 3%, 0.3);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 0.8rem;
-  position: absolute;
-  right: 0px;
-  top: calc(100% + 1px);
 }
 
 .sim-options > label {
   position: absolute;
-  top: -100%;
+  top: -100rem;
 }
 
 .play-btn {
   padding-left: 0.6rem;
   padding-right: 0.6rem;
+}
+
+.sim-ops-dialog {
+  inset-inline-start: unset;
 }

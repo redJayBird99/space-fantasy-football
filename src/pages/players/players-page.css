@@ -1,6 +1,7 @@
 @import "../util/button.css";
 @import "../util/form.css";
 @import "../util/common.css";
+@import "../util/dialog.css";
 
 sff-players,
 players-table {
@@ -178,14 +179,7 @@ th:first-child > .btn-txt {
 }
 
 .filters-dialog {
-  background-color: var(--dk-bg-color-650, var(--lt-bg-color-200));
-  border: 1px solid var(--dk-primary-color-300, var(--lt-primary-color-300));
-  border-radius: 5px;
-  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 30%);
-  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
-  overflow: hidden;
-  padding: 1rem;
-  padding-top: 28px;
+  overflow: auto;
   top: calc(var(--header-height) + 3.2rem);
   z-index: 2;
 }
@@ -222,15 +216,4 @@ th:first-child > .btn-txt {
 .arrow {
   background-color: var(--dk-primary-color-300, var(--lt-bg-color-200));
   padding: 0 0.5rem;
-}
-
-.modal-close {
-  position: absolute;
-  right: 8px;
-  top: 5px;
-}
-
-#filters-dialog-title {
-  margin: 0;
-  text-align: center;
 }

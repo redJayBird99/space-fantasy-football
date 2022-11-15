@@ -225,15 +225,17 @@ function filters(): TemplateResult {
         ${ref(dialogRef)}
         aria-labelledby="filters-dialog-title"
       >
-        <h2 id="filters-dialog-title">Customize filters</h2>
-        <button
-          autofocus
-          class="modal-close"
-          @click=${closeControls}
-          aria-label="close"
-        >
-          𐄂
-        </button>
+        <div class="dig-head">
+          <h2 class="dig-title" id="filters-dialog-title">Customize filters</h2>
+          <button
+            autofocus
+            class="modal-close"
+            @click=${closeControls}
+            aria-label="close"
+          >
+            𐄂
+          </button>
+        </div>
         ${filterControls()}
       </dialog>
       <div class="rst-filters">

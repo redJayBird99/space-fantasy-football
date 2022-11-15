@@ -12,6 +12,7 @@ import {
 import style from "./sim-controls.css";
 import { goTo } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";
+import { createRef, Ref, ref } from "lit-html/directives/ref.js";
 
 class SimControls extends HTMLSFFGameElement {
   constructor() {
@@ -218,7 +219,7 @@ class PlaySim extends HTMLSFFGameElement {
 
 /** open and close the simOption menu */
 class BtnSimOptions extends HTMLElement {
-  private open = false;
+  private dialogRef: Ref<HTMLDialogElement> = createRef();
 
   connectedCallback() {
     if (this.isConnected) {
@@ -226,22 +227,42 @@ class BtnSimOptions extends HTMLElement {
     }
   }
 
-  handleOptionsClick = () => {
-    this.open = !this.open;
-    this.render();
+  handleOpenOptions = () => {
+    this.dialogRef.value!.show();
+  };
+
+  handleCloseOptions = () => {
+    this.dialogRef.value!.close();
   };
 
   render() {
     render(
       html`
         <button
-          aria-label="${this.open ? "close" : "open"} sim options"
-          @click=${this.handleOptionsClick}
+          aria-label="open sim options"
+          @click=${this.handleOpenOptions}
           class="btn btn--acc"
         >
           ⚙
         </button>
-        ${this.open ? simOptions(this.handleOptionsClick) : nothing}
+        <dialog
+          ${ref(this.dialogRef)}
+          class="sim-ops-dialog"
+          aria-labelledby="dig-ops-title"
+        >
+          <div class="dig-head">
+            <h2 id="dig-ops-title" class="dig-title">Sim options</h2>
+            <button
+              autofocus
+              @click=${this.handleCloseOptions}
+              class="modal-close"
+              aria-label="close dialog"
+            >
+              𐄂
+            </button>
+          </div>
+          ${simOptions(this.handleCloseOptions)}
+        </dialog>
       `,
       this
     );
