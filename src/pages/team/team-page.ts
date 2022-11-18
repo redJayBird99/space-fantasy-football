@@ -140,7 +140,7 @@ function teamMain(
         <a
           aria-label="manual about finances"
           @click=${handleLinkClick}
-          href="${window.$PUBLIC_PATH}game-manual#players"
+          href="game-manual#players"
           class="info-link"
           >🛈</a
         >
@@ -205,7 +205,6 @@ function teamPlayerRow(
   openUpdateLineup?: (id: string) => void,
   st?: Starter
 ): TemplateResult {
-  const link = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
   const at = st?.sp.pos;
 
   return html`<tr class="plr ${st ? "starting" : ""}">
@@ -220,7 +219,7 @@ function teamPlayerRow(
         ${at}
       </button>
     </td>
-    <td class="plr-name">${goLink(link, p.name)}</td>
+    <td class="plr-name">${goLink(`players/player?id=${p.id}`, p.name)}</td>
     ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
   </tr>`;
 }

@@ -79,11 +79,10 @@ function expiringPlayer(r: SignRequest, sks: MacroSkill[]): TemplateResult {
   const p = gs.players[r.plId];
   const frt = new Intl.NumberFormat("en-GB");
   const canSign = r.wage !== 0 && r.seasons !== 0;
-  const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
   return html`
     <tr>
-      <td>${goLink(playerPath, p.name)}</td>
+      <td>${goLink(`players/player?id=${p.id}`, p.name)}</td>
       <td class="small-col"><span class="plr-pos">${p.position}</span></td>
       <td class="small-col">${Player.age(p, gs.date)}</td>
       ${sks.map((sk) =>

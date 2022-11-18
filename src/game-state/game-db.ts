@@ -1,4 +1,5 @@
-import { goTo, atUrl } from "../pages/util/router";
+import { goTo } from "../pages/util/router";
+import { atUrl } from "../util/util";
 import { GameState } from "./game-state";
 
 // TODO: testing

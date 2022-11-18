@@ -3,7 +3,7 @@
 import { html, TemplateResult } from "lit-html";
 import { handleLinkClick } from "./router";
 
-/** get a sff-go element with the given url and a nested anchor */
+/** return a anchor element handled by the client side router */
 export function goLink(
   href: string,
   content: TemplateResult | string

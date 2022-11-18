@@ -165,6 +165,7 @@ home-team-picker {
 }
 
 .pick-team-btn {
+  align-items: stretch;
   background-color: var(--dk-bg-color-600, var(--lt-bg-color-300));
   border: 1px solid var(--dk-on-bg-color, var(--lt-on-bg-color));
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));

@@ -117,19 +117,16 @@ function draftTable(dft: DraftRecord): TemplateResult {
 function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[rec.plId];
-  const link = `${window.$PUBLIC_PATH}players/player?id=${rec.plId}`;
+  const plLink = `players/player?id=${rec.plId}`;
   const canDraft = p && gs.flags.userDrafting && p.team === "draft";
-  const teamLink = goLink(
-    `${window.$PUBLIC_PATH}team?team=${rec.team}`,
-    rec.team
-  );
+  const teamLink = goLink(`team?team=${rec.team}`, rec.team);
 
   // the player could be retired
   return html`
     <tr>
       <td><span class="pick-n">${isNaN(rec.n) ? "" : rec.n}</span></td>
       <td>${
-        p ? goLink(link, p.name) : `${gs.retirees[rec.plId]} (retired)`
+        p ? goLink(plLink, p.name) : `${gs.retirees[rec.plId]} (retired)`
       }</td>
       <td>${p ? p.position.toUpperCase() : ""}</td>
       <td>${p ? Player.age(p, when) : ""}</td>
@@ -184,8 +181,7 @@ function ratingSymbol(symbol: string, rating: number): TemplateResult {
 function lottery(order: string[]): TemplateResult {
   const user = window.$game.state?.userTeam;
   const pickN = window.$game.state!.drafts.now.picked.length + 1;
-  const teamLink = (t: string) =>
-    goLink(`${window.$PUBLIC_PATH}team?team=${t}`, t);
+  const teamLink = (t: string) => goLink(`team?team=${t}`, t);
 
   return html`
     <article class="cnt-lottery">

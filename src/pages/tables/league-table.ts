@@ -81,13 +81,11 @@ class LeagueTable extends HTMLElement {
 
   /** when the table is in large mode add supplementary data columns */
   renderData(e: Entry): TemplateResult[] {
-    const teamLink = (name: string) =>
-      `${window.$PUBLIC_PATH}team?team=${name}`;
     return (this.dataset.mode === "compact" ? cmpctCols : columns).map((c) => {
       const rst = c.data(e);
       return html`<td>
         ${c.full === "team" && typeof rst === "string"
-          ? goLink(teamLink(rst), rst)
+          ? goLink(`team?team=${rst}`, rst)
           : rst}
       </td>`;
     });

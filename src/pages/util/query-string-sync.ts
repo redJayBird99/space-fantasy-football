@@ -11,19 +11,22 @@ export function getQueryString(): { [key: string]: string } {
   return ctx;
 }
 
-/** save all the key value pairs in c that are string or have a toString method */
-export function save(c: object) {
-  const prs = new URLSearchParams(
-    Object.entries(c)
-      .filter(([, e]) => typeof e === "string" || e?.toString)
-      .map((e) => {
-        if (typeof e[1] === "string") {
-          return [e[0], e[1]];
-        } else {
-          return [e[0], e[1].toString()];
-        }
-      })
-  );
+/** save in the url queryString all the key value pairs in c,
+ * if the value is a string or has a toString value is setted otherwise if a
+ * value is undefined or null remove it */
+export function save(c: { [key: string]: unknown }) {
+  const prs = new URLSearchParams(location.search);
+
+  for (const [k, v] of Object.entries(c)) {
+    if (typeof v === "string") {
+      prs.set(k, v);
+    } else if ((v as any)?.toString) {
+      prs.set(k, (v as any).toString());
+    } else if (v === undefined || v === null) {
+      prs.delete(k);
+    }
+  }
+
   history.replaceState({}, "", "?" + prs.toString());
   obs.forEach((o) => o.onQueryStringUpdate());
 }

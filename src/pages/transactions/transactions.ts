@@ -162,13 +162,11 @@ function playerInfo(plId: string, was: Date): TemplateResult {
   // when the player is retired doesn't exist, TODO add some record of retired players
   const gs = window.$game.state!;
   const p = gs.players[plId];
-  const playerPath = (p: Player) =>
-    `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
   if (p) {
     return html`
       <span class="plr-pos" aria-label="position">${p.position}</span>
-      ${goLink(playerPath(p), p.name)}
+      ${goLink(`players/player?id=${p.id}`, p.name)}
       <span aria-label="age">
         ${Player.age(p, was)} <abbr title="year">y.</abbr>
         <abbr title="old">o.</abbr>
@@ -221,7 +219,7 @@ function renewals(rs: SigningRecord[]): TemplateResult {
 }
 
 function teamLink(name: string): TemplateResult {
-  return goLink(`${window.$PUBLIC_PATH}team?team=${name}`, name);
+  return goLink(`team?team=${name}`, name);
 }
 
 export default function define() {

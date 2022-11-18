@@ -292,7 +292,12 @@ function tableControls(): TemplateResult {
       </label>
     </div>
     <label
-      >Search: <input class="input-bg" type="search" @input=${onSearchChange}
+      >Search:
+      <input
+        class="input-bg"
+        type="search"
+        @input=${onSearchChange}
+        value=${c.search ?? ""}
     /></label>
   `;
 }
@@ -470,15 +475,13 @@ class PlayersTable extends HTMLElement {
 /** render table rows with the given players as entries */
 function renderRows(players: Player[]) {
   const gs = window.$game.state!;
-  const playerPath = (p: Player) =>
-    `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
 
   return repeat(
     players,
     (p: Player) => p.id,
     (p: Player) =>
       html`<tr>
-        <td>${goLink(playerPath(p), p.name)}</td>
+        <td>${goLink(`players/player?id=${p.id}`, p.name)}</td>
         <td class="plr-pos">${p.position}</td>
         ${ratingCell(p, gs)}
         <td>${Player.age(p, gs.date)}</td>

@@ -64,7 +64,7 @@ function playerCtn(p: Player): TemplateResult {
       <a
         aria-label="manual about finances"
         @click=${handleLinkClick}
-        href="${window.$PUBLIC_PATH}game-manual#players"
+        href="game-manual#players"
         class="info-link"
         >🛈</a
       >
@@ -89,9 +89,7 @@ function playerBio(p: Player): TemplateResult {
   const bgColor = (c: string) => `background-color: ${c}`;
   const rColor = `hsl(${getPlayerRating(p, gs) * 120}deg 100% 60%)`;
   const iColor = `hsl(${estimateImprovabilityRating(p, t) * 120}deg 100% 60%)`;
-  const teamLink = gs.teams[p.team]
-    ? `${window.$PUBLIC_PATH}team?team=${p.team}`
-    : "";
+  const teamLink = gs.teams[p.team] ? `../team?team=${p.team}` : "";
 
   return html`
     <div class="cnt-plr-high">

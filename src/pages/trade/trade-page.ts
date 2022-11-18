@@ -495,13 +495,12 @@ function player(
 function playerInfo(p: Player): TemplateResult {
   const gs = window.$game.state!;
   const c = GameState.getContract(gs, p);
-  const link = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
   const wage = c?.wage ? new Intl.NumberFormat("en-GB").format(c?.wage) : 0;
 
   return html`
     <div class="plr-info">
       <div class="plr-bio">
-        <h3>${goLink(link, p.name)}</h3>
+        <h3>${goLink(`players/player?id=${p.id}`, p.name)}</h3>
         <div>
           <span class="plr-bio__pos">${p.position}</span>
           <span>

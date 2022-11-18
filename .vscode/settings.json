@@ -9,6 +9,7 @@
     "labelledby",
     "Matchday",
     "modf",
-    "tabindex"
+    "tabindex",
+    "urlpattern"
   ]
 }

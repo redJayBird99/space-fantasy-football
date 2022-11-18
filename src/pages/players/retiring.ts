@@ -48,13 +48,11 @@ function players(): TemplateResult {
 function player(plId: string): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[plId];
-  const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
-  const teamPath =
-    p.team !== "free agent" ? `${window.$PUBLIC_PATH}team?team=${p.team}` : "";
+  const teamPath = p.team !== "free agent" ? `team?team=${p.team}` : "";
 
   return html`
     <article class="cnt-plr ${gs.userTeam === p.team ? "user-plr" : ""}">
-      <h3>${goLink(playerPath, p.name)}</h3>
+      <h3>${goLink(`players/player?id=${p.id}`, p.name)}</h3>
       <div>
         <span>${teamPath ? goLink(teamPath, p.team) : p.team}</span>
         <span>${Player.age(p, gs.date)} y.o.</span>

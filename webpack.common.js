@@ -5,6 +5,9 @@ module.exports = {
     main: "./src/index.ts",
     "sim-worker": "./src/game-sim/sim-worker.ts",
   },
+  experiments: {
+    topLevelAwait: true,
+  },
   plugins: [new HtmlWebpackPlugin()],
   module: {
     rules: [

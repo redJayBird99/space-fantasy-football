@@ -17,3 +17,12 @@ export function interpolate(tx: string, subs: { [k: string]: string }): string {
 export function toISODateString(d: Date): string {
   return d.toISOString().split("T")[0];
 }
+
+/**
+ * check if the current page is already on the given url
+ * @param url relative or absolute
+ */
+
+export function atUrl(url: string): boolean {
+  return location.href === new URL(url, location.origin).href;
+}

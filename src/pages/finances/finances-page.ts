@@ -81,7 +81,7 @@ function teamFinances(t: Team): TemplateResult {
       <a
         aria-label="manual about finances"
         @click=${handleLinkClick}
-        href="${window.$PUBLIC_PATH}game-manual#players"
+        href="game-manual#players"
         class="info-link"
         >🛈</a
       >
@@ -234,13 +234,13 @@ function contractsTable(t: Team): TemplateResult {
 function plWageRow(p: Player): TemplateResult {
   const gs = window.$game.state!;
   const c = GameState.getContract(gs, p);
-  const playerPath = `${window.$PUBLIC_PATH}players/player?id=${p.id}`;
+  const plLink = `players/player?id=${p.id}`;
   const yWages = Array.from({ length: SEASONS }, (_, i) =>
     (c?.duration ?? 0) - i > 0 ? c?.wage : ""
   );
   return html`
     <tr>
-      <td>${goLink(playerPath, p.name)}</td>
+      <td>${goLink(plLink, p.name)}</td>
       ${yWages.map((w) => html`<td>${w ? `${frt.format(w)}₡` : w}</td>`)}
     </tr>
   `;

@@ -1,10 +1,7 @@
 import appState from "./app-state/app-state";
 import script from "./util/script";
 import { GameStateHandle } from "./game-state/game-state";
-import { Router } from "./pages/util/router";
-import defineComponents from "./pages/define-components";
-import style from "./index.css";
-defineComponents();
+import initPages from "./pages/initPages";
 
 declare global {
   // eslint-disable-next-line no-unused-vars
@@ -17,72 +14,14 @@ declare global {
   }
 }
 
+// @ts-ignore: Property 'UrlPattern' does not exist
+if (!globalThis.URLPattern) {
+  await import("urlpattern-polyfill");
+}
+
 window.$appState = appState;
 window.$game = new GameStateHandle();
+/** the currently given github page path */
 window.$PUBLIC_PATH = "/space-fantasy-football/";
 window.$script = script;
-
-document.documentElement.classList.add("dark");
-document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
-
-const root = document.createElement("div");
-const modalRoot = (window.$modalRoot = document.createElement("div"));
-document.body.append(root, modalRoot);
-
-new Router(root, "<div>404 page no found</div>")
-  .addRoutes([
-    { path: `${window.$PUBLIC_PATH}`, page: "<sff-home></sff-home>" },
-    {
-      path: `${window.$PUBLIC_PATH}dashboard`,
-      page: "<sff-dashboard></sff-dashboard>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}players`,
-      page: "<sff-players></sff-players>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}players/player`,
-      page: "<sff-player></sff-player>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}league`,
-      page: "<sff-league></sff-league>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}inbox`,
-      page: "<sff-inbox-page></sff-inbox-page>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}team`,
-      page: "<sff-team></sff-team>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}finances`,
-      page: "<sff-team-finances></sff-team-finances>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}transactions`,
-      page: "<sff-transactions></sff-transactions>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}draft`,
-      page: "<sff-draft></sff-draft>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}retiring`,
-      page: "<retiring-players></retiring-players>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}trade`,
-      page: "<sff-trade></sff-trade>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}trade-offers`,
-      page: "<sff-trade data-offers=''></sff-trade>",
-    },
-    {
-      path: `${window.$PUBLIC_PATH}game-manual`,
-      page: "<sff-game-manual></sff-game-manual>",
-    },
-  ])
-  .renderPage();
+initPages();
