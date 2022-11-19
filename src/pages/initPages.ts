@@ -2,6 +2,27 @@ import { init } from "./util/router";
 import defineComponents from "./define-components";
 import style from "./index.css";
 import { html } from "lit-html";
+import { page404 } from "./common/page-404";
+
+/** this function is specifically to handle a customized redirection from the 404 github pages,
+ * because gitHub pages doesn't support Single Page Apps we need some hacks
+ *
+ * when the 404 page get hit, it redirects the request to the index page,
+ * but to do that the original path is converted as a query string, this function
+ * take care of reconstructing the original requested url, only if "gh-path" query exists
+ *
+ * as reference https://github.com/rafgraph/spa-github-pages/blob/gh-pages/404.html
+ * the idea is basically the the same
+ */
+function handleGitHubPages404Redirection() {
+  const prs = new URLSearchParams(location.search);
+  const path = prs.get("gh-path");
+
+  if (path) {
+    prs.delete("gh-path");
+    history.replaceState({}, "", path + "?" + prs.toString() + location.hash);
+  }
+}
 
 export default function initPages(): void {
   defineComponents();
@@ -23,6 +44,7 @@ export default function initPages(): void {
         content: (m) => html`<sff-game-page .match=${m}></sff-game-page>`,
       },
     ],
-    html`<div>404 page no found</div>`
+    page404(),
+    handleGitHubPages404Redirection
   );
 }

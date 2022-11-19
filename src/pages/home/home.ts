@@ -9,6 +9,7 @@ import { forkMe } from "../common/fork-me";
 class Home extends HTMLElement {
   connectedCallback() {
     if (this.isConnected) {
+      document.title = `Space Fantasy Football Home Page`;
       this.render();
     }
   }

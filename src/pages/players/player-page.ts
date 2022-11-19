@@ -62,7 +62,7 @@ function playerCtn(p: Player): TemplateResult {
       <a
         aria-label="manual about finances"
         @click=${onLinkClick}
-        href="game-manual#players"
+        href="../game-manual#players"
         class="info-link"
         >🛈</a
       >

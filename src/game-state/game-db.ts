@@ -125,19 +125,24 @@ export function saveGame(gs: GameState, onSaved?: () => unknown) {
 
 /**
  * try to open the game with the given name from the db, when the db is ready
- * it calls the onLoad with the game, when an error occurs it calls onErr
+ * it calls the onLoad with the game, when the game doesn't exist or an error
+ * occurs it calls onErr
  */
 export function openGame(
   name: string,
   onLoad: (s: GameState) => unknown,
   onErr: () => unknown
 ): void {
-  db?.close();
-  const req = indexedDB.open(name, 1);
-  onupgradeneeded(req);
-  onsuccess(req, () => loadGame(onLoad));
-  // TODO: try to handle some errors
-  req.onerror = onErr;
+  if (getSavesNames().includes(name)) {
+    db?.close();
+    const req = indexedDB.open(name, 1);
+    onupgradeneeded(req);
+    onsuccess(req, () => loadGame(onLoad));
+    // TODO: try to handle some errors
+    req.onerror = onErr;
+  } else {
+    onErr();
+  }
 }
 
 /** try to load the game from the current open db and pass it to onLoad */

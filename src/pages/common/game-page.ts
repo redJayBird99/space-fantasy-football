@@ -6,6 +6,7 @@ import defineGameHeader from "./game-header";
 import defineGameNav from "./game-nav";
 import { forkMe } from "./fork-me";
 import { Router } from "../util/router";
+import { page404 } from "./page-404";
 defineMenuBar();
 defineGameHeader();
 defineGameNav();
@@ -18,11 +19,7 @@ class GamePage extends HTMLElement {
   /**
    * @param main the main content of the game page
    */
-  pageTemplate = (
-    // eslint-disable-next-line no-undef
-    gName: string,
-    main: TemplateResult | typeof nothing
-  ) => {
+  pageTemplate = (gName: string, main: TemplateResult | typeof nothing) => {
     return html`
       <sff-layout>
         <style>
@@ -39,6 +36,13 @@ class GamePage extends HTMLElement {
     `;
   };
 
+  errorPageTemplate = (gName: string) => {
+    // TODO a proper 404 page
+    html`<div>
+      <div>sorry, the page you are looking for doesn't exist</div>
+    </div>`;
+  };
+
   // eslint-disable-next-line no-undef
   render = (m: URLPatternResult | null, main: TemplateResult) => {
     const gName = m!.pathname.groups.gName;
@@ -46,13 +50,11 @@ class GamePage extends HTMLElement {
     if (!window.$game.state && gName) {
       // if the game isn't already loaded like when navigating directly from  a
       // link try to get the save from the db before rendering the page
-      // TODO: if the save wasn't found warn the user
-      // TODO: show some loading placeholder
-      const content = new Promise((resolve, reject) => {
+      const content = new Promise((resolve) => {
         window.$game.loadGameFromDB(
           m!.pathname.groups.gName!,
           () => resolve(this.pageTemplate(gName!, main)),
-          () => console.error("TODO!")
+          () => resolve(page404())
         );
       });
 
@@ -68,66 +70,71 @@ class GamePage extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
-      this.router = new Router(this, [
-        {
-          path: `${this.basePath}dashboard`,
-          content: (m) => this.render(m, html`<sff-dashboard></sff-dashboard>`),
-        },
-        {
-          path: `${this.basePath}players`,
-          content: (m) => this.render(m, html`<sff-players></sff-players>`),
-        },
-        {
-          path: `${this.basePath}players/player`,
-          content: (m) => this.render(m, html`<sff-player></sff-player>`),
-        },
-        {
-          path: `${this.basePath}league`,
-          content: (m) => this.render(m, html`<sff-league></sff-league>`),
-        },
-        {
-          path: `${this.basePath}inbox`,
-          content: (m) =>
-            this.render(m, html`<sff-inbox-page></sff-inbox-page>`),
-        },
-        {
-          path: `${this.basePath}team`,
-          content: (m) => this.render(m, html`<sff-team></sff-team>`),
-        },
-        {
-          path: `${this.basePath}finances`,
-          content: (m) =>
-            this.render(m, html`<sff-team-finances></sff-team-finances>`),
-        },
-        {
-          path: `${this.basePath}transactions`,
-          content: (m) =>
-            this.render(m, html`<sff-transactions></sff-transactions>`),
-        },
-        {
-          path: `${this.basePath}draft`,
-          content: (m) => this.render(m, html`<sff-draft></sff-draft>`),
-        },
-        {
-          path: `${this.basePath}retiring`,
-          content: (m) =>
-            this.render(m, html`<retiring-players></retiring-players>`),
-        },
-        {
-          path: `${this.basePath}trade`,
-          content: (m) => this.render(m, html`<sff-trade></sff-trade>`),
-        },
-        {
-          path: `${this.basePath}trade-offers`,
-          content: (m) =>
-            this.render(m, html`<sff-trade data-offers=""></sff-trade>`),
-        },
-        {
-          path: `${this.basePath}game-manual`,
-          content: (m) =>
-            this.render(m, html`<sff-game-manual></sff-game-manual>`),
-        },
-      ]);
+      this.router = new Router(
+        this,
+        [
+          {
+            path: `${this.basePath}dashboard`,
+            content: (m) =>
+              this.render(m, html`<sff-dashboard></sff-dashboard>`),
+          },
+          {
+            path: `${this.basePath}players`,
+            content: (m) => this.render(m, html`<sff-players></sff-players>`),
+          },
+          {
+            path: `${this.basePath}players/player`,
+            content: (m) => this.render(m, html`<sff-player></sff-player>`),
+          },
+          {
+            path: `${this.basePath}league`,
+            content: (m) => this.render(m, html`<sff-league></sff-league>`),
+          },
+          {
+            path: `${this.basePath}inbox`,
+            content: (m) =>
+              this.render(m, html`<sff-inbox-page></sff-inbox-page>`),
+          },
+          {
+            path: `${this.basePath}team`,
+            content: (m) => this.render(m, html`<sff-team></sff-team>`),
+          },
+          {
+            path: `${this.basePath}finances`,
+            content: (m) =>
+              this.render(m, html`<sff-team-finances></sff-team-finances>`),
+          },
+          {
+            path: `${this.basePath}transactions`,
+            content: (m) =>
+              this.render(m, html`<sff-transactions></sff-transactions>`),
+          },
+          {
+            path: `${this.basePath}draft`,
+            content: (m) => this.render(m, html`<sff-draft></sff-draft>`),
+          },
+          {
+            path: `${this.basePath}retiring`,
+            content: (m) =>
+              this.render(m, html`<retiring-players></retiring-players>`),
+          },
+          {
+            path: `${this.basePath}trade`,
+            content: (m) => this.render(m, html`<sff-trade></sff-trade>`),
+          },
+          {
+            path: `${this.basePath}trade-offers`,
+            content: (m) =>
+              this.render(m, html`<sff-trade data-offers=""></sff-trade>`),
+          },
+          {
+            path: `${this.basePath}game-manual`,
+            content: (m) =>
+              this.render(m, html`<sff-game-manual></sff-game-manual>`),
+          },
+        ],
+        page404()
+      );
     }
   }
 }

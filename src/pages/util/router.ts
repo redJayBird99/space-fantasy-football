@@ -44,17 +44,19 @@ const urlObservers: Set<{ onUrlUpdate: () => unknown }> = new Set();
  * @param root is the node where the route content will be rendered
  * @routes list of al possible route available to the Router
  * @param defaultContent when the Router doesn't find a route match render this content
+ * @param preMatching called before the router start matching the new url
  */
 export function init(
   root: HTMLElement,
   rs: Route[],
-  defaultContent?: TemplateResult
+  defaultContent?: TemplateResult,
+  preMatching?: () => void
 ) {
   if (urlObservers.size === 0) {
     window.addEventListener("popstate", () =>
       urlObservers.forEach((o) => o.onUrlUpdate())
     );
-    urlObservers.add(new Router(root, rs, defaultContent));
+    urlObservers.add(new Router(root, rs, defaultContent, preMatching));
   }
 }
 
@@ -75,20 +77,24 @@ function getRoute<T extends { path: string }>(routes: T[]): T | void {
 export class Router {
   private routes: Route[] = [];
   private defaultContent?: TemplateResult | typeof nothing = nothing;
+  private preRender?: () => void;
 
   /**
    * @param root is the node where the route content will be rendered
    * @routes list of al possible route available to the Router
    * @param defaultContent when the Router doesn't find a route match render this content
+   * @param preMatching called before the router start matching the new url
    */
   constructor(
     private root: HTMLElement,
     routes: Route[],
-    defaultContent?: TemplateResult
+    defaultContent?: TemplateResult,
+    preMatching?: () => void
   ) {
     this.routes.push(...routes);
     defaultContent && (this.defaultContent = defaultContent);
     urlObservers.add(this);
+    this.preRender = preMatching;
     this.renderContent();
   }
 
@@ -106,6 +112,7 @@ export class Router {
 
   /** render the content of the route matching the pathname of the current url, */
   renderContent() {
+    this.preRender?.();
     const route = getRoute(this.routes);
     const match = route
       ? // eslint-disable-next-line no-undef
