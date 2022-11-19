@@ -21,7 +21,7 @@ import { Team } from "../../character/team";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
-import { handleLinkClick } from "../util/router";
+import { onLinkClick } from "../util/router";
 definePlayerHistory();
 
 class PlayerPage extends HTMLSFFGameElement {
@@ -42,9 +42,7 @@ class PlayerPage extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">${p ? playerCtn(p) : nothing}</div>
-        </sff-game-page>
+        ${p ? playerCtn(p) : nothing}
       `,
       this
     );
@@ -63,7 +61,7 @@ function playerCtn(p: Player): TemplateResult {
     <section class="plr-info">
       <a
         aria-label="manual about finances"
-        @click=${handleLinkClick}
+        @click=${onLinkClick}
         href="game-manual#players"
         class="info-link"
         >🛈</a

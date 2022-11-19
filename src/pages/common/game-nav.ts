@@ -1,10 +1,12 @@
 import style from "./game-nav.css";
 import { render, html, nothing, TemplateResult } from "lit-html";
-import { handleLinkClick } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";
+import { goLink } from "../util/go-link";
 
 /** the in game nav bar */
 class GameNav extends HTMLSFFGameElement {
+  gName?: string; // named group of the matched URL passed as property
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -12,10 +14,9 @@ class GameNav extends HTMLSFFGameElement {
 
   render(): void {
     const gs = window.$game.state!;
+    const gn = this.gName;
     const link = (href: string, content: string | TemplateResult) =>
-      html`<a @click=${handleLinkClick} href=${href} class="rt-link"
-        ><span>${content}</span></a
-      >`;
+      goLink(href, html`<span>${content}</span>`);
 
     render(
       html`
@@ -23,34 +24,27 @@ class GameNav extends HTMLSFFGameElement {
           ${style}
         </style>
         <ul>
-          <li class="home">${link(window.$PUBLIC_PATH, "⌂ home")}</li>
+          <li class="home">${link("/", "⌂ home")}</li>
           <li class="inbox">
-            ${link(`${window.$PUBLIC_PATH}inbox`, html`📬 inbox${mailBadge()}`)}
+            ${link(`/${gn}/inbox`, html`📬 inbox${mailBadge()}`)}
           </li>
-          <li>${link(`${window.$PUBLIC_PATH}dashboard`, "🎮 dashboard")}</li>
-          <li>${link(`${window.$PUBLIC_PATH}players`, "🏃 players")}</li>
-          <li>${link(`${window.$PUBLIC_PATH}league`, "🏆 league")}</li>
-          <li>${link(`${window.$PUBLIC_PATH}team`, "🏟 team")}</li>
-          <li>${link(`${window.$PUBLIC_PATH}finances`, "🏦 finances")}</li>
-          <li>
-            ${link(`${window.$PUBLIC_PATH}transactions`, "🧳 transactions")}
-          </li>
-          <li>${link(`${window.$PUBLIC_PATH}draft`, "🥇 draft")}</li>
-          <li>${link(`${window.$PUBLIC_PATH}trade`, "⚖ trade")}</li>
+          <li>${link(`/${gn}/dashboard`, "🎮 dashboard")}</li>
+          <li>${link(`/${gn}/players`, "🏃 players")}</li>
+          <li>${link(`/${gn}/league`, "🏆 league")}</li>
+          <li>${link(`/${gn}/team`, "🏟 team")}</li>
+          <li>${link(`/${gn}/finances`, "🏦 finances")}</li>
+          <li>${link(`/${gn}/transactions`, "🧳 transactions")}</li>
+          <li>${link(`/${gn}/draft`, "🥇 draft")}</li>
+          <li>${link(`/${gn}/trade`, "⚖ trade")}</li>
           ${gs.tradeOffers.length > 0
             ? html`<li class="offers">
-                ${link(
-                  `${window.$PUBLIC_PATH}trade-offers`,
-                  html`📲 offers${offerBadge()}`
-                )}
+                ${link(`/${gn}/trade-offers`, html`📲 offers${offerBadge()}`)}
               </li>`
             : nothing}
           ${gs.flags.onGameEvent === "retiring"
-            ? html`<li>
-                ${link(`${window.$PUBLIC_PATH}retiring`, "🎽 retiring")}
-              </li>`
+            ? html`<li>${link(`/${gn}/retiring`, "🎽 retiring")}</li>`
             : nothing}
-          <li>${link(`${window.$PUBLIC_PATH}game-manual`, "📘 manual")}</li>
+          <li>${link(`/${gn}/game-manual`, "📘 manual")}</li>
         </ul>
       `,
       this.shadowRoot!

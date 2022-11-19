@@ -33,7 +33,8 @@ class Inbox extends HTMLSFFGameElement {
    * otherwise open the email for reading and mark it as opened */
   handleOpenMail = (e: Mail) => {
     if (this.hasAttribute("data-compact")) {
-      goTo(`${window.$PUBLIC_PATH}inbox`);
+      // TODO use the gName
+      goTo(`/${window.$game.state!.name}/inbox`);
     } else {
       e.opened = true;
       this.mail = e;

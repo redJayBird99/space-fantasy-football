@@ -29,12 +29,8 @@ class LeaguePage extends HTMLElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            <league-table data-mode=${this.tableMode}></league-table>
-            <league-fixtures></league-fixtures>
-          </div>
-        </sff-game-page>
+        <league-table data-mode=${this.tableMode}></league-table>
+        <league-fixtures></league-fixtures>
       `,
       this
     );

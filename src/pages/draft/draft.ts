@@ -60,14 +60,10 @@ class Draft extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            ${this.renderSeasonSelector()}
-            <div class="cnt-draft-info">
-              ${draftTable(draft)} ${lottery(draft.lottery)}
-            </div>
-          </div>
-        </sff-game-page>
+        ${this.renderSeasonSelector()}
+        <div class="cnt-draft-info">
+          ${draftTable(draft)} ${lottery(draft.lottery)}
+        </div>
       `,
       this
     );

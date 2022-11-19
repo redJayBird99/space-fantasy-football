@@ -6,6 +6,8 @@ defineSimControls();
 
 /** the header of the pages when in game */
 class GameHeader extends HTMLElement {
+  gName?: string; // named group of the matched URL passed as property
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -27,7 +29,7 @@ class GameHeader extends HTMLElement {
           ${userTeamColor()}
           <h2>${window.$game.state!.userTeam}</h2>
         </div>
-        <sim-controls class="cts"></sim-controls>
+        <sim-controls .gName=${this.gName!} class="cts"></sim-controls>
       `,
       this.shadowRoot!
     );

@@ -24,9 +24,7 @@ class RetiringPlayers extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">${players()}</div>
-        </sff-game-page>
+        ${players()}
       `,
       this.shadowRoot!
     );

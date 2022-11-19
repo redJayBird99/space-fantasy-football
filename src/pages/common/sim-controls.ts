@@ -15,6 +15,8 @@ import { HTMLSFFGameElement } from "./html-game-element";
 import { createRef, Ref, ref } from "lit-html/directives/ref.js";
 
 class SimControls extends HTMLSFFGameElement {
+  gName?: string; // named group of the matched URL passed as property
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -27,7 +29,7 @@ class SimControls extends HTMLSFFGameElement {
           ${style}
         </style>
         ${gameDate()}
-        <play-sim></play-sim>
+        <play-sim .gName=${this.gName}></play-sim>
         <btn-sim-options></btn-sim-options>
       `,
       this.shadowRoot!
@@ -78,6 +80,7 @@ function dateEventInfo(): string {
 
 /** the play button to start the game simulation and customizable options */
 class PlaySim extends HTMLSFFGameElement {
+  gName?: string; // named group of the matched URL passed as property
   private simCloser: ReturnType<typeof simulate> | undefined;
   private state = _ps.newState({} as { simGs?: Readonly<GameState> }, () =>
     this.render()
@@ -94,34 +97,22 @@ class PlaySim extends HTMLSFFGameElement {
 
   /** save the given gameState and sometimes redirect to some page when on some specific game date */
   handleSimEnd = (gs: Readonly<GameState>) => {
-    const update = () => {
-      window.$game.state = gs;
-      window.$game.saveGsOnDB();
-    };
-    const prepareRedirect = () => {
-      window.$game.clearObservers(); // in case we are going to another page we don't need to update this one
-      update();
-    };
-
     /** check if should redirect to a specific page when on a specific event */
     if (gs.flags.onGameEvent === "draftStart") {
-      prepareRedirect();
-      goTo(`${window.$PUBLIC_PATH}draft`);
+      goTo(`/${this.gName!}/draft`);
     } else if (gs.flags.onGameEvent === "updateContracts") {
-      prepareRedirect();
-      goTo(`${window.$PUBLIC_PATH}finances`);
+      goTo(`/${this.gName!}/finances`);
     } else if (gs.flags.onGameEvent === "retiring") {
-      prepareRedirect();
-      goTo(`${window.$PUBLIC_PATH}retiring`);
+      goTo(`/${this.gName!}/retiring`);
     } else if (gs.flags.onGameEvent === "openFreeSigningWindow") {
-      prepareRedirect();
-      goTo(`${window.$PUBLIC_PATH}players?team=free+agent`);
+      goTo(`/${this.gName!}/players?team=free+agent`);
     } else if (gs.flags.onGameEvent === "openTradeWindow") {
-      prepareRedirect();
-      goTo(`${window.$PUBLIC_PATH}trade`);
-    } else {
-      update();
+      goTo(`/${this.gName!}/trade`);
     }
+
+    // unfortunately will cause a double rendering for some elements
+    window.$game.state = gs;
+    window.$game.saveGsOnDB();
   };
 
   /** update the sim game state */
@@ -218,14 +209,8 @@ class PlaySim extends HTMLSFFGameElement {
 }
 
 /** open and close the simOption menu */
-class BtnSimOptions extends HTMLElement {
+class BtnSimOptions extends HTMLSFFGameElement {
   private dialogRef: Ref<HTMLDialogElement> = createRef();
-
-  connectedCallback() {
-    if (this.isConnected) {
-      this.render();
-    }
-  }
 
   handleOpenOptions = () => {
     this.dialogRef.value!.show();

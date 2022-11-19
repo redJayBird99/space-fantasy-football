@@ -5,7 +5,7 @@ dashboard-next-match {
   display: block;
 }
 
-[slot="in-main"] {
+sff-dashboard {
   align-items: start;
   display: grid;
   gap: 1rem 0;
@@ -51,7 +51,7 @@ league-table {
 }
 
 @media screen and (max-width: 85rem) {
-  [slot="in-main"] {
+  sff-dashboard {
     grid-template-areas: "nx fx" "lg ix";
     grid-template-columns: minmax(0px, 9fr) minmax(0px, 7fr);
   }
@@ -62,7 +62,7 @@ league-table {
 }
 
 @media screen and (max-width: 55rem) {
-  [slot="in-main"] {
+  sff-dashboard {
     grid-template-areas: "nx nx" "fx ix" "lg lg";
     grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr);
   }
@@ -77,7 +77,7 @@ league-table {
 }
 
 @media screen and (max-width: 32rem) {
-  [slot="in-main"] {
+  sff-dashboard {
     grid-template-areas: "nx" "fx" "ix" "lg";
     grid-template-columns: 1fr;
   }

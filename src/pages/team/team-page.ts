@@ -36,7 +36,7 @@ import { changeFormation, updateUserFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
-import { handleLinkClick } from "../util/router";
+import { onLinkClick } from "../util/router";
 defineChangeSpot();
 
 export const PITCH_WIDTH = 66;
@@ -101,9 +101,7 @@ class TeamPage extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          ${teamMain(this.team, isUser ? this.openUpdateLineup : undefined)}
-        </sff-game-page>
+        ${teamMain(this.team, isUser ? this.openUpdateLineup : undefined)}
       `,
       this
     );
@@ -139,7 +137,7 @@ function teamMain(
       <div class="cnt-controls">
         <a
           aria-label="manual about finances"
-          @click=${handleLinkClick}
+          @click=${onLinkClick}
           href="game-manual#players"
           class="info-link"
           >🛈</a

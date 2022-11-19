@@ -191,13 +191,9 @@ class PlayersPage extends HTMLElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            ${filters()}
-            <div class="tb-controls">${tableControls()}</div>
-            <players-table></players-table>
-          </div>
-        </sff-game-page>
+        ${filters()}
+        <div class="tb-controls">${tableControls()}</div>
+        <players-table></players-table>
       `,
       this
     );

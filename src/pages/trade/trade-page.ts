@@ -49,13 +49,9 @@ class TradeRoot extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            ${this.hasAttribute("data-offers")
-              ? html`<sff-trade-offers-page></sff-trade-offers-page>`
-              : html`<sff-trade-page></sff-trade-page>`}
-          </div>
-        </sff-game-page>
+        ${this.hasAttribute("data-offers")
+          ? html`<sff-trade-offers-page></sff-trade-offers-page>`
+          : html`<sff-trade-page></sff-trade-page>`}
       `,
       this
     );

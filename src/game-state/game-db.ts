@@ -87,7 +87,7 @@ function onsuccess(req: IDBOpenDBRequest, onOpen?: () => unknown) {
     req.result.onversionchange = () => {
       req.result.close();
       setDB(undefined);
-      !atUrl(window.$PUBLIC_PATH) && goTo(window.$PUBLIC_PATH);
+      !atUrl(window.$PUBLIC_PATH) && goTo("/");
     };
 
     // it is not fired if the database connection is closed normally

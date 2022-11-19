@@ -23,15 +23,11 @@ class Dashboard extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            <div class="bg-grid1"></div>
-            <dashboard-next-match role="article"></dashboard-next-match>
-            <sff-fixtures role="article"></sff-fixtures>
-            <sff-inbox data-compact></sff-inbox>
-            <league-table data-mode="compact"></league-table>
-          </div>
-        </sff-game-page>
+        <div class="bg-grid1"></div>
+        <dashboard-next-match role="article"></dashboard-next-match>
+        <sff-fixtures role="article"></sff-fixtures>
+        <sff-inbox data-compact></sff-inbox>
+        <league-table data-mode="compact"></league-table>
       `,
       this
     );

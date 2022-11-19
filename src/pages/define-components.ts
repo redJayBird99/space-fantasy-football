@@ -22,7 +22,6 @@ export default function define() {
     defineLayout();
     defineModal();
     defineHome();
-    defineGamePage();
     defineLeagueTable();
     defineInbox();
     defineDashboard();
@@ -37,5 +36,6 @@ export default function define() {
     defineRetiringPage();
     defineTradePage();
     defineInGameManual();
+    defineGamePage();
   }
 }

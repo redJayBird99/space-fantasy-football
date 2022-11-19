@@ -114,8 +114,9 @@ class NewGame extends HTMLElement {
     const input = this.querySelector("#game-name") as HTMLInputElement;
 
     if (input.value && /^\w{4,14}$/.test(input.value)) {
-      window.$game.newGame(this.pickedTeam, `${SAVES_PREFIX}${input.value}`);
-      goTo(`dashboard`);
+      const gName = `${SAVES_PREFIX}${input.value}`;
+      window.$game.newGame(this.pickedTeam, gName);
+      goTo(`${gName}/dashboard`);
     } else {
       alert(`${input.value} is not a valid name`);
     }
@@ -192,7 +193,7 @@ class LoadFile extends HTMLElement {
 
     if (confirm(warning)) {
       window.$game.loadGameFrom(gs);
-      goTo(`dashboard`);
+      goTo(`${gs.name}/dashboard`);
     }
   };
 
@@ -256,7 +257,7 @@ class LoadGame extends HTMLElement {
     const v = (e.target as HTMLButtonElement).value;
     window.$game.loadGameFromDB(
       v,
-      () => goTo(`dashboard`),
+      () => goTo(`${window.$game.state!.name}/dashboard`),
       () => alert(`something went wrong, the ${v} game wasn't loaded`)
     );
   };

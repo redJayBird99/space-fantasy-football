@@ -53,11 +53,7 @@ class Transactions extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            ${this.renderSeasonSelector()} ${transactionsSection(rec)}
-          </div>
-        </sff-game-page>
+        ${this.renderSeasonSelector()} ${transactionsSection(rec)}
       `,
       this
     );

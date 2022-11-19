@@ -15,11 +15,7 @@ class InboxPage extends HTMLElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">
-            <sff-inbox></sff-inbox>
-          </div>
-        </sff-game-page>
+        <sff-inbox></sff-inbox>
       `,
       this
     );

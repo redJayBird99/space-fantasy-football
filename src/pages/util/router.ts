@@ -7,22 +7,32 @@ export type Route = {
   content: (m: URLPatternResult | null) => TemplateResult;
 };
 
-/** go directly to the given link href */
-export function goTo(href: URL | string): void {
-  const url = new URL(href, location.href);
+/** if the href start with a "/" and without the public path attach the public path to the returned href */
+export function resolvePublicPath(href: string): string {
+  return href.startsWith("/") && !href.startsWith(window.$PUBLIC_PATH)
+    ? window.$PUBLIC_PATH + href.substring(1)
+    : href;
+}
+
+/** go directly to the given link href
+ * if the href start with "/" it get substituted with the public path
+ */
+export function goTo(href: string): void {
+  const url = new URL(resolvePublicPath(href), location.href);
   history.pushState({}, "", url);
   history.pushState({}, "", url);
   history.back();
 }
 
-/** handle the clicking of an anchor element with the client side router  */
-export function handleLinkClick(e: Event): void {
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (e.target instanceof HTMLElement) {
-    const a = e.target.closest("a");
-    a?.hasAttribute("href") && goTo(a.getAttribute("href")!);
+/** handle the navigation click any element with a href with the client side router  */
+export function onLinkClick(e: Event): void {
+  if (
+    e.currentTarget instanceof HTMLElement &&
+    e.currentTarget.hasAttribute("href")
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    goTo(e.currentTarget.getAttribute("href")!);
   }
 }
 

@@ -1,16 +1,6 @@
 @import "./fork-me.css";
 
-:host {
-  display: block;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
-}
-
-::slotted([slot="in-main"]) {
+.game-main {
   margin: 2rem auto;
   max-width: 97rem;
   padding: 0 2%;

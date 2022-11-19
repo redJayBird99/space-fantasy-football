@@ -19,9 +19,7 @@ class ManualInGame extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <sff-game-page>
-          <div slot="in-main">${manualContent()}</div>
-        </sff-game-page>
+        ${manualContent()}
       `,
       this
     );
