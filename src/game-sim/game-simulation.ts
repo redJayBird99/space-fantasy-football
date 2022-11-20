@@ -13,6 +13,7 @@ import {
   setFormation,
   MIN_TEAM_SIZE,
   removeLineupDepartures,
+  LineupSpot,
 } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
@@ -29,7 +30,7 @@ import {
   tradeOffer,
 } from "../character/mail";
 import { updateTradeOffers } from "../character/user";
-import { toISODateString } from "../util/util";
+import { cubicBezierY, toISODateString } from "../util/util";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
@@ -583,11 +584,41 @@ function enqueueSimRoundEvent(gs: GameState, round: number): void {
   }
 }
 
-// TODO: implement a real one
 function simulateMatch(gs: GameState, matchId: string): void {
+  // TODO: implement a real one
   const match = gs.matches[matchId];
-  const goals = () => Math.floor(Math.random() * 6);
-  match.result = { home: goals(), away: goals() };
+  const getScore = (l: LineupSpot[]) =>
+    l.reduce((a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos), 0);
+  const homeScore =
+    within(getScore(gs.teams[match.home].formation?.lineup!) - 700, 0, 100) /
+      100 +
+    0.1;
+  const awayScore =
+    within(getScore(gs.teams[match.away].formation?.lineup!) - 700, 0, 100) /
+      100 -
+    0.1;
+  const goals = Math.round(cubicBezierY(Math.random(), 0, 0.35, -0.2, 1) * 6);
+  const winGoals = 1 + goals;
+  const homeShare = (1 + homeScore / 2 - awayScore / 2) / 2;
+  const awayShare = 1 - homeShare;
+  const p = Math.random();
+
+  if (homeShare * 0.8 >= p) {
+    match.result = {
+      home: winGoals,
+      away: Math.floor(Math.random() * winGoals),
+    };
+  } else if ((homeShare + awayShare) * 0.8 >= p) {
+    match.result = {
+      home: Math.floor(Math.random() * winGoals),
+      away: winGoals,
+    };
+  } else {
+    match.result = {
+      home: Math.round(goals / 2),
+      away: Math.round(goals / 2),
+    };
+  }
 }
 
 // applies the monthly growth and degrowth for every player stored in gs

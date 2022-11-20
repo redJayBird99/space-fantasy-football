@@ -15,4 +15,12 @@ export default {
   getImprovabilityRating(p: Player): number {
     return p.growthRate / MAX_GROWTH_RATE;
   },
+  getScore(team: string) {
+    const gs = window.$game.state!;
+    const l = gs.teams[team].formation?.lineup!;
+    return l.reduce(
+      (a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos),
+      0
+    );
+  },
 };

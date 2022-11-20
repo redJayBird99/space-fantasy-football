@@ -26,3 +26,18 @@ export function toISODateString(d: Date): string {
 export function atUrl(url: string): boolean {
   return location.href === new URL(url, location.origin).href;
 }
+
+export function cubicBezierY(
+  t: number,
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number
+): number {
+  return (
+    (1 - t) ** 3 * y1 +
+    3 * (1 - t) ** 2 * t * y2 +
+    3 * (1 - t) * t ** 2 * y3 +
+    t ** 3 * y4
+  );
+}

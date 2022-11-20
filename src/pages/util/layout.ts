@@ -13,23 +13,29 @@ class Layout extends HTMLElement {
     }
   }
 
+  onNavLinkClick = (e: Event) => {
+    const nav = e.currentTarget as HTMLElement;
+    // cast to any because any element with a href could be a link
+    if (e.composedPath().find((t) => (t as any).href)) {
+      nav.classList.add("mb-nav-close");
+    }
+  };
+
   /** handle the btn-toggle-nav, opening and closing the nav bar */
   onOpenNav = () => {
     const nav = this.shadowRoot!.querySelector("#js-nav") as HTMLElement;
 
-    if (!nav.classList.contains("nav-open")) {
-      nav.classList.add("nav-open");
-      nav.style.display = "block";
+    if (nav.classList.contains("mb-nav-close")) {
+      nav.classList.remove("mb-nav-close");
       nav.style.opacity = "0";
       // setTimeout without delay on firefox sometimes doesn't fire the transition
       requestAnimationFrame(() =>
         requestAnimationFrame(() => (nav.style.opacity = ""))
       );
     } else {
-      nav.classList.remove("nav-open");
       const clear = () => {
         nav.style.opacity = "";
-        nav.style.display = "";
+        nav.classList.add("mb-nav-close");
         nav.removeEventListener("transitionend", clear);
         nav.removeEventListener("transitioncancel", clear);
       };
@@ -51,7 +57,7 @@ class Layout extends HTMLElement {
             <span>☰</span>
           </button>
         </header>
-        <nav id="js-nav">
+        <nav id="js-nav" class="mb-nav-close" @click=${this.onNavLinkClick}>
           <slot name="in-nav"></slot>
         </nav>
         <main>

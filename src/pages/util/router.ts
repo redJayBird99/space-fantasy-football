@@ -31,7 +31,6 @@ export function onLinkClick(e: Event): void {
     e.currentTarget.hasAttribute("href")
   ) {
     e.preventDefault();
-    e.stopPropagation();
     goTo(e.currentTarget.getAttribute("href")!);
   }
 }
