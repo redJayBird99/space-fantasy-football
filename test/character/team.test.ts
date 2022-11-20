@@ -1,5 +1,6 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
+import "../../src/pages/util/router";
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
@@ -7,6 +8,7 @@ import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { swap } from "../../src/util/generator";
 import { mean } from "../../src/util/math";
+jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 let st = _gs.GameState.init("abcd".split(""));

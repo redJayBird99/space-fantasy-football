@@ -1,5 +1,6 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
+import "../../src/pages/util/router";
 import {
   exportedForTesting as _u,
   updateSort,
@@ -10,6 +11,7 @@ import {
 } from "../../src/character/util";
 import { Player } from "../../src/character/player";
 import { GameState } from "../../src/game-state/game-state";
+jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 Player.getScore = jest.fn();

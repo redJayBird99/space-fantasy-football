@@ -1,8 +1,10 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
+import "../../src/pages/util/router";
 import * as _p from "../../src/character/player";
 import { exportedForTesting as _u } from "../../src/character/util";
 import { getPopStats } from "../../src/game-state/population-stats";
+jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
 
 describe("getPopStats()", () => {

@@ -587,14 +587,17 @@ function enqueueSimRoundEvent(gs: GameState, round: number): void {
 function simulateMatch(gs: GameState, matchId: string): void {
   // TODO: implement a real one
   const match = gs.matches[matchId];
-  const getScore = (l: LineupSpot[]) =>
-    l.reduce((a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos), 0);
+  const getScore = (l?: LineupSpot[]) =>
+    l?.reduce(
+      (a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos),
+      0
+    ) ?? 0;
   const homeScore =
-    within(getScore(gs.teams[match.home].formation?.lineup!) - 700, 0, 100) /
+    within(getScore(gs.teams[match.home]?.formation?.lineup!) - 700, 0, 100) /
       100 +
     0.1;
   const awayScore =
-    within(getScore(gs.teams[match.away].formation?.lineup!) - 700, 0, 100) /
+    within(getScore(gs.teams[match.away]?.formation?.lineup!) - 700, 0, 100) /
       100 -
     0.1;
   const goals = Math.round(cubicBezierY(Math.random(), 0, 0.35, -0.2, 1) * 6);

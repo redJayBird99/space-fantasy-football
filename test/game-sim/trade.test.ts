@@ -1,5 +1,6 @@
 import "../../src/game-sim/sim-worker-interface";
 import "../mock/broadcast-channel.mock";
+import "../../src/pages/util/router";
 import * as _t from "../../src/character/team";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
@@ -8,6 +9,7 @@ import { exportedForTesting as _u } from "../../src/character/util";
 import { mean } from "../../src/util/math";
 const _trdTest = _tde.exportedForTesting;
 jest.mock("../../src/game-sim/sim-worker-interface");
+jest.mock("../../src/pages/util/router");
 
 // guarantee findOffer
 const getSampleOffer = (gs: _gs.GameState, by: _t.Team, to: _t.Team) => {

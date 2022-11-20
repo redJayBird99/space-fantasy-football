@@ -1,5 +1,6 @@
 import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
+import "../../src/pages/util/router";
 import * as _trd from "../../src/game-sim/trade";
 import {
   canTrade,
@@ -11,6 +12,7 @@ import {
 import * as _gs from "../../src/game-state/game-state";
 import { MAX_GROWTH_RATE, Player } from "../../src/character/player";
 import { Team } from "../../src/character/team";
+jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
 jest.mock("../../src/game-sim/trade");
 
