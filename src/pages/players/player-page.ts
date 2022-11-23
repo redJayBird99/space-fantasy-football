@@ -22,6 +22,7 @@ import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
 import { onLinkClick } from "../util/router";
+import { daysBetween } from "../../util/math";
 definePlayerHistory();
 
 class PlayerPage extends HTMLSFFGameElement {
@@ -88,6 +89,7 @@ function playerBio(p: Player): TemplateResult {
   const rColor = `hsl(${getPlayerRating(p, gs) * 120}deg 100% 60%)`;
   const iColor = `hsl(${estimateImprovabilityRating(p, t) * 120}deg 100% 60%)`;
   const teamLink = gs.teams[p.team] ? `../team?team=${p.team}` : "";
+  const injury = gs.injuries[p.id];
 
   return html`
     <div class="cnt-plr-high">
@@ -122,6 +124,11 @@ function playerBio(p: Player): TemplateResult {
       <div>Preferred foot ${p.foot}</div>
       <div>wage: ${wage}₡</div>
       <div>contract: ${seasons ? `length ${seasons} seasons` : "free"}</div>
+      ${injury
+        ? html`<div>
+            injured for ${daysBetween(gs.date, new Date(injury.when))} days 🚑
+          </div>`
+        : nothing}
     </div>
   `;
 }

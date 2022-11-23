@@ -7,6 +7,7 @@ const GOOD_STAT = 75;
 const BAD_STAT = 35;
 const areas = Object.keys(_p.POSITION_AREA) as _p.PositionArea[];
 
+// not used at the moment
 /** find the best player from pls at the given pos */
 export function bestAtPos(
   pls: Iterable<_p.Player>,

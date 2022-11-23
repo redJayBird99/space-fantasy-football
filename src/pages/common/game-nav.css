@@ -56,7 +56,18 @@ li:hover > a {
   position: relative;
 }
 
+@keyframes ani-badge {
+  from {
+    filter: brightness(1);
+  }
+
+  to {
+    filter: brightness(1.5);
+  }
+}
+
 .badge {
+  animation: ani-badge 1s linear infinite alternate;
   background-color: var(--dk-primary-color-300);
   border-radius: 50%;
   display: inline-block;

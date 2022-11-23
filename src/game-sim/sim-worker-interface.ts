@@ -23,13 +23,16 @@ function request(req: WorkerReq): Promise<FormRes[]> {
   });
 }
 
-/** get new formations for each given team, trying to find the best lineup. */
+/** get new formations for each given team, trying to find the best lineup.
+ *  injured player will not make it in the lineup
+ */
 export function fetchNewFormations(r: ReqFor): Promise<FormRes[]> {
   return request({ type: "getNewFormations", reqs: toNewFormReqs(r) });
 }
 
 /** get updated formations (or new ones if the team doesn't already have a formation)
- * for each given team, trying to find the best lineup. */
+ * for each given team, trying to find the best lineup.
+ * injured player will not make it in the lineup */
 export function fetchUpdatedFormations(r: ReqFor): Promise<FormRes[]> {
   return request({ type: "getUpdatedFormations", reqs: toUpdateFormReqs(r) });
 }
@@ -38,7 +41,7 @@ export function fetchUpdatedFormations(r: ReqFor): Promise<FormRes[]> {
 function toFormReqs(r: ReqFor, type: "update" | "new"): FormReq[] {
   return r.teams.map((t) => ({
     team: t,
-    pls: GameState.getTeamPlayers(r.gs, t),
+    pls: GameState.getTeamPlayers(r.gs, t).filter((p) => !r.gs.injuries[p.id]),
     f: type === "update" ? r.gs.teams[t].formation?.name : undefined,
   }));
 }

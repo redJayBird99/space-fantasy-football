@@ -26,17 +26,15 @@ import {
   Starter,
 } from "../../character/formation";
 import pImg from "../../asset/player.svg";
-import {
-  fillLineupMissingSpot,
-  getFormation,
-  Team,
-} from "../../character/team";
+import { completeLineup, getFormation, Team } from "../../character/team";
 import defineChangeSpot from "./change-spot";
-import { changeFormation, updateUserFormation } from "../../character/user";
+import { changeFormation, updateFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
 import { onLinkClick } from "../util/router";
+import phyImg from "../../asset/pharmacy.png";
+
 defineChangeSpot();
 
 export const PITCH_WIDTH = 66;
@@ -120,13 +118,18 @@ class TeamPage extends HTMLSFFGameElement {
 function teamMain(
   t: Team,
   openUpdateLineup?: (id: string) => void
-): TemplateResult {
+): TemplateResult | typeof nothing {
   const gs = window.$game.state!;
   const pls = GameState.getTeamPlayers(gs, t.name);
 
   // lazily filling empty spots (sometimes when not needed the formation is incomplete)
-  if (gs.userTeam !== t.name || window.$appState.userSettings.autoFormation) {
-    fillLineupMissingSpot({ gs, t });
+  if (
+    !completeLineup(gs, t) &&
+    (gs.userTeam !== t.name || window.$appState.userSettings.autoFormation)
+  ) {
+    // the update will rerender with the new formation
+    updateFormation(gs, t);
+    return nothing;
   }
 
   const starters = getFormation({ gs, t })?.lineup ?? [];
@@ -196,25 +199,34 @@ function teamPlayersTableHead(mSkills: string[]): TemplateResult {
   `;
 }
 
-/** the table rows of all team's players */
+/**
+ * the table row for the give player
+ * @param openUpdateLineup the handler for the click button to substitute a player
+ * if the player is injured it doesn't apply
+ * @param st indicate if the player is a starter or not
+ */
 function teamPlayerRow(
   p: Player,
   skl: MacroSkill[],
   openUpdateLineup?: (id: string) => void,
   st?: Starter
 ): TemplateResult {
+  const gs = window.$game.state!;
   const at = st?.sp.pos;
+  const canSub = !gs.injuries[p.id] && openUpdateLineup;
 
   return html`<tr class="plr ${st ? "starting" : ""}">
     <td class="plr-pos"><span>${p.position}</span></td>
     <td class="plr-pos plr-at" style=${starterAtBgColor(st)}>
       <button
-        ?disabled=${!openUpdateLineup}
-        @click=${openUpdateLineup ? () => openUpdateLineup(p.id) : nothing}
+        ?disabled=${!canSub}
+        @click=${canSub ? () => openUpdateLineup(p.id) : nothing}
         class="btn-at btn-txt"
         aria-label="change starting position"
       >
-        ${at}
+        ${at}${gs.injuries[p.id]
+          ? html`<img src=${phyImg} alt="player injured" class="injury" />`
+          : nothing}
       </button>
     </td>
     <td class="plr-name">${goLink(`players/player?id=${p.id}`, p.name)}</td>
@@ -338,9 +350,11 @@ function formationSelector(): TemplateResult {
 
 /** handle the automatization option for updating the user formation before a match usually */
 function autoUpdateFormation(): TemplateResult {
+  const gs = window.$game.state!;
+
   const onChange = (e: Event) => {
     if ((e.target as HTMLInputElement).checked) {
-      updateUserFormation(window.$game.state!);
+      updateFormation(gs, gs.teams[gs.userTeam]);
     }
 
     setAutoOptions({ autoFormation: (e.target as HTMLInputElement).checked });

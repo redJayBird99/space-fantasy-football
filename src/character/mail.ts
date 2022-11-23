@@ -4,6 +4,7 @@ import mails from "../asset/mails.json";
 import { MIN_TEAM_SIZE, Team } from "./team";
 import { Trade } from "../game-sim/trade";
 import { TradeRecord } from "../game-state/game-state";
+import { Injury } from "./player";
 
 export interface Mail {
   id: string;
@@ -85,6 +86,19 @@ export function withdrawOffer(send: Date, t: TradeRecord, user: Team): Mail {
       content: `${offer.team} has withdrawn its trading offer for ${pls
         .map((p) => p.name)
         .join(", ")}. The trading conditions aren't met anymore`,
+    },
+    send
+  );
+}
+
+export function injury(send: Date, plrName: string, i: Injury): Mail {
+  return newMail(
+    {
+      sender: "Coach Assistant",
+      subject: `${plrName} get injured`,
+      content: `unfortunately our player ${plrName} get injured, the doctors say he will be fully recovered for the ${new Date(
+        i.when
+      ).toLocaleDateString()}, He can't play in the meantime`,
     },
     send
   );

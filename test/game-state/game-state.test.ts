@@ -229,10 +229,10 @@ describe("GameState.saveSchedule()", () => {
 });
 
 describe("initGameEvents", () => {
-  test("should enqueue 9 GameEvents on gameState.eventQueue", () => {
+  test("should enqueue 10 GameEvents on gameState.eventQueue", () => {
     st.schedules.now = [{ date: startD, matchIds: ["..."] }];
     _gs.initGameEvents(st);
-    expect(st.eventQueue.length).toBe(9);
+    expect(st.eventQueue.length).toBe(10);
   });
 
   test("should enqueue a GameEvent for the first season round", () => {

@@ -12,7 +12,6 @@ import teamsJson from "../asset/teams.json";
 import { hash } from "../util/generator";
 import { within } from "../util/math";
 import { Formation, Formations, Spot } from "./formation";
-import { bestAtPos } from "./util";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 export const MAX_TEAM_SIZE = 30;
@@ -303,19 +302,6 @@ class Team {
   }
 }
 
-/** update the team lineup substituting all players not in the team anymore
- * (retired, traded and ect), this function does a simple substitution and
- * doesn't add new spots when missing.
- * updateFormations instead does a complete overhaul of the lineup so it is usually preferable
- *
- * motivation: before every match the formation is guaranteed to be complete
- * (the sim updateFormations is called), but in between matches changes can happen
- */
-export function subLineupDepartures({ gs, t }: GsTm): void {
-  removeLineupDepartures({ gs, t });
-  fillLineupMissingSpot({ gs, t });
-}
-
 /** remove all players not in the team anymore (retired, traded and ect) */
 export function removeLineupDepartures({ gs, t }: GsTm): void {
   t.formation?.lineup.forEach((s) => {
@@ -327,32 +313,18 @@ export function removeLineupDepartures({ gs, t }: GsTm): void {
   });
 }
 
-/** this function does a simple substitution and it doesn't add new spots when missing.
- * updateFormations instead does a complete overhaul of the lineup so it is usually preferable
- *
- * motivation: before every match the formation is guaranteed to have a complete lineup
- * (the sim updateFormations is called), but in between matches changes can happen
- */
-export function fillLineupMissingSpot({ gs, t }: GsTm): void {
+/** check if the given team formation is complete or not */
+export function completeLineup(gs: GameState, t: Team) {
   if (!t.formation) {
-    return;
+    return false;
   }
 
-  const ln = t.formation.lineup;
-  const exclude = new Set(ln.map((s) => s.plID).filter((id) => id));
-  const bench = new Set(
-    Team.getNotExpiringPlayers({ gs, t }).filter((p) => !exclude.has(p.id))
+  // the team could have less the 11 player available in that case filled should be equal to the available player
+  const filled = t.formation?.lineup.reduce((a, s) => (s.plID ? ++a : a), 0);
+  return (
+    filled === 11 ||
+    filled === t.playerIds.reduce((a, id) => (gs.injuries[id] ? a : ++a), 0)
   );
-  ln.forEach((s) => {
-    if (s.plID === undefined) {
-      const sub = bestAtPos(bench, s.sp.pos);
-
-      if (sub) {
-        s.plID = sub.id;
-        bench.delete(sub);
-      }
-    }
-  });
 }
 
 /** set the team formation property to the given formation */

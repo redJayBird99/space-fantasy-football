@@ -22,7 +22,6 @@ import {
   MAX_TEAM_SIZE,
   removeLineupDepartures,
   setFormation,
-  subLineupDepartures,
   Team,
 } from "./team";
 
@@ -285,14 +284,13 @@ export function changeFormation(to: Formations): void {
       name: to,
       lineup: FORMATIONS[to].map((s) => ({ sp: s })),
     };
-    subLineupDepartures({ gs, t: user });
-    window.$game.state = gs;
+    updateFormation(gs, user);
   }
 }
 
-/** call the fetchUpdatedFormations function to do a complete update of the user formation */
-export async function updateUserFormation(gs: GameState) {
-  const res = await fetchUpdatedFormations({ gs, teams: [gs.userTeam] });
+/** call the fetchUpdatedFormations function to do a complete update of the given team formation */
+export async function updateFormation(gs: GameState, t: Team) {
+  const res = await fetchUpdatedFormations({ gs, teams: [t.name] });
   setFormation(gs.teams[res[0].team], res[0].f);
   window.$game.state = gs;
 }

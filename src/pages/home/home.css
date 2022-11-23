@@ -62,11 +62,24 @@ home-team-picker {
   transform: translate(-50%, 40%);
 }
 
+@keyframes ani-btn {
+  from {
+    background-color: var(--dk-bg-color-750);
+  }
+
+  to {
+    background-color: var(--dk-bg-color);
+  }
+}
+
 .hm-btn {
+  animation: ani-btn 700ms linear infinite alternate;
   background-color: var(--dk-bg-color-750);
+  border: 1px solid transparent;
   color: var(--dk-on-bg-color);
   font-size: 24px;
   height: 85px;
+  transition: border 1s ease-out;
   width: 160px;
 }
 

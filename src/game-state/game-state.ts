@@ -1,4 +1,4 @@
-import { Player, PositionArea } from "../character/player";
+import { Injury, Player, PositionArea } from "../character/player";
 import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
@@ -8,6 +8,7 @@ import {
   prepareSeasonStart,
   GameEventTypes,
   onStateUpdate,
+  enqueueEventFor,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
 import teamsJson from "../asset/teams.json";
@@ -74,6 +75,8 @@ class GameState {
   reSigning?: SignRequest[];
   /** the trade offers received by the user */
   tradeOffers: TradeRecord[] = [];
+  /** all the current player injuries, indexed by the player id  */
+  injuries: { [id: string]: Injury } = {};
   flags = {
     openTradeWindow: false,
     openFreeSigningWindow: true,
@@ -468,6 +471,7 @@ function initTeams(gs: GameState, names: string[]): Team[] {
 function initGameEvents(gs: GameState): void {
   prepareSeasonStart(gs);
   enqueueSkillUpdateEvent(gs);
+  enqueueEventFor(gs, gs.date, "injuriesUpdate", { days: 1 });
   GameState.enqueueGameEvent(gs, {
     date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),
     type: "updateFinances",

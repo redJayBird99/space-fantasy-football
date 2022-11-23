@@ -14,6 +14,7 @@ import {
   MIN_TEAM_SIZE,
   removeLineupDepartures,
   LineupSpot,
+  completeLineup,
 } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
@@ -24,6 +25,7 @@ import {
   fetchUpdatedFormations,
 } from "./sim-worker-interface";
 import {
+  injury,
   mustDraft,
   teamLineupAlert,
   teamSizeAlert,
@@ -31,9 +33,11 @@ import {
 } from "../character/mail";
 import { updateTradeOffers } from "../character/user";
 import { cubicBezierY, toISODateString } from "../util/util";
+import { sortByFinances } from "../character/util";
 
 const SIM_TIME_SLICE = 12; // in hours of game time
 const MAX_SIM_TIME_PER_TICK = 2 * SIM_TIME_SLICE;
+const MAX_SIM_MLS_PER_TICK = MAX_SIM_TIME_PER_TICK * 60 * 60 * 1000; // the above but in milliseconds
 
 const SEASON_START_MONTH = 8; // september
 const SEASON_START_DATE = 1;
@@ -56,7 +60,8 @@ export type GameEventTypes =
   | "trade" // sim trading player between teams
   | "openTradeWindow" // start the exchanging of players period
   | "openFreeSigningWindow" // start the signing free players period
-  | "closeFreeSigningWindow"; //
+  | "closeFreeSigningWindow"
+  | "injuriesUpdate"; // update the recovery of player and broke some player;
 export type SimRound = { round: number };
 /** when done is true when the event was processed, stop is true when the sim should stop on the event */
 type EventRst = { stop: boolean; done: boolean };
@@ -266,6 +271,8 @@ async function handleGameEvent(gs: GameState, evt: GameEvent): PEventRst {
     return handleOpenFreeSigningWindow(gs);
   } else if (evt.type === "closeFreeSigningWindow") {
     return handleCloseFreeSigningWindow(gs);
+  } else if (evt.type === "injuriesUpdate") {
+    return handleInjuries(gs);
   }
 
   return { stop: false, done: false };
@@ -469,6 +476,59 @@ function handleOpenFreeSigningWindow(gs: GameState): EventRst {
 function handleCloseFreeSigningWindow(gs: GameState): EventRst {
   gs.flags.openFreeSigningWindow = false;
   return { stop: endSimOnEvent.closeFreeSigningWindow ?? false, done: true };
+}
+
+/** handle the injure recovery, injury some others and enqueue the next update */
+function handleInjuries(gs: GameState): EventRst {
+  enqueueEventFor(gs, gs.date, "injuriesUpdate", { days: 1 });
+  recoverInjuredPlayers(gs);
+  injurePlayers(gs);
+  return { stop: false, done: true };
+}
+
+function recoverInjuredPlayers(gs: GameState) {
+  for (const [id, injury] of Object.entries(gs.injuries)) {
+    // remove the injury a day before for two reason, the user would see time to recovery 0 days
+    // and because this handle run once per day (game time) but a player could recover in between
+    // so instead of checking for every sim run we just recover the player a day before
+    if (
+      new Date(injury.when).getTime() <=
+      gs.date.getTime() + MAX_SIM_MLS_PER_TICK + 1000
+    ) {
+      delete gs.injuries[id];
+    }
+  }
+}
+
+/** get some player injured, the time or recovery are affected by the team health expenses */
+function injurePlayers(gs: GameState) {
+  const teams = sortByFinances(Object.values(gs.teams), "health", false);
+
+  while (Math.random() > 0.45) {
+    const nthTeam = Math.floor(Math.random() * teams.length);
+    const pls = teams[nthTeam].playerIds;
+    const pId = pls[Math.floor(Math.random() * pls.length)];
+
+    if (!gs.injuries[pId]) {
+      const minRecoveryDay = 5 + Math.random() * 10;
+      let recoveryDays = Math.random() ** 3 * 150 + minRecoveryDay;
+      // apply the health facilities penalty on recovery time
+      recoveryDays = Math.floor(
+        (1 + 0.2 * (nthTeam / teams.length)) * recoveryDays
+      );
+      const now = new Date(gs.date);
+      now.setDate(now.getDate() + recoveryDays);
+      gs.injuries[pId] = { when: toISODateString(now) };
+      // remove the injured player from the formation
+      const spot = teams[nthTeam].formation?.lineup.find((l) => l.plID === pId);
+      spot && (spot.plID = undefined);
+
+      if (teams[nthTeam].name === gs.userTeam) {
+        // notify the user of the injury
+        addMail(gs, injury(gs.date, gs.players[pId].name, gs.injuries[pId]));
+      }
+    }
+  }
 }
 
 /**
@@ -686,7 +746,7 @@ function enqueueSeasonStartEvent(gs: GameState): void {
  * @param off amount of time after or before the given date
  * @returns return true when was possible to schedule the event
  */
-function enqueueEventFor(
+export function enqueueEventFor(
   gs: GameState,
   d: Date,
   t: GameEventTypes,
@@ -858,7 +918,7 @@ function checkUserLineup(gs: GameState): boolean {
     e.type !== "simRound" ||
     e.date.getTime() - gs.date.getTime() > hour ||
     window.$appState.userSettings.autoFormation ||
-    Boolean(u.formation && !u.formation.lineup.some((s) => !s.plID));
+    completeLineup(gs, u);
 
   if (!gs.flags.canSimRound && gs.flags.whyIsSimDisabled !== "missingLineup") {
     gs.flags.whyIsSimDisabled = "missingLineup";
@@ -910,6 +970,7 @@ export const exportedForTesting = {
   handleCloseFreeSigningWindow,
   handleRenewals,
   handleRetire,
+  handleInjuries,
   createDraftPlayers,
   simulateRound,
   updateSkills,
@@ -924,10 +985,11 @@ export const exportedForTesting = {
   enqueueSeasonEndEvent,
   enqueueSeasonStartEvent,
   enqueueUpdateFinancesEvent,
-  enqueueEventFor,
   storeEndedSeason,
   newSeasonSchedule,
   prepareDraft,
   retirePlayer,
   updateRejections,
+  recoverInjuredPlayers,
+  injurePlayers,
 };

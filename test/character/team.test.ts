@@ -863,29 +863,3 @@ describe("removeLineupDepartures", () => {
     expect(cpTeam.formation?.lineup[3].plID).toBe(pls[2].id);
   });
 });
-
-describe("fillLineupMissingSpot()", () => {
-  const sp = { pos: "cm", row: 3, col: 8 } as const;
-  const pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-  team.formation = {
-    name: "3-4-3",
-    lineup: [{ plID: pls[0].id, sp }, { sp }, { sp }],
-  };
-  const cpTeam = JSON.parse(JSON.stringify(team));
-  _t.fillLineupMissingSpot({ gs: st, t: cpTeam });
-
-  test("should substitute empty spot", () => {
-    expect(cpTeam.formation?.lineup[1].plID).toBeDefined();
-    expect(cpTeam.formation?.lineup[2].plID).toBeDefined();
-  });
-
-  test("should preserve all already filled position", () => {
-    expect(cpTeam.formation?.lineup[0].plID).toBe(pls[0].id);
-  });
-
-  test("the subs should different for each spot", () => {
-    expect(new Set(cpTeam.formation?.lineup.map((s: any) => s.plID)).size).toBe(
-      3
-    );
-  });
-});

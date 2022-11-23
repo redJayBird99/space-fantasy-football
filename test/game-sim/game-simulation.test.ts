@@ -7,6 +7,7 @@ import {
   exportedForTesting as _sm,
   GameEvent,
   prepareSeasonStart,
+  enqueueEventFor,
 } from "../../src/game-sim/game-simulation";
 import * as _gs from "../../src/game-state/game-state";
 import { LeagueTable } from "../../src/game-state/league-table";
@@ -365,7 +366,7 @@ describe("enqueueSeasonStartEvent()", () => {
 describe("enqueueEventFor()", () => {
   test("should enqueue a gameEvent on the gameState for next day", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContracts", { days: 1 });
+    enqueueEventFor(st, endD, "updateContracts", { days: 1 });
     const date = new Date(endD);
     date.setDate(date.getDate() + 1);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
@@ -373,7 +374,7 @@ describe("enqueueEventFor()", () => {
 
   test("should enqueue a gameEvent on the gameState for next month", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContracts", { months: 1 });
+    enqueueEventFor(st, endD, "updateContracts", { months: 1 });
     const date = new Date(endD);
     date.setMonth(date.getMonth() + 1);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
@@ -381,7 +382,7 @@ describe("enqueueEventFor()", () => {
 
   test("should enqueue an event on the gameState for the previous day", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, endD, "updateContracts", { days: -1 });
+    enqueueEventFor(st, endD, "updateContracts", { days: -1 });
     const date = new Date(endD);
     date.setDate(date.getDate() - 1);
     expect(st.eventQueue).toContainEqual({ date, type: "updateContracts" });
@@ -389,7 +390,7 @@ describe("enqueueEventFor()", () => {
 
   test("should not enqueue an event for the previous day when the date is passed", () => {
     const st = new _gs.GameState(startD);
-    _sm.enqueueEventFor(st, startD, "updateContracts", { days: -1 });
+    enqueueEventFor(st, startD, "updateContracts", { days: -1 });
     const date = new Date(startD);
     date.setDate(date.getDate() - 1);
     expect(st.eventQueue).not.toContainEqual({ date, type: "updateContracts" });
@@ -736,6 +737,15 @@ describe("handleSignings()", () => {
   });
 });
 
+describe("handleInjuries", () => {
+  test("should enqueue the next InjuryUpdate", () => {
+    _gs.initTeams(st, ["a", "b"]);
+    expect(st.eventQueue.some((e) => e.type === "injuriesUpdate")).toBe(false);
+    _sm.handleInjuries(st);
+    expect(st.eventQueue.some((e) => e.type === "injuriesUpdate")).toBe(true);
+  });
+});
+
 describe("handleOpenTradeWindow", () => {
   test("should set the gameState flag openTradeWindow to true", () => {
     _sm.handleOpenTradeWindow(st);
@@ -1062,5 +1072,45 @@ describe("updateRejections", () => {
       )
     ).toBe(false);
     _pl.Player.approachable = fn;
+  });
+});
+
+describe("recoverInjuredPlayers", () => {
+  const mockGs = {
+    date: new Date("2000-1-6"),
+    injuries: {
+      a: { severe: false, when: "2000-1-6" },
+      b: { severe: false, when: "2000-1-8" },
+    },
+  };
+  _sm.recoverInjuredPlayers(mockGs as unknown as _gs.GameState);
+
+  test("should delete the injury of player a", () => {
+    expect(mockGs.injuries.a).toBeUndefined();
+  });
+
+  test("should preserve the injury of player b", () => {
+    expect(mockGs.injuries.b).toBeDefined();
+  });
+});
+
+describe("InjurePlayers", () => {
+  _gs.initTeams(st, ["a", "b"]);
+  const mockGs = _gs.GameState.parse(JSON.stringify(st));
+
+  for (let i = 0; i < 4; i++) {
+    _sm.injurePlayers(mockGs);
+  }
+
+  const injuries = Object.entries(mockGs.injuries);
+
+  test("after some calls some players should be injured", () => {
+    expect(injuries.length).toBeGreaterThan(0);
+  });
+
+  test("the recovery should greater than 0 days for all injured players", () => {
+    injuries.forEach(([, i]) =>
+      expect(new Date(i.when).getTime() > st.date.getTime()).toBe(true)
+    );
   });
 });

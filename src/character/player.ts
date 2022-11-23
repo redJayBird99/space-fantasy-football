@@ -239,6 +239,10 @@ const SKILLS_APPLICABLE_PENALTY = new Set<Skill>([
 
 const NO_GROWTH_SKILL = new Set<Skill>(["height"]);
 
+// TODO: add a type field with an id of what type of injury
+// this is store on the gameState.injuries not on the player object
+export type Injury = { when: string };
+
 // Player creates semi-random player that best fit the position characteristics
 // note instances of this class are saved as JSON on the user machine
 class Player {
@@ -270,24 +274,27 @@ class Player {
     return getAgeAt(p.birthday, now);
   }
 
-  // get the skill player value taking in consideration all modifiers like
-  // out of position penalty and growthState
-  // if growth is false the growthState modifier isn't applied
+  /**
+   * get the skill player value taking in consideration all modifiers
+   * @param at if is is of the player natural position a penalty could be applied
+   * @param growth if false the growthState modifier isn't applied
+   */
   static getSkill(p: Player, s: Skill, at = p.position, growth = true): number {
     const v =
       NO_GROWTH_SKILL.has(s) || !growth
         ? p.skills[s]
         : p.skills[s] * p.growthState;
-
     return SKILLS_APPLICABLE_PENALTY.has(s)
       ? v - v * getOutOfPositionPenalty(p, at)
       : v;
   }
 
-  // get the macroSkill player value taking in consideration all modifiers
-  // if growth is false the growthState modifier isn't applied
-  // the value is between MIN_SKILL and MAX_SKILL
-  // check macroSkills for all possible macroSkills
+  /**
+   * get the macroSkill player value taking in consideration all modifiers
+   * @param at if is is of the player natural position a penalty could be applied
+   * @param growth if false the growthState modifier isn't applied
+   * @return the value is between MIN_SKILL and MAX_SKILL
+   */
   static getMacroSkill(
     p: Player,
     m: MacroSkill,

@@ -28,9 +28,16 @@ button {
   background-color: var(--dk-positive-color, var(--lt-positive-color));
 }
 
+.btn,
+.btn-sml,
+.modal-close {
+  transition: filter 500ms;
+}
+
 .btn:hover:not(:disabled),
-.btn-sml:hover:not(:disabled) {
-  filter: brightness(1.2);
+.btn-sml:hover:not(:disabled),
+.modal-close:hover:not(:disabled) {
+  filter: brightness(1.3);
 }
 
 .btn-link {

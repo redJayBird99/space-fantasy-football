@@ -18,17 +18,21 @@ dialog {
   box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 40%);
   max-width: 100%;
   max-height: 100%;
-  transition: opacity 0.4s;
+  transition: opacity 333ms, transform 333ms;
 }
 
 dialog::backdrop {
   background-color: var(--backdrop-color, #0f0f0fcc);
-  transition: opacity 0.4s;
+  transition: opacity 333ms;
 }
 
 .opening-dig,
 .opening-dig::backdrop {
   opacity: 0;
+}
+
+.opening-dig {
+  transform: scale(0);
 }
 
 ::slotted(:not([slot])) {

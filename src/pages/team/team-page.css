@@ -212,3 +212,8 @@ rect.playing-pitch {
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
   padding: 0 0.1rem;
 }
+
+.injured {
+  width: 16px;
+  height: 16px;
+}
