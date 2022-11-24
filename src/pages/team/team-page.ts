@@ -173,10 +173,14 @@ function teamPlayersTable(
   const starter = (p: Player) => sts.find((s) => s.pl?.id === p.id);
 
   return html`
-    <table>
-      ${teamPlayersTableHead(mSkills)}
-      ${pls.map((p) => teamPlayerRow(p, mSkills, openUpdateLineup, starter(p)))}
-    </table>
+    <div class="cnt-table">
+      <table>
+        ${teamPlayersTableHead(mSkills)}
+        ${pls.map((p) =>
+          teamPlayerRow(p, mSkills, openUpdateLineup, starter(p))
+        )}
+      </table>
+    </div>
   `;
 }
 
@@ -188,6 +192,7 @@ function teamPlayersTableHead(mSkills: string[]): TemplateResult {
       <th class="plr-pos">
         <abbr aria-label="playing at" title="playing at">at</abbr>
       </th>
+      <th class="plr-n"><abbr title="squad number">n.</abbr></th>
       <th class="plr-name">name</th>
       ${mSkills.map(
         (sk) =>
@@ -229,6 +234,7 @@ function teamPlayerRow(
           : nothing}
       </button>
     </td>
+    <td class="plr-n"><span class="sqd-number">${p.number}</span></td>
     <td class="plr-name">${goLink(`players/player?id=${p.id}`, p.name)}</td>
     ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
   </tr>`;
@@ -279,7 +285,10 @@ function starterTag(s: Starter): TemplateResult {
       aria-label="starting player"
     >
       <div class="tag-name"><em>${s.pl?.name}</em></div>
-      <div class="tag-info"><span class="tag-pos">${s.sp.pos}</span> TODO</div>
+      <div class="tag-info">
+        <span class="tag-pos">${s.sp.pos}</span>
+        <span class="sqd-number">${s.pl?.number ?? ""}</span>
+      </div>
     </div>
   `;
 }

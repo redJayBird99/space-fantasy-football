@@ -6,12 +6,14 @@ import {
   MAX_SKILL,
   MIN_WAGE,
   MAX_GROWTH_RATE,
+  Position,
 } from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../asset/teams.json";
 import { hash } from "../util/generator";
 import { within } from "../util/math";
 import { Formation, Formations, Spot } from "./formation";
+import { bestAtPos } from "./util";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 export const MAX_TEAM_SIZE = 30;
@@ -93,7 +95,8 @@ class Team {
     };
   }
 
-  /** add the player to the team and the signed contract to the gameState, returns the signed Contract */
+  /** add the player to the team and the signed contract to the gameState, returns the signed Contract
+   * the player will receive a squad number */
   static signPlayer(g: GsTmPl, wage: number, duration?: number): Contract {
     const { gs, t, p } = g;
     duration = duration ?? Math.floor(Math.random() * 4) + 1;
@@ -101,14 +104,17 @@ class Team {
     t.playerIds.includes(p.id) || t.playerIds.push(p.id);
     const contract = new Contract(t, p, wage, duration);
     GameState.saveContract(gs, contract);
+    updateSquadNumber(t.playerIds.map((id) => g.gs.players[id]));
     return contract;
   }
 
-  // remove the player from the team and delete the contract from the gameState
+  /** remove the player from the team and delete the contract from the gameState,
+   * and update some player filed like number and team */
   static unSignPlayer(gs: GameState, c: Contract): void {
     const team = gs.teams[c.teamName];
     const player = gs.players[c.playerId];
     player.team = "free agent";
+    delete player.number;
     team.playerIds = team.playerIds.filter((id) => id !== player.id);
     GameState.deleteContract(gs, c);
   }
@@ -440,6 +446,53 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
         Team.evaluatePlayer({ ...g, p: p1 })
     )
     .slice(0, n);
+}
+
+/**
+ * assign a squad number to all player missing one
+ * @param squad all team players
+ */
+export function updateSquadNumber(squad: Player[]) {
+  const nTaken = new Set(squad.map((p) => p.number));
+  // every time a new number is assigned remove the number and the player from the available ones
+  const plsWithoutN = new Set(squad.filter((p) => p.number === undefined));
+  const update = (n: number, p?: Player) => {
+    if (p) {
+      p.number = n;
+      nTaken.add(n);
+      plsWithoutN.delete(p);
+    }
+  };
+  // the squad number paired with the preferred position
+  const numberMatch: [number, Position][] = [
+    [1, "gk"], // TODO expectation for GK
+    [10, "am"],
+    [9, "cf"],
+    [7, "lw"], // TODO left or ring wing shouldn't matter
+    [11, "rw"], // TODO left or ring wing shouldn't matter
+    [2, "cb"],
+    [3, "cb"],
+    [4, "lb"],
+    [5, "rb"],
+    [6, "cm"],
+    [8, "cm"],
+  ];
+  // find the best fit for the given number
+  numberMatch.forEach((m) => {
+    if (!nTaken.has(m[0])) {
+      update(m[0], bestAtPos(plsWithoutN, m[1]));
+    }
+  });
+  // the rest of the players will get a random number
+  for (const p of plsWithoutN) {
+    let n: undefined | number;
+    // there is a relatively small collision probability but nothing to worry about
+    do {
+      n = 11 + Math.floor(Math.random() * 89);
+    } while (nTaken.has(n));
+
+    update(n!, p);
+  }
 }
 
 // TODO move on exportedForTesting

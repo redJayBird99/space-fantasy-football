@@ -462,6 +462,8 @@ function initTeams(gs: GameState, names: string[]): Team[] {
     signPlayers(pickBest(arg, createPlayers(gs, "defender", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "midfielder", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "forward", 8), 6));
+    // squad number are resigned in the iniGameEvents with the prepareSeasonStart function
+    // so it doesn't matter if for now they are not great
     return team;
   });
 }

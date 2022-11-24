@@ -2,14 +2,18 @@ import "../mock/broadcast-channel.mock";
 import "../../src/game-sim/sim-worker-interface";
 import "../../src/pages/util/router";
 import * as _t from "../../src/character/team";
+import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
 import * as _p from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
-import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
-import { exportedForTesting as _u } from "../../src/character/util";
+import * as utl from "../../src/character/util";
 import { swap } from "../../src/util/generator";
 import { mean } from "../../src/util/math";
+const _u = utl.exportedForTesting;
 jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
+
+// eslint-disable-next-line no-import-assign
+const mockBestAtPos = ((utl.bestAtPos as jest.Mock) = jest.fn());
 
 let st = _gs.GameState.init("abcd".split(""));
 let team = st.teams.a;
@@ -861,5 +865,29 @@ describe("removeLineupDepartures", () => {
 
   test("should preserve all already filled position", () => {
     expect(cpTeam.formation?.lineup[3].plID).toBe(pls[2].id);
+  });
+});
+
+describe("updateSquadNumber", () => {
+  const mockPls = Array.from({ length: _t.MAX_TEAM_SIZE }, () => ({
+    position: "am",
+  })) as _p.Player[];
+
+  test("every player should have a unique number", () => {
+    const cp = JSON.parse(JSON.stringify(mockPls)) as _p.Player[];
+    let i = 0;
+    mockBestAtPos.mockImplementation(() => cp[i++]);
+    _t.updateSquadNumber(cp);
+    expect(new Set(cp.map((p) => p.number)).size).toBe(mockPls.length);
+  });
+
+  test("should select the best option for some specific numbers", () => {
+    const cp = JSON.parse(JSON.stringify(mockPls));
+    let i = 1;
+    mockBestAtPos.mockImplementation((_, pos) =>
+      pos === "gk" ? cp[0] : cp[i++]
+    );
+    _t.updateSquadNumber(cp);
+    expect(cp[0].number).toBe(1);
   });
 });

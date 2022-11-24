@@ -12,7 +12,7 @@ const areas = Object.keys(_p.POSITION_AREA) as _p.PositionArea[];
 export function bestAtPos(
   pls: Iterable<_p.Player>,
   pos: _p.Position
-): _p.Player | void {
+): _p.Player | undefined {
   let bestScore = 0;
   let bestPlayer: _p.Player | undefined;
 
@@ -93,6 +93,7 @@ export function sortByMacroSkill(
       ? _p.Player.getMacroSkill(p1, m) - _p.Player.getMacroSkill(p2, m)
       : _p.Player.getMacroSkill(p2, m) - _p.Player.getMacroSkill(p1, m)
   );
+  return pls;
 }
 
 export function sortByAge(pls: _p.Player[], ascending: boolean): void {
@@ -113,7 +114,13 @@ export function sortByInfo(
   ascending: boolean,
   gs: _gs.GameState
 ) {
-  if (k === "birthday") {
+  if (k === "number") {
+    pls.sort((p1, p2) =>
+      ascending
+        ? (p1[k] ?? 100) - (p2[k] ?? 100)
+        : (p2[k] ?? -1) - (p1[k] ?? -1)
+    );
+  } else if (k === "birthday") {
     sortByAge(pls, ascending);
   } else if (k === "position") {
     sortByPosition(pls, ascending);

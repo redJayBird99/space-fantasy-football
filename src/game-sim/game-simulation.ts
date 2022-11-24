@@ -15,6 +15,7 @@ import {
   removeLineupDepartures,
   LineupSpot,
   completeLineup,
+  updateSquadNumber,
 } from "../character/team";
 import { shuffle } from "../util/generator";
 import { within } from "../util/math";
@@ -331,6 +332,11 @@ export function prepareSeasonStart(gs: GameState): void {
   enqueueEventFor(gs, endDate, "openTradeWindow", { days: 4 });
   enqueueEventFor(gs, endDate, "openFreeSigningWindow", { days: 4 });
   prepareDraft(gs);
+  // remove and resign the squad number every time a season start
+  Object.values(gs.players).forEach((p) => delete p.number);
+  Object.values(gs.teams).forEach((t) =>
+    updateSquadNumber(t.playerIds.map((id) => gs.players[id]))
+  );
 }
 
 /** update the contracts length and add re-signing requests for the user team */

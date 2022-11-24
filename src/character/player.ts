@@ -255,6 +255,7 @@ class Player {
   growthRate: number; // monthly growth rate of growthState
   growthState: number; // (percentage 0-1) applying it: skillValue * growthState
   skills: Skills; // to get the skill values with all modifiers (growth, penalty and etc) applied use getSkill
+  number?: number;
 
   constructor(pos: Position, now: Date, age?: number) {
     this.name = createName();

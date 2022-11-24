@@ -66,8 +66,13 @@ sff-team {
   }
 }
 
-table {
+.cnt-table {
   flex-grow: 1;
+  overflow: auto;
+}
+
+table {
+  min-width: 32rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
@@ -96,6 +101,10 @@ table {
   flex-shrink: 2;
   text-align: left;
   width: 10rem;
+}
+
+.plr-n {
+  width: 1.3rem;
 }
 
 .plr-pos {
@@ -216,4 +225,9 @@ rect.playing-pitch {
 .injured {
   width: 16px;
   height: 16px;
+}
+
+.sqd-number {
+  font-style: italic;
+  font-weight: bold;
 }

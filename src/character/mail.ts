@@ -96,7 +96,7 @@ export function injury(send: Date, plrName: string, i: Injury): Mail {
     {
       sender: "Coach Assistant",
       subject: `${plrName} get injured`,
-      content: `unfortunately our player ${plrName} get injured, the doctors say he will be fully recovered for the ${new Date(
+      content: `unfortunately our player ${plrName} has sustained an injury, the doctors say he will be fully recovered for the ${new Date(
         i.when
       ).toLocaleDateString()}, He can't play in the meantime`,
     },
