@@ -891,3 +891,17 @@ describe("updateSquadNumber", () => {
     expect(cp[0].number).toBe(1);
   });
 });
+
+describe("updateCaptain", () => {
+  test("should set a new team captain", () => {
+    team.captain = undefined;
+    _t.updateCaptain(st, team);
+    expect(team.captain).toBeDefined();
+  });
+
+  test("te captain should be preferably an older player", () => {
+    expect(
+      _p.Player.age(st.players[team.captain!], st.date)
+    ).toBeGreaterThanOrEqual(25);
+  });
+});

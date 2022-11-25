@@ -146,7 +146,7 @@ function teamMain(
           >🛈</a
         >
         <h3>formation: ${t.formation?.name}</h3>
-        ${gs.userTeam === t.name ? userControls() : nothing}
+        ${gs.userTeam === t.name ? userControls(t) : nothing}
       </div>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
@@ -154,11 +154,17 @@ function teamMain(
 }
 
 /** control options to customize the formation */
-function userControls(): TemplateResult | void {
+function userControls(t: Team): TemplateResult | void {
+  const gs = window.$game.state!;
+
   return html`
     <menu class="controls">
       <li>${autoUpdateFormation()}</li>
       <li>${formationSelector()}</li>
+      <li>
+        Captain:
+        <span class="captain">${gs.players[t.captain ?? ""]?.name}</span>
+      </li>
     </menu>
   `;
 }

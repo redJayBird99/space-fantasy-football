@@ -228,6 +228,10 @@ rect.playing-pitch {
 }
 
 .sqd-number {
-  font-style: italic;
   font-weight: bold;
+}
+
+.captain,
+.sqd-number {
+  font-style: italic;
 }

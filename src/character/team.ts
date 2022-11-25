@@ -81,6 +81,7 @@ class Team {
   appeal = 0; // is a relative value respect other teams, should be init apart and change slowly
   scoutOffset: number; // percentage value higher is worse
   formation?: { name: Formations; lineup: LineupSpot[] }; // this will only get saved (in the JSON file) for the userTeam
+  captain?: string; // id of the player
 
   constructor(name: string) {
     this.name = name;
@@ -104,7 +105,7 @@ class Team {
     t.playerIds.includes(p.id) || t.playerIds.push(p.id);
     const contract = new Contract(t, p, wage, duration);
     GameState.saveContract(gs, contract);
-    updateSquadNumber(t.playerIds.map((id) => g.gs.players[id]));
+    updateSquadNumber(GameState.getTeamPlayers(gs, t.name));
     return contract;
   }
 
@@ -117,6 +118,10 @@ class Team {
     delete player.number;
     team.playerIds = team.playerIds.filter((id) => id !== player.id);
     GameState.deleteContract(gs, c);
+
+    if (c.playerId === gs.teams[c.teamName].captain) {
+      gs.teams[c.teamName].captain = undefined;
+    }
   }
 
   // moves the contracted player to the new team, the contract has the same conditions
@@ -453,9 +458,9 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
  * @param squad all team players
  */
 export function updateSquadNumber(squad: Player[]) {
-  const nTaken = new Set(squad.map((p) => p.number));
+  const nTaken = new Set(squad.map((p) => p?.number));
   // every time a new number is assigned remove the number and the player from the available ones
-  const plsWithoutN = new Set(squad.filter((p) => p.number === undefined));
+  const plsWithoutN = new Set(squad.filter((p) => p?.number === undefined));
   const update = (n: number, p?: Player) => {
     if (p) {
       p.number = n;
@@ -493,6 +498,28 @@ export function updateSquadNumber(squad: Player[]) {
 
     update(n!, p);
   }
+}
+
+/** set the team captain, only if it doesn't exist  */
+export function updateCaptain(gs: GameState, t: Team) {
+  t.captain = selectCaptain(gs, GameState.getTeamPlayers(gs, t.name))?.id;
+}
+
+/**
+ * return the best player fitting the role of captain
+ * @param squad the player to choose from
+ */
+function selectCaptain(gs: GameState, squad: Player[]): Player | undefined {
+  // TODO the amount of season played for the same team should be a factor
+  // older players are preferred
+  const { meanScore: mean, standardDev: std } = gs.popStats;
+  // get the quality score between 0 and 1
+  const qty = (p: Player) => within((Player.getScore(p) - mean) / std, 0, 1);
+  // get the experience score between 0 and 1
+  const age = (p: Player) => (Player.age(p, gs.date) - 25) / 7;
+  const captainScore = (p: Player) => qty(p) * 0.4 + age(p) * 0.6;
+  squad.sort((p1, p2) => captainScore(p2) - captainScore(p1));
+  return squad[0];
 }
 
 // TODO move on exportedForTesting
