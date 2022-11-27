@@ -360,7 +360,7 @@ function filterControls(): TemplateResult {
         age range ${inputAge("min-age", "min", "minimum age")} to
         ${inputAge("max-age", "max", "maximum age")}
       </div>
-      <button class="btn-sml" autofocus>Apply filters</button>
+      <button class="btn-sml">Apply filters</button>
     </form>
   `;
 }

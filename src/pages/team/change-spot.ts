@@ -5,7 +5,7 @@ import {
   getStarterX,
   getStarterY,
 } from "./team-page";
-import { LineupSpot } from "../../character/team";
+import { LineupSpot, updateSetPiecesTakers } from "../../character/team";
 import { GameState } from "../../game-state/game-state";
 import { styleMap } from "lit-html/directives/style-map.js";
 import style from "./change-spot.css";
@@ -46,6 +46,7 @@ class ChangeSpot extends HTMLElement {
       }
 
       n.plID = plId;
+      updateSetPiecesTakers(gs.teams[gs.userTeam]);
       window.$game.state = gs; // mutation notification
     }
   };

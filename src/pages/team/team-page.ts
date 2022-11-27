@@ -26,7 +26,12 @@ import {
   Starter,
 } from "../../character/formation";
 import pImg from "../../asset/player.svg";
-import { completeLineup, getFormation, Team } from "../../character/team";
+import {
+  completeLineup,
+  findSetPiecesTakers,
+  getFormation,
+  Team,
+} from "../../character/team";
 import defineChangeSpot from "./change-spot";
 import { changeFormation, updateFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
@@ -34,6 +39,8 @@ import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
 import { onLinkClick } from "../util/router";
 import phyImg from "../../asset/pharmacy.png";
+import { breakCamelCase } from "../../util/util";
+import { createRef, ref, Ref } from "lit-html/directives/ref.js";
 
 defineChangeSpot();
 
@@ -132,40 +139,147 @@ function teamMain(
     return nothing;
   }
 
+  // on every fresh new game the user team doesn't have any set pieces setted,
+  // in this case set a initial configuration
+  if (!t.setPieces && t.name === gs.userTeam) {
+    t.setPieces = findSetPiecesTakers(gs, t.formation?.lineup ?? []);
+  }
+
   const starters = getFormation({ gs, t })?.lineup ?? [];
 
   return html`
     <section slot="in-main" class="team-main">
       <div>${pitch(starters)}</div>
-      <div class="cnt-controls">
-        <a
-          aria-label="manual about finances"
-          @click=${onLinkClick}
-          href="game-manual#players"
-          class="info-link"
-          >🛈</a
-        >
-        <h3>formation: ${t.formation?.name}</h3>
-        ${gs.userTeam === t.name ? userControls(t) : nothing}
-      </div>
+      <article class="cnt-tactics">
+        <header class="tactics-head">
+          <h3>Tactics</h3>
+          <div>
+            ${t.name === gs.userTeam ? customizeTactics() : nothing}
+            <a
+              aria-label="manual about finances"
+              @click=${onLinkClick}
+              href="game-manual#players"
+              >🛈</a
+            >
+          </div>
+        </header>
+        ${tactics(t)}
+      </article>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
   `;
 }
 
-/** control options to customize the formation */
-function userControls(t: Team): TemplateResult | void {
+/** show info about set pieces, formation and etc */
+function tactics(t: Team): TemplateResult {
   const gs = window.$game.state!;
+  const isUser = gs.userTeam === t.name;
+  const setPieces = Object.entries(
+    t.setPieces ?? findSetPiecesTakers(gs, t.formation?.lineup ?? [])
+  );
 
   return html`
-    <menu class="controls">
-      <li>${autoUpdateFormation()}</li>
-      <li>${formationSelector()}</li>
+    <menu class="tactics">
+      ${isUser ? html`<li>${autoUpdateFormation()}</li>` : nothing}
+      <li>Formation: ${t.formation?.name ?? ""}</li>
       <li>
         Captain:
-        <span class="captain">${gs.players[t.captain ?? ""]?.name}</span>
+        <i>${gs.players[t.captain ?? ""]?.name}</i>
       </li>
+      ${setPieces.map(
+        (s) =>
+          html`<li>
+            ${breakCamelCase(s[0])}:
+            <i>${gs.players[s[1] ?? ""]?.name ?? ""}</i>
+          </li>`
+      )}
     </menu>
+  `;
+}
+
+/** the user dialog to customize the user tactics */
+function customizeTactics(): TemplateResult {
+  const fms = Object.keys(FORMATIONS) as Formations[];
+  const gs = window.$game.state!;
+  const team = gs.teams[gs.userTeam];
+  const refDig: Ref<HTMLDialogElement> = createRef();
+  const openDig = () => refDig.value!.show();
+  const closeDig = () => refDig.value!.close();
+  // the only candidates are the staring players for set pieces
+  const squad =
+    team.formation?.lineup
+      .filter((s) => Boolean(s.plID))
+      .map((s) => gs.players[s.plID!]) ?? [];
+
+  // update the user tactics with the new setting, or preserve the old ones when no change was made
+  const onSummit = (e: Event) => {
+    const form = e.currentTarget as HTMLFormElement;
+
+    team.captain = form.captain.value || team.captain;
+    team.setPieces = {
+      penalties: form.penalties.value || team.setPieces?.penalties,
+      shortFreeKicks:
+        form["short-kick"].value || team.setPieces?.shortFreeKicks,
+      longFreeKicks: form["long-kick"].value || team.setPieces?.longFreeKicks,
+      corners: form.corners.value || team.setPieces?.corners,
+      throwIns: form["throw-ins"].value || team.setPieces?.throwIns,
+    };
+
+    if (fms.includes(form.formations.value)) {
+      changeFormation(form.formations.value as Formations);
+    } else {
+      window.$game.state = gs; // mutation notification
+    }
+  };
+
+  return html`
+    <button
+      class="btn-txt"
+      @click=${openDig}
+      aria-label="open customize tactics"
+    >
+      ⚙
+    </button>
+    <dialog ${ref(refDig)} aria-labelledby="dig-tactics-title" class="tct-dig">
+      <div class="dig-head">
+        <h3 class="dig-title" id="dig-tactics-title">Customize Tactics</h3>
+        <button
+          autofocus
+          class="modal-close"
+          @click=${closeDig}
+          aria-label="close"
+        >
+          𐄂
+        </button>
+      </div>
+      <form @submit=${onSummit} method="dialog">
+        ${formationSelector(fms)}
+        ${selectTactic(squad, "Choose captain", "captain")}
+        ${selectTactic(squad, "Choose penalties taker", "penalties")}
+        ${selectTactic(squad, "Choose corners taker", "corners")}
+        ${selectTactic(squad, "Choose long free kick taker", "long-kick")}
+        ${selectTactic(squad, "Choose short free kick taker", "short-kick")}
+        ${selectTactic(squad, "Choose throw-ins taker", "throw-ins")}
+
+        <button class="btn-sml">Apply Tactics</button>
+      </form>
+    </dialog>
+  `;
+}
+
+/** select element for a customizable team tactic */
+function selectTactic(
+  squad: Player[],
+  label: string,
+  name: string
+): TemplateResult {
+  const id = `slc-${name}`;
+  return html`
+    <label class="hide" for=${id}>${label}</label>
+    <select id=${id} class="input-bg" aria-label=${label} name=${name}>
+      <option value="">${label}</option>
+      ${squad.map((p) => html`<option value=${p.id}>${p.name}</option>`)}
+    </select>
   `;
 }
 
@@ -346,20 +460,13 @@ function starter(s: Spot): SVGTemplateResult {
 }
 
 /** formation selector to change the user formation */
-function formationSelector(): TemplateResult {
-  const uFrm =
-    window.$game.state?.teams[window.$game.state.userTeam].formation?.name;
-  const fms = Object.keys(FORMATIONS) as Formations[];
-  const onChange = (e: Event) =>
-    changeFormation((e.currentTarget as HTMLSelectElement).value as Formations);
-
+function formationSelector(options: string[]): TemplateResult {
   return html`
-    <label>
-      change formation
-      <select class="input-bg" @change=${onChange}>
-        ${fms.map((f) => html`<option ?selected=${f === uFrm}>${f}</option>`)}
-      </select>
-    </label>
+    <label for="forms-slc" class="hide">Choose formation</label>
+    <select id="forms-slc" class="input-bg" name="formations">
+      <option value="">Choose formation</option>
+      ${options.map((f) => html`<option value=${f}>${f}</option>`)}
+    </select>
   `;
 }
 

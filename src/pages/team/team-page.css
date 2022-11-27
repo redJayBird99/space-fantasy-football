@@ -1,6 +1,7 @@
 @import "../util/button.css";
 @import "../util/common.css";
 @import "../util/form.css";
+@import "../util/dialog.css";
 
 sff-team {
   display: block;
@@ -20,7 +21,7 @@ sff-team {
   overflow: auto;
 }
 
-.cnt-controls {
+.cnt-tactics {
   background-color: var(--dk-bg-color-750);
   border-radius: 5px;
   box-shadow: 0px 1px 3px 0px rgba(19, 19, 19, 0.26);
@@ -29,26 +30,25 @@ sff-team {
   position: relative;
 }
 
-.info-link {
-  position: absolute;
-  right: 4px;
-  top: 4px;
+.tactics-head {
+  display: flex;
+  justify-content: space-between;
 }
 
-.cnt-controls > h3 {
+.tactics-head > h3 {
   margin: 0;
 }
 
-.controls {
+.tactics {
   margin: 0.5rem 0;
   padding-left: 1rem;
 }
 
-.controls > li {
+.tactics > li {
   background-color: var(--dk-bg-color-700);
   border-radius: 5px;
   list-style-type: none;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   padding: 2px 0.25rem;
 }
 
@@ -228,10 +228,27 @@ rect.playing-pitch {
 }
 
 .sqd-number {
+  font-style: italic;
   font-weight: bold;
 }
 
-.captain,
-.sqd-number {
-  font-style: italic;
+.tactics > li {
+  text-transform: capitalize;
+}
+
+.tct-dig {
+  inset-inline-start: unset;
+  inset-inline-end: 0px;
+  width: max-content;
+}
+
+.hide {
+  position: absolute;
+  top: -9999rem;
+}
+
+.tct-dig > form > * {
+  display: block;
+  margin-bottom: 4px;
+  width: 100%;
 }

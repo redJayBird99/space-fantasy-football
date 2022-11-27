@@ -1,5 +1,5 @@
 import { Injury, Player, PositionArea } from "../character/player";
-import { Team, Contract, pickBest, updateCaptain } from "../character/team";
+import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
@@ -462,7 +462,6 @@ function initTeams(gs: GameState, names: string[]): Team[] {
     signPlayers(pickBest(arg, createPlayers(gs, "defender", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "midfielder", 10), 8));
     signPlayers(pickBest(arg, createPlayers(gs, "forward", 8), 6));
-    updateCaptain(gs, team);
     // squad number are resigned in the iniGameEvents with the prepareSeasonStart function
     // so it doesn't matter if for now they are not great
     return team;

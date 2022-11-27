@@ -14,6 +14,7 @@ jest.mock("../../src/game-sim/sim-worker-interface");
 
 // eslint-disable-next-line no-import-assign
 const mockBestAtPos = ((utl.bestAtPos as jest.Mock) = jest.fn());
+const mockBestWithSkill = ((utl.bestWithSkill as jest.Mock) = jest.fn());
 
 let st = _gs.GameState.init("abcd".split(""));
 let team = st.teams.a;
@@ -903,5 +904,49 @@ describe("updateCaptain", () => {
     expect(
       _p.Player.age(st.players[team.captain!], st.date)
     ).toBeGreaterThanOrEqual(25);
+  });
+});
+
+describe("findSetPiecesTakers", () => {
+  test("should find a complete set when enough players are available", () => {
+    const starters = team.playerIds.slice(0, 11);
+    const lineup = starters.map((id) => ({
+      sp: { pos: "am", row: 0, col: 0 },
+      plID: id,
+    })) as _t.LineupSpot[];
+    mockBestWithSkill.mockImplementation(
+      (pls) => pls[Math.floor(Math.random() * pls.length)]
+    );
+    const set = Object.values(_t.findSetPiecesTakers(st, lineup));
+    expect(set.length).toBe(5);
+    expect(starters).toEqual(expect.arrayContaining(set));
+  });
+});
+
+describe("updateSetPiecesTakers", () => {
+  test("should remove all set pieces when the players aren't in the lineup", () => {
+    team.setPieces = {
+      corners: "a",
+      longFreeKicks: "b",
+      shortFreeKicks: "c",
+      throwIns: "d",
+      penalties: "e",
+    };
+    console.log(team.setPieces);
+    _t.updateSetPiecesTakers(team);
+    expect(Object.values(team.setPieces!).some((v) => !v)).toBe(true);
+  });
+
+  test("should preserve the players not removed from the lineup", () => {
+    const starter = team.playerIds[0];
+    team.formation = {
+      name: "3-4-3",
+      lineup: [{ sp: { pos: "am", row: 0, col: 0 }, plID: starter }],
+    };
+    team.setPieces = {
+      corners: starter,
+    };
+    _t.updateSetPiecesTakers(team);
+    expect(team.setPieces.corners).toBe(starter);
   });
 });

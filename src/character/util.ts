@@ -28,6 +28,20 @@ export function bestAtPos(
   return bestPlayer;
 }
 
+/** get the player with the highest given skill from the given players */
+export function bestWithSkill(
+  pls: _p.Player[],
+  s: _p.Skill
+): _p.Player | undefined {
+  if (pls.length <= 1) {
+    return pls[0];
+  }
+
+  return pls.reduce((a, b) =>
+    _p.Player.getSkill(a, s) >= _p.Player.getSkill(b, s) ? a : b
+  );
+}
+
 function createPlayers(a: _p.PositionArea, n: number): _p.Player[] {
   return Array.from({ length: n }, () =>
     _p.Player.createPlayerAt(new Date(), a)

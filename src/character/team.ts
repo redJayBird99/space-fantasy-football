@@ -13,7 +13,7 @@ import teamsJson from "../asset/teams.json";
 import { hash } from "../util/generator";
 import { within } from "../util/math";
 import { Formation, Formations, Spot } from "./formation";
-import { bestAtPos } from "./util";
+import { bestAtPos, bestWithSkill } from "./util";
 const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 export const MAX_TEAM_SIZE = 30;
@@ -24,6 +24,15 @@ type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
 type Affordable = (wage: number) => boolean;
 type fanBase = "huge" | "big" | "medium" | "small" | "very small";
 export type LineupSpot = { plID?: string; sp: Spot };
+
+type SetPieces = {
+  // the players ids
+  penalties?: string;
+  shortFreeKicks?: string;
+  longFreeKicks?: string;
+  corners?: string;
+  throwIns?: string;
+};
 
 export const fanBaseScore: Readonly<Record<fanBase, number>> = {
   huge: 4,
@@ -82,6 +91,8 @@ class Team {
   scoutOffset: number; // percentage value higher is worse
   formation?: { name: Formations; lineup: LineupSpot[] }; // this will only get saved (in the JSON file) for the userTeam
   captain?: string; // id of the player
+  /** only stored for the user team, for all other teams the function findSetPiecesTakers is called on the fly */
+  setPieces?: SetPieces;
 
   constructor(name: string) {
     this.name = name;
@@ -110,7 +121,7 @@ class Team {
   }
 
   /** remove the player from the team and delete the contract from the gameState,
-   * and update some player filed like number and team */
+   * and update some player fields like number and team */
   static unSignPlayer(gs: GameState, c: Contract): void {
     const team = gs.teams[c.teamName];
     const player = gs.players[c.playerId];
@@ -313,7 +324,8 @@ class Team {
   }
 }
 
-/** remove all players not in the team anymore (retired, traded and ect) */
+/** remove all players not in the team anymore (retired, traded and ect),
+ * and update the user setPieces removing missing player from the lineup */
 export function removeLineupDepartures({ gs, t }: GsTm): void {
   t.formation?.lineup.forEach((s) => {
     const id = s.plID;
@@ -322,6 +334,7 @@ export function removeLineupDepartures({ gs, t }: GsTm): void {
       s.plID = undefined;
     }
   });
+  updateSetPiecesTakers(t);
 }
 
 /** check if the given team formation is complete or not */
@@ -338,12 +351,14 @@ export function completeLineup(gs: GameState, t: Team) {
   );
 }
 
-/** set the team formation property to the given formation */
+/** set the team formation property to the given formation,
+ * and update the user setPieces removing missing player from the lineup */
 export function setFormation(t: Team, fm: Formation): void {
   t.formation = {
     name: fm.name,
     lineup: fm.lineup.map(({ pl, sp }) => ({ sp, plID: pl?.id })),
   };
+  updateSetPiecesTakers(t);
 }
 
 /** get the formation of the given team if any exist */
@@ -522,6 +537,43 @@ function selectCaptain(gs: GameState, squad: Player[]): Player | undefined {
   return squad[0];
 }
 
+/** this function is used only for the user team, it doesn't apply on any other team
+ *
+ * remove from the team.setPieces all player in the lineup
+ */
+function updateSetPiecesTakers(t: Team): void {
+  if (!t.setPieces) {
+    // only the user team has the setPieces property
+    return;
+  }
+
+  const starters = new Set(t.formation?.lineup.map((s) => s.plID) ?? []);
+
+  for (const k in t.setPieces) {
+    if ((t.setPieces as any)[k] && !starters.has((t.setPieces as any)[k])) {
+      (t.setPieces as any)[k] = undefined;
+    }
+  }
+}
+
+/**
+ * return the best player fitting all the set pieces takers
+ * @param l the team lineup
+ */
+export function findSetPiecesTakers(gs: GameState, l: LineupSpot[]): SetPieces {
+  const squad = l
+    .filter((s) => Boolean(s.plID) && s.sp.pos !== "gk")
+    .map((s) => gs.players[s.plID!]);
+  const passer = bestWithSkill(squad, "passing")?.id;
+  return {
+    penalties: bestWithSkill(squad, "finishing")?.id,
+    shortFreeKicks: bestWithSkill(squad, "shot")?.id,
+    longFreeKicks: passer,
+    corners: passer,
+    throwIns: bestWithSkill(squad, "strength")?.id,
+  };
+}
+
 // TODO move on exportedForTesting
 export {
   GsTm,
@@ -539,6 +591,7 @@ export {
   pickBest,
   initScoutOffset,
   sumWages,
+  updateSetPiecesTakers,
 };
 
 export const exportedForTesting = {};

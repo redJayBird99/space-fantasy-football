@@ -41,3 +41,8 @@ export function cubicBezierY(
     t ** 3 * y4
   );
 }
+
+/** transform the given camel case string to a normal string with spaces, camelCase => camel Case */
+export function breakCamelCase(s: string): string {
+  return s.replace(/([A-Z])/g, " $1");
+}
