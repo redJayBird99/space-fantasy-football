@@ -1,0 +1,101 @@
+<!-- this is how the pitch was relize in case of mofication need -->
+export const PITCH_WIDTH = 66;
+export const PITCH_HEIGHT = 52; // half pitch
+const PITCH_PAD = 3;
+const ENTIRE_PITCH_WIDTH = PITCH_WIDTH + PITCH_PAD * 2;
+const ENTIRE_PITCH_HEIGHT = PITCH_HEIGHT + PITCH_PAD * 2;
+
+.pitch-lines {
+  stroke: white;
+  fill: transparent;
+}
+
+.pitch-fill {
+  fill: hsl(120, 53%, 27%);
+}
+
+.pitch-point {
+  fill: white;
+}
+
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 ${ENTIRE_PITCH_WIDTH} ${ENTIRE_PITCH_HEIGHT}"
+    >
+      <rect
+        class="pitch-fill"
+        x="0"
+        y="0"
+        width=${ENTIRE_PITCH_WIDTH}
+        height=${ENTIRE_PITCH_HEIGHT}
+      />
+      <rect
+        class="pitch-lines"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        x=${PITCH_PAD}
+        y=${PITCH_PAD}
+        width=${PITCH_WIDTH}
+        height=${PITCH_HEIGHT}
+      />
+      <circle
+        class="pitch-lines"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        cx=${PITCH_PAD + PITCH_WIDTH / 2}
+        cy=${PITCH_PAD + 11}
+        r="9"
+      />
+      <rect
+        class="pitch-lines pitch-fill"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        x=${PITCH_PAD + 13}
+        y=${PITCH_PAD}
+        width="40"
+        height="16.5"
+      />
+      <rect
+        class="pitch-lines"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        x=${PITCH_PAD + 24}
+        y=${PITCH_PAD}
+        width="18.3"
+        height="5.5"
+      />
+      <circle
+        class="pitch-point"
+        stroke-width=${PITCH_WIDTH * 0.007}
+        cx=${PITCH_PAD + PITCH_WIDTH / 2}
+        cy=${PITCH_PAD + 11}
+        r=${PITCH_WIDTH * 0.005}
+      />
+      <circle
+        class="pitch-lines"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        cx=${PITCH_PAD + PITCH_WIDTH / 2}
+        cy=${PITCH_PAD + PITCH_HEIGHT}
+        r="9"
+      />
+      <circle
+        class="pitch-point"
+        stroke-width=${PITCH_WIDTH * 0.005}
+        cx=${PITCH_PAD + PITCH_WIDTH / 2}
+        cy=${PITCH_PAD + PITCH_HEIGHT}
+        r=${PITCH_WIDTH * 0.007}
+      />
+      <line
+        class="pitch-lines"
+        x1=${PITCH_PAD}
+        y1=${PITCH_PAD + PITCH_HEIGHT}
+        x2=${PITCH_PAD}
+        y2=${2 * PITCH_PAD + PITCH_HEIGHT}
+        stroke-width=${PITCH_WIDTH * 0.005}
+      />
+      <line
+        class="pitch-lines"
+        x1=${PITCH_PAD + PITCH_WIDTH}
+        y1=${PITCH_PAD + PITCH_HEIGHT}
+        x2=${PITCH_PAD + PITCH_WIDTH}
+        y2=${2 * PITCH_PAD + PITCH_HEIGHT}
+        stroke-width=${PITCH_WIDTH * 0.005}
+      />
+      }> ${sts.map((s) => starter(s.sp))}
+    </svg>

@@ -7,18 +7,24 @@ sff-team {
   display: block;
 }
 
-.team-main {
-  align-items: flex-start;
+.cnt-team-info {
+  background-color: var(--pitch-color);
+  border: 2px solid var(--dk-bg-color-700, var(--lt-bg-color-100));
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  max-width: max-content;
 }
 
-.team-main > :first-child {
-  flex-grow: 1;
+.cnt-team-info > :first-child {
   /* this value should match ENTIRE_PITCH_WIDTH */
-  max-width: calc((66px + 3px * 2) * 12);
+  width: calc(78px * 9);
+  min-width: 0px;
   overflow: auto;
+}
+
+.cnt-team-info > :last-child {
+  flex-shrink: 0;
+  padding-right: 4px;
+  padding-top: 6px;
 }
 
 .cnt-tactics {
@@ -40,29 +46,53 @@ sff-team {
 }
 
 .tactics {
-  margin: 0.5rem 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
   padding-left: 1rem;
 }
 
 .tactics > li {
   background-color: var(--dk-bg-color-700);
-  border-radius: 5px;
+  border-radius: 6px;
   list-style-type: none;
-  margin-bottom: 8px;
-  padding: 2px 0.25rem;
+  padding: 2px 0.5rem;
+}
+
+.tactics > li > i {
+  font-weight: bold;
 }
 
 .cnt-pitch {
   position: relative;
   /* this value should match ENTIRE_PITCH_WIDTH */
-  min-width: calc((66px + 3px * 2) * 4.9);
-  max-width: calc((66px + 3px * 2) * 12);
+  min-width: calc(78px * 5);
 }
 
-@media screen and (min-width: 500px) {
-  .cnt-pitch {
-    /* this value should match ENTIRE_PITCH_WIDTH */
-    min-width: calc((66px + 3px * 2) * 6.5);
+@media screen and (max-width: 63rem) {
+  .cnt-team-info {
+    flex-direction: column;
+    max-width: unset;
+  }
+
+  .cnt-team-info > :last-child {
+    flex-shrink: unset;
+    padding: 0;
+  }
+
+  .cnt-team-info > :first-child {
+    width: 100%;
+  }
+
+  .cnt-tactics {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    max-width: unset;
+  }
+
+  .tactics {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    padding-left: unset;
   }
 }
 
@@ -174,15 +204,6 @@ svg {
   display: block;
 }
 
-rect.pitch {
-  fill: hsl(120, 53%, 27%);
-}
-
-rect.playing-pitch {
-  stroke: white;
-  fill: transparent;
-}
-
 .starter-tag {
   background-color: hsla(275deg, 4%, 16%, 0.75);
   border-radius: 5px;
@@ -217,9 +238,11 @@ rect.playing-pitch {
 
 .tag-pos {
   background-color: var(--dk-primary-color-300, var(--lt-primary-color-300));
-  border-radius: 2px;
+  background-clip: padding-box;
+  border-radius: 4px;
   color: var(--dk-on-primary-color, var(--lt-on-primary-color));
-  padding: 0 0.1rem;
+  font-weight: bold;
+  padding: 0 2px;
 }
 
 .injured {

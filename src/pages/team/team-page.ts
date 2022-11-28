@@ -25,7 +25,6 @@ import {
   Spot,
   Starter,
 } from "../../character/formation";
-import pImg from "../../asset/player.svg";
 import {
   completeLineup,
   findSetPiecesTakers,
@@ -38,18 +37,20 @@ import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
 import { onLinkClick } from "../util/router";
-import phyImg from "../../asset/pharmacy.png";
 import { breakCamelCase } from "../../util/util";
 import { createRef, ref, Ref } from "lit-html/directives/ref.js";
+import plrImg from "../../asset/player.svg";
+import phyImg from "../../asset/pharmacy.png";
+import pitchSvg from "../../asset/half-pitch3.svg";
 
 defineChangeSpot();
 
-export const PITCH_WIDTH = 66;
+export const PITCH_WIDTH = 74;
 export const PITCH_HEIGHT = 52; // half pitch
-const PITCH_PAD = 3;
+const PITCH_PAD = 2;
 const ENTIRE_PITCH_WIDTH = PITCH_WIDTH + PITCH_PAD * 2;
 const ENTIRE_PITCH_HEIGHT = PITCH_HEIGHT + PITCH_PAD * 2;
-const P_IMG_SIZE = 8;
+const PLR_SIZE = 9;
 
 /** get the searched team from the gameState */
 function getSearchParamTeam(): Team | undefined {
@@ -149,22 +150,26 @@ function teamMain(
 
   return html`
     <section slot="in-main" class="team-main">
-      <div>${pitch(starters)}</div>
-      <article class="cnt-tactics">
-        <header class="tactics-head">
-          <h3>Tactics</h3>
-          <div>
-            ${t.name === gs.userTeam ? customizeTactics() : nothing}
-            <a
-              aria-label="manual about finances"
-              @click=${onLinkClick}
-              href="game-manual#players"
-              >🛈</a
-            >
-          </div>
-        </header>
-        ${tactics(t)}
-      </article>
+      <div class="cnt-team-info">
+        <div>${pitch(starters)}</div>
+        <div>
+          <article class="cnt-tactics">
+            <header class="tactics-head">
+              <h3>Tactics</h3>
+              <div>
+                ${t.name === gs.userTeam ? customizeTactics() : nothing}
+                <a
+                  aria-label="manual about finances"
+                  @click=${onLinkClick}
+                  href="game-manual#players"
+                  >🛈</a
+                >
+              </div>
+            </header>
+            ${tactics(t)}
+          </article>
+        </div>
+      </div>
       ${teamPlayersTable(pls, starters, openUpdateLineup)}
     </section>
   `;
@@ -407,6 +412,9 @@ function starterTag(s: Starter): TemplateResult {
       <div class="tag-name"><em>${s.pl?.name}</em></div>
       <div class="tag-info">
         <span class="tag-pos">${s.sp.pos}</span>
+        <span class="tag-pos" style=${starterAtBgColor(s)}
+          >${s.pl?.position}</span
+        >
         <span class="sqd-number">${s.pl?.number ?? ""}</span>
       </div>
     </div>
@@ -420,20 +428,12 @@ function pitchDraw(sts: Starter[]): TemplateResult {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 ${ENTIRE_PITCH_WIDTH} ${ENTIRE_PITCH_HEIGHT}"
     >
-      <rect
-        class="pitch"
+      <image
+        href=${pitchSvg}
         x="0"
         y="0"
         width=${ENTIRE_PITCH_WIDTH}
         height=${ENTIRE_PITCH_HEIGHT}
-      />
-      <rect
-        class="playing-pitch"
-        stroke-width=${PITCH_WIDTH * 0.005}
-        x=${PITCH_PAD}
-        y=${PITCH_PAD}
-        width=${PITCH_WIDTH}
-        height=${PITCH_HEIGHT}
       />
       ${sts.map((s) => starter(s.sp))}
     </svg>
@@ -452,10 +452,10 @@ export function getStarterY(s: Spot, noPad = false): number {
 
 /** the staring players images on the pitch */
 function starter(s: Spot): SVGTemplateResult {
-  const x = getStarterX(s) - P_IMG_SIZE / 2;
-  const y = getStarterY(s) - P_IMG_SIZE / 2;
+  const x = getStarterX(s) - PLR_SIZE / 2;
+  const y = getStarterY(s) - PLR_SIZE / 2;
   return svg`
-    <image href=${pImg} x=${x} y=${y} height=${P_IMG_SIZE} width=${P_IMG_SIZE}/>
+    <image href=${plrImg} x=${x} y=${y} height=${PLR_SIZE} width=${PLR_SIZE}/>
   `;
 }
 

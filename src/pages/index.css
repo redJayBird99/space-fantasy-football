@@ -21,6 +21,8 @@
   --lt-on-error-color: black;
   --lt-neutral-color: #e1c457;
 
+  --pitch-color: #195905;
+
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(13px, 2vw, 16px);
 }
