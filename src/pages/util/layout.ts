@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
 import style from "./layout.css";
+import { afterRouteLeave } from "./router";
 
 class Layout extends HTMLElement {
   constructor() {
@@ -9,20 +10,33 @@ class Layout extends HTMLElement {
 
   connectedCallback() {
     if (this.isConnected) {
+      afterRouteLeave.add(this);
       this.render();
     }
   }
 
-  onNavLinkClick = (e: Event) => {
-    const nav = e.currentTarget as HTMLElement;
-    // cast to any because any element with a href could be a link
-    if (e.composedPath().find((t) => (t as any).href)) {
-      nav.classList.add("mb-nav-close");
-    }
-  };
+  disconnectedCallback() {
+    afterRouteLeave.delete(this);
+  }
 
-  /** handle the btn-toggle-nav, opening and closing the nav bar */
-  onOpenNav = () => {
+  /** after the router has completed its job and the page is rendered, it is time
+   * to close the mobile nav (if it is open), it look nicer than closing the nav
+   * on the click right away
+   *
+   * if the routing take to much for a given page, break the page load in async smaller tasks
+   * */
+  onRouteLeave() {
+    if (
+      !this.shadowRoot!.querySelector("#js-nav")?.classList.contains(
+        "mb-nav-close"
+      )
+    ) {
+      this.toggleNav();
+    }
+  }
+
+  /** toggle the mb-nav-close btn, opening and closing the nav bar */
+  toggleNav = () => {
     const nav = this.shadowRoot!.querySelector("#js-nav") as HTMLElement;
 
     if (nav.classList.contains("mb-nav-close")) {
@@ -53,11 +67,11 @@ class Layout extends HTMLElement {
         </style>
         <header>
           <slot name="in-header"></slot>
-          <button class="btn-toggle-nav" @click=${this.onOpenNav}>
+          <button class="btn-toggle-nav" @click=${this.toggleNav}>
             <span>☰</span>
           </button>
         </header>
-        <nav id="js-nav" class="mb-nav-close" @click=${this.onNavLinkClick}>
+        <nav id="js-nav" class="mb-nav-close">
           <slot name="in-nav"></slot>
         </nav>
         <main>

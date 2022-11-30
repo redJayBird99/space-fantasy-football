@@ -37,6 +37,8 @@ export function onLinkClick(e: Event): void {
 
 /** list of listeners for the url update */
 const urlObservers: Set<{ onUrlUpdate: () => unknown }> = new Set();
+/** every time the main router end the routing process call these observes */
+export const afterRouteLeave: Set<{ onRouteLeave: () => unknown }> = new Set();
 
 /**
  * init the router on the current document, it can be called only once
@@ -121,6 +123,7 @@ export class Router {
       : null;
 
     render(route?.content(match) ?? this.defaultContent, this.root);
+    afterRouteLeave.forEach((o) => o.onRouteLeave());
   }
 
   /** called this function when the router isn't need anymore */

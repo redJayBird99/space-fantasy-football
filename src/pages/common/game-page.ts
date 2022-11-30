@@ -36,13 +36,6 @@ class GamePage extends HTMLElement {
     `;
   };
 
-  errorPageTemplate = (gName: string) => {
-    // TODO a proper 404 page
-    html`<div>
-      <div>sorry, the page you are looking for doesn't exist</div>
-    </div>`;
-  };
-
   // eslint-disable-next-line no-undef
   render = (m: URLPatternResult | null, main: TemplateResult) => {
     const gName = m!.pathname.groups.gName;
