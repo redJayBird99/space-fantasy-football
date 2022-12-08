@@ -1,12 +1,7 @@
 import { html, render } from "lit-html";
 import { MAX_WAGE, MIN_WAGE, Player, SALARY_CAP } from "../../character/player";
 import { Team } from "../../character/team";
-import {
-  fakeWageRequest,
-  resignPlayer,
-  signPlayer,
-} from "../../character/user";
-import { SignRequest } from "../../game-state/game-state";
+import { fakeWageRequest, signPlayer } from "../../character/user";
 import { within } from "../../util/math";
 import style from "./negotiate-contract.css";
 
@@ -18,8 +13,7 @@ import style from "./negotiate-contract.css";
  * the component expect as props:
  * - prl: the player negotiating with
  * - onClose: a function called when the negotiation was concluded
- * - SignRequest?: if this value is given than the negotiation will be about
- * re-signing the player otherwise the new sign player mode is used
+ * - sign: if true it opens in new sign mode otherwise in re-sign mode
  */
 class NegotiateContract extends HTMLElement {
   // the result of the last offer
@@ -31,7 +25,7 @@ class NegotiateContract extends HTMLElement {
   // passed by the caller component
   props?: {
     plr: Player;
-    req?: SignRequest;
+    sign: boolean;
     onClose: () => unknown;
   };
 
@@ -66,8 +60,8 @@ class NegotiateContract extends HTMLElement {
       length < 5 &&
       wage >= Player.wageRequest({ gs: this.gs, t: this.user, p })
     ) {
-      if (this.props?.req) {
-        resignPlayer(this.props!.req, wage, length);
+      if (!this.props!.sign) {
+        signPlayer(p, wage, length, true);
         this.result = "successful";
       } else if (wage <= MIN_WAGE || wage + this.userPayroll <= SALARY_CAP) {
         // only when signing new players check if the team enough has cap space
@@ -101,9 +95,10 @@ class NegotiateContract extends HTMLElement {
       return;
     }
 
-    const maxWage = Math.floor(
-      within(SALARY_CAP - this.userPayroll, MIN_WAGE, MAX_WAGE)
-    );
+    // when re-signing the salary cap doesn't apply (Larry Bird exception)
+    const maxWage = this.props.sign
+      ? Math.floor(within(SALARY_CAP - this.userPayroll, MIN_WAGE, MAX_WAGE))
+      : MAX_WAGE;
 
     render(
       html`

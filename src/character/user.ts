@@ -9,7 +9,6 @@ import {
   addMail,
   DraftPickRecord,
   GameState,
-  SignRequest,
   TradeRecord,
   TransRecord,
 } from "../game-state/game-state";
@@ -173,36 +172,33 @@ export function canSignPlayer(
   return { can: true, why: "" };
 }
 
-/** the user add the player to his team */
-export function signPlayer(p: Player, wage: number, length: number): void {
+/**
+ * the user team sign a contract with the given player, and update the transaction history an related flags
+ * @param length contract duration in seasons
+ * @param reSign if true player is treated as a re-sign otherwise as a new sign
+ */
+export function signPlayer(
+  p: Player,
+  wage: number,
+  length: number,
+  reSign = false
+): void {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
   Team.signPlayer({ gs, t, p }, wage, length);
-  gs.flags.signedNewPlayer = true;
-  gs.transactions.now.signings.push({
+  const historyEntry = {
     when: toISODateString(gs.date),
     plId: p.id,
     team: t.name,
-  });
-  window.$game.state = gs; // mutation notification
-}
+  };
 
-/** the user team re-sign the given player request and add it to the transaction history */
-export function resignPlayer(
-  r: SignRequest,
-  wage: number,
-  length: number
-): void {
-  const gs = window.$game.state! as GameState;
-  const p = gs.players[r.plId];
-  const t = gs.teams[gs.userTeam];
-  Team.signPlayer({ gs, t, p }, wage, length);
-  gs.reSigning = gs.reSigning?.filter((rq) => rq !== r);
-  gs.transactions.now.renewals.push({
-    when: toISODateString(gs.date),
-    plId: p.id,
-    team: t.name,
-  });
+  if (reSign) {
+    gs.transactions.now.renewals.push(historyEntry);
+  } else {
+    gs.transactions.now.signings.push(historyEntry);
+    gs.flags.signedNewPlayer = true;
+  }
+
   window.$game.state = gs; // mutation notification
 }
 

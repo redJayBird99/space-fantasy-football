@@ -627,14 +627,6 @@ describe("handleUpdateContracts()", () => {
       expect(cts[k].duration).toBe(st.contracts[k].duration + 1)
     );
   });
-
-  test("should add all user expiring contract in gs.reSigning", () => {
-    ctsKeys
-      .filter((k) => cts[k] === st.userTeam && cts[k].duration === 0)
-      .forEach((c) => {
-        expect(st.reSigning?.some((r) => cts[r.plId])).toBe(true);
-      });
-  });
 });
 
 describe("handleRenewals()", () => {

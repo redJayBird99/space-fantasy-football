@@ -344,7 +344,6 @@ export function prepareSeasonStart(gs: GameState): void {
 /** update the contracts length and add re-signing requests for the user team */
 function handleUpdateContracts(gs: GameState): EventRst {
   updateContracts(gs);
-  addRenewalRequests(gs);
   GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "renewals" });
   // return endSimOnEvent.updateContracts ?? false;
   // TODO: until auto re-sign flags is done we need always to stop here
@@ -357,7 +356,6 @@ function handleRenewals(gs: GameState): EventRst {
   renewExpiringContracts(gs, true);
   removeExpiredContracts(gs);
   Object.values(gs.teams).forEach((t) => removeLineupDepartures({ gs, t }));
-  gs.reSigning = undefined;
   return { stop: endSimOnEvent.renewals ?? false, done: true };
 }
 
@@ -856,20 +854,6 @@ export function draftPlayer(gs: GameState, pick?: Player): void {
   const iPick = gs.drafts.now.picks.findIndex((p) => p.plId === plr.id);
   gs.drafts.now.picks.splice(iPick, 1);
   gs.drafts.now.picked.push({ team: tName, n, plId: plr.id });
-}
-
-/** add to the game state the renewal requests for all expiring contracts of the user team */
-function addRenewalRequests(gs: GameState): void {
-  const t = gs.teams[gs.userTeam];
-
-  if (t) {
-    gs.reSigning = Team.getExpiringPlayers({ gs, t }).map((p) => {
-      return {
-        plId: p.id,
-        willing: Player.approachable({ gs, t, p }),
-      };
-    });
-  }
 }
 
 /** check for each free agent if is willing to sign for the user team if not add to the rejections */

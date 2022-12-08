@@ -8,7 +8,7 @@ sff-player {
 .plr-info {
   display: grid;
   grid-template-areas: "img high" "img info" "btn btn";
-  grid-template-columns: repeat(2, minmax(0rem, max-content));
+  grid-template-columns: minmax(0rem, 150px) minmax(0rem, max-content);
   gap: 0 1rem;
   position: relative;
 }
@@ -19,6 +19,13 @@ sff-player {
   top: 4px;
 }
 
+.cnt-plr-high {
+  display: flex;
+  gap: 3px 1.3rem;
+  grid-area: high;
+  text-align: center;
+}
+
 @media screen and (max-width: 25rem) {
   .plr-info {
     grid-template-areas: "high high" "img info" "btn btn";
@@ -27,6 +34,7 @@ sff-player {
   }
 
   .cnt-plr-high {
+    justify-self: center;
     margin-bottom: 0.5rem;
   }
 
@@ -51,19 +59,11 @@ sff-player {
   grid-area: info;
 }
 
-.cnt-plr-high {
-  display: flex;
-  gap: 3px 1.3rem;
-  grid-area: high;
-  justify-self: center;
-  text-align: center;
-}
-
 .cnt-plr-img {
   grid-area: img;
 }
 
-.cnt-plr-sign {
+sign-new-player {
   grid-area: btn;
 }
 

@@ -1,27 +1,28 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
 import { macroSkills, Player } from "../../character/player";
 import style from "./re-sign.css";
-import { SignRequest } from "../../game-state/game-state";
 import { skillData } from "../players/player-page";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { Team } from "../../character/team";
 
-type Negotiate = (pl: SignRequest) => unknown;
+type Negotiate = (pl: Player) => unknown;
 
 /** show infos about expiring contracts of the user team and re-signing tools,
  * ( the user can go over the salary cap )
  */
 class ReSign extends HTMLSFFGameElement {
-  // where it exist open the negotiation with this request
-  r?: SignRequest;
+  // where it exist open the negotiation with this player
+  pl?: Player;
 
   closeNegotiation = () => {
-    this.r = undefined;
+    this.pl = undefined;
     this.render();
   };
 
-  openNegotiation = (pl: SignRequest) => {
-    this.r = pl;
+  openNegotiation = (pl: Player) => {
+    console.log(pl);
+    this.pl = pl;
     this.render();
   };
 
@@ -37,12 +38,12 @@ class ReSign extends HTMLSFFGameElement {
           ${style}
         </style>
         ${expiringPlayers(this.openNegotiation)}
-        ${this.r
+        ${this.pl
           ? html`<negotiate-contract
               .props=${{
-                plr: window.$game.state!.players[this.r.plId],
+                plr: this.pl,
                 onClose: this.closeNegotiation,
-                req: this.r,
+                sign: false,
               }}
             ></negotiate-contract>`
           : nothing}
@@ -55,6 +56,7 @@ class ReSign extends HTMLSFFGameElement {
 /** table the players re-signing request */
 function expiringPlayers(open: Negotiate): TemplateResult {
   const gs = window.$game.state!;
+  const expiring = Team.getExpiringPlayers({ gs, t: gs.teams[gs.userTeam] });
 
   return html`
     <table>
@@ -73,16 +75,20 @@ function expiringPlayers(open: Negotiate): TemplateResult {
         )}
         <th>sign</th>
       </tr>
-      ${gs.reSigning?.map((r) => expiringPlayer(r, open))}
+      ${expiring.map((p) => expiringPlayer(p, open))}
     </table>
   `;
 }
 
 /** show infos about the given request and the player, and the resign button
  * ( the user can go over the salary cap ) */
-function expiringPlayer(r: SignRequest, open: Negotiate): TemplateResult {
+function expiringPlayer(p: Player, open: Negotiate): TemplateResult {
   const gs = window.$game.state!;
-  const p = gs.players[r.plId];
+  const willing = Player.approachable({ gs, t: gs.teams[gs.userTeam], p });
+  const call = () => {
+    console.log("hhs");
+    open(p);
+  };
 
   return html`
     <tr>
@@ -95,8 +101,8 @@ function expiringPlayer(r: SignRequest, open: Negotiate): TemplateResult {
       <td>
         <button
           class="btn-sml btn--acc sign-btn"
-          ?disabled=${!r.willing}
-          @click=${r.willing ? () => open(r) : nothing}
+          ?disabled=${!willing}
+          @click=${willing ? call : nothing}
         >
           Negotiate
         </button>

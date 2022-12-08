@@ -172,7 +172,7 @@ class SignNewPlayer extends HTMLSFFGameElement {
           </label>
           ${this.negotiating
             ? html`<negotiate-contract
-                .props=${{ plr: p, onClose: this.closeNegotiation }}
+                .props=${{ plr: p, onClose: this.closeNegotiation, sign: true }}
               ></negotiate-contract>`
             : nothing}
         </div>

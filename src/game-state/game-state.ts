@@ -48,7 +48,6 @@ export type TransRecord = {
 type Transactions = {
   [season: string]: TransRecord;
 };
-export type SignRequest = { plId: string; willing: boolean };
 
 // instances of this interface are saved as JSON on the user machine, this is
 // the game save
@@ -70,8 +69,6 @@ class GameState {
   retirees: { [id: string]: { name: string } } = {};
   /** rejections by players to sign for the user team (cleared after some time) */
   rejections: { [id: string]: boolean } = {};
-  /** list of expiring player intentions if there are willing to re-sign */
-  reSigning?: SignRequest[];
   /** the trade offers received by the user */
   tradeOffers: TradeRecord[] = [];
   /** all the current player injuries, indexed by the player id  */

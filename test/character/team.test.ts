@@ -932,7 +932,6 @@ describe("updateSetPiecesTakers", () => {
       throwIns: "d",
       penalties: "e",
     };
-    console.log(team.setPieces);
     _t.updateSetPiecesTakers(team);
     expect(Object.values(team.setPieces!).some((v) => !v)).toBe(true);
   });

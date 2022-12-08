@@ -418,16 +418,18 @@ class Player {
     const minChance = 0.3 + ((t.appeal - midAppeal) / midAppeal) * 0.2;
     const step = 0.9 * gs.popStats.standardDev;
     const highScore = gs.popStats.meanScore + 1.25 * gs.popStats.standardDev;
+    // we use a deterministic random under the same condition (the output vary only when the time change),
+    // the mod is small enough to loop back often when the time change
+    const rdm = hash(p.id + t.name + gs.date.getTime().toString(36), 100) / 100;
 
-    if (Math.random() > 0.95) {
+    if (rdm > 0.95) {
       // TODO  this is fake player mood
       return false;
     }
 
     return (
       t.appeal > goodAppeal ||
-      Math.max(minChance, (highScore - Player.getScore(p)) / step) >=
-        Math.random()
+      Math.max(minChance, (highScore - Player.getScore(p)) / step) >= rdm
     );
   }
 
