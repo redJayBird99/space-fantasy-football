@@ -149,6 +149,7 @@ const MACRO_SKILLS = {
   offense: ["offensivePositioning", "shot", "finishing"] as SkillList,
 } as const;
 type MacroSkill = keyof typeof MACRO_SKILLS;
+export const macroSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
 
 type Penalty = "smallPenalty" | "midPenalty"; // bigPenalty default
 type PosPenalty = Readonly<

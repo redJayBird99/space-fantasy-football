@@ -38,36 +38,21 @@ th {
   white-space: nowrap;
 }
 
-th:nth-of-type(11),
 th:last-child {
-  width: 10%;
+  width: 20%;
 }
 
 th.small-col {
-  width: 3.5rem;
+  width: 4rem;
 }
 
 @media screen and (max-width: 64rem) {
-  th:last-child {
-    width: 4rem;
-  }
-
-  th:nth-of-type(11) {
-    width: 5rem;
-  }
-
   th.small-col {
     width: 6%;
   }
 
   .small-col {
     font-size: 0.9rem;
-  }
-}
-
-@media screen and (max-width: 45rem) {
-  th.small-col {
-    width: 5.4%;
   }
 }
 

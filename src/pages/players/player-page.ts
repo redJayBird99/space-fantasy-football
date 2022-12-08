@@ -13,7 +13,6 @@ import {
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
-  signPlayer,
 } from "../../character/user";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
@@ -23,7 +22,9 @@ import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
 import { onLinkClick } from "../util/router";
 import { daysBetween } from "../../util/math";
+import defineNegotiate from "./negotiate-contract";
 definePlayerHistory();
+defineNegotiate();
 
 class PlayerPage extends HTMLSFFGameElement {
   connectedCallback() {
@@ -71,7 +72,8 @@ function playerCtn(p: Player): TemplateResult {
         <h3 class="plr-info__name">${p?.name}</h3>
         <img class="plr-img" src=${pImg} alt="a football player" />
       </div>
-      ${playerBio(p)} ${signBtn(p)}
+      ${playerBio(p)}
+      <sign-new-player data-plr-id=${p.id}></sign-new-player>
     </section>
     <div class="plr-skills">${p && playersMacroSkills(p)}</div>
     <player-history data-pl-id=${p?.id ?? ""}></player-history>
@@ -133,29 +135,51 @@ function playerBio(p: Player): TemplateResult {
   `;
 }
 
-/** the button to sign the given player, it is enabled only if signable */
-function signBtn(p: Player): TemplateResult {
-  const gs = window.$game.state!;
-  const t = gs.teams[gs.userTeam];
-  const uPayroll = Team.getWagesAmount({ gs, t: gs.teams[gs.userTeam] });
-  const req = new Intl.NumberFormat("en-GB").format(
-    Player.wageRequest({ gs, t, p })
-  );
-  const sign = canSignPlayer(gs, uPayroll, p);
+/** the button to start the negotiation with the player, it is enabled only if the player is signable
+ *
+ * expect the player id as attribute "data-plr-id"
+ */
+class SignNewPlayer extends HTMLSFFGameElement {
+  private negotiating = false;
 
-  return html`
-    <div class="cnt-plr-sign">
-      <label>
-        <button
-          class="btn btn--acc sign-btn"
-          ?disabled=${!sign.can}
-          @click=${sign.can ? () => signPlayer(p) : nothing}
-        >
-          sign</button
-        >${sign.can ? `sign him for ${req}₡` : sign.why}
-      </label>
-    </div>
-  `;
+  closeNegotiation = () => {
+    this.negotiating = false;
+    this.render();
+  };
+
+  openNegotiation = () => {
+    this.negotiating = true;
+    this.render();
+  };
+
+  render() {
+    const gs = window.$game.state!;
+    const p = gs.players[this.dataset.plrId ?? ""];
+    const uPayroll = Team.getWagesAmount({ gs, t: gs.teams[gs.userTeam] });
+    const sign = canSignPlayer(gs, uPayroll, p);
+
+    render(
+      html`
+        <div class="cnt-plr-sign">
+          <label>
+            <button
+              class="btn btn--acc sign-btn"
+              ?disabled=${!sign.can}
+              @click=${sign.can ? this.openNegotiation : nothing}
+            >
+              Negotiate</button
+            >${sign.can ? `` : sign.why}
+          </label>
+          ${this.negotiating
+            ? html`<negotiate-contract
+                .props=${{ plr: p, onClose: this.closeNegotiation }}
+              ></negotiate-contract>`
+            : nothing}
+        </div>
+      `,
+      this
+    );
+  }
 }
 
 /** lists all macroSkills with their subSkills values */
@@ -210,5 +234,6 @@ export function skillData(score: number): { color: string; score: string } {
 export default function define() {
   if (!customElements.get("sff-player")) {
     customElements.define("sff-player", PlayerPage);
+    customElements.define("sign-new-player", SignNewPlayer);
   }
 }

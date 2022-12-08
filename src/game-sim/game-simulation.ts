@@ -864,11 +864,9 @@ function addRenewalRequests(gs: GameState): void {
 
   if (t) {
     gs.reSigning = Team.getExpiringPlayers({ gs, t }).map((p) => {
-      const abl = Player.approachable({ gs, t, p });
       return {
         plId: p.id,
-        wage: abl ? Player.wageRequest({ gs, t, p }) : 0,
-        seasons: abl ? Math.floor(Math.random() * 4) + 1 : 0,
+        willing: Player.approachable({ gs, t, p }),
       };
     });
   }

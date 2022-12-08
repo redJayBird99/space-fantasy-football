@@ -13,11 +13,18 @@ import {
   TradeRecord,
   TransRecord,
 } from "../game-state/game-state";
+import { hash } from "../util/generator";
 import { within } from "../util/math";
 import { toISODateString } from "../util/util";
 import { Formations, FORMATIONS } from "./formation";
 import { withdrawOffer } from "./mail";
-import { Player, MIN_WAGE, SALARY_CAP, MAX_GROWTH_RATE } from "./player";
+import {
+  Player,
+  MIN_WAGE,
+  SALARY_CAP,
+  MAX_GROWTH_RATE,
+  MAX_WAGE,
+} from "./player";
 import {
   MAX_TEAM_SIZE,
   removeLineupDepartures,
@@ -110,6 +117,22 @@ function transactionsHistoryOf(plId: string): TransRecord {
   return record;
 }
 
+/** the player should always ask for an higher wage to the user respect to want
+ * it is willing to accept, expect when he is asking for the min wage */
+export function fakeWageRequest(p: Player) {
+  const gs = window.$game.state!;
+  const user = gs.teams[gs.userTeam];
+  const wage = Player.wageRequest({ gs, t: user, p });
+
+  if (wage === MIN_WAGE) {
+    return wage;
+  }
+
+  return Math.round(
+    within(wage + 0.15 * wage * (hash(p.id, 100) / 100), MIN_WAGE, MAX_WAGE)
+  );
+}
+
 /**
  * check if the user team can sign the given player (team size, salary cap, player will and etc)
  * @param payroll the wages of the user's players
@@ -141,17 +164,20 @@ export function canSignPlayer(
     };
   }
   if (wage > MIN_WAGE && wage + payroll > SALARY_CAP) {
-    return { can: false, why: "your team doesn't have enough free cap space" };
+    return {
+      can: false,
+      why: "your team doesn't have enough free cap space to make an acceptable offer",
+    };
   }
 
   return { can: true, why: "" };
 }
 
 /** the user add the player to his team */
-export function signPlayer(p: Player): void {
+export function signPlayer(p: Player, wage: number, length: number): void {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
-  Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, t, p }));
+  Team.signPlayer({ gs, t, p }, wage, length);
   gs.flags.signedNewPlayer = true;
   gs.transactions.now.signings.push({
     when: toISODateString(gs.date),
@@ -162,11 +188,15 @@ export function signPlayer(p: Player): void {
 }
 
 /** the user team re-sign the given player request and add it to the transaction history */
-export function resignPlayer(r: SignRequest): void {
+export function resignPlayer(
+  r: SignRequest,
+  wage: number,
+  length: number
+): void {
   const gs = window.$game.state! as GameState;
   const p = gs.players[r.plId];
   const t = gs.teams[gs.userTeam];
-  Team.signPlayer({ gs, t, p }, r.wage, r.seasons);
+  Team.signPlayer({ gs, t, p }, wage, length);
   gs.reSigning = gs.reSigning?.filter((rq) => rq !== r);
   gs.transactions.now.renewals.push({
     when: toISODateString(gs.date),
