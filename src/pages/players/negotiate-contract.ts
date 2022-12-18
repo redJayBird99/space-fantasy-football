@@ -1,7 +1,11 @@
 import { html, render } from "lit-html";
 import { MAX_WAGE, MIN_WAGE, Player, SALARY_CAP } from "../../character/player";
 import { Team } from "../../character/team";
-import { fakeWageRequest, signPlayer } from "../../character/user";
+import {
+  fakeWageRequest,
+  tryReSignPlayer,
+  trySignNewPlayer,
+} from "../../character/user";
 import { within } from "../../util/math";
 import style from "./negotiate-contract.css";
 
@@ -13,7 +17,7 @@ import style from "./negotiate-contract.css";
  * the component expect as props:
  * - prl: the player negotiating with
  * - onClose: a function called when the negotiation was concluded
- * - sign: if true it opens in new sign mode otherwise in re-sign mode
+ * - newSign: if true it opens in new sign mode otherwise in re-sign mode
  */
 class NegotiateContract extends HTMLElement {
   // the result of the last offer
@@ -25,7 +29,7 @@ class NegotiateContract extends HTMLElement {
   // passed by the caller component
   props?: {
     plr: Player;
-    sign: boolean;
+    newSign: boolean;
     onClose: () => unknown;
   };
 
@@ -38,6 +42,10 @@ class NegotiateContract extends HTMLElement {
     if (this.isConnected) {
       this.render();
     }
+  }
+
+  trySignPlayer() {
+    return this.props!.newSign ? trySignNewPlayer : tryReSignPlayer;
   }
 
   /** handle the submitted offer, if the offer is successful the player is sign and the onclose sign called */
@@ -58,21 +66,9 @@ class NegotiateContract extends HTMLElement {
       p &&
       length >= 1 &&
       length < 5 &&
-      wage >= Player.wageRequest({ gs: this.gs, t: this.user, p })
+      this.trySignPlayer()(p, wage, length)
     ) {
-      if (!this.props!.sign) {
-        signPlayer(p, wage, length, true);
-        this.result = "successful";
-      } else if (wage <= MIN_WAGE || wage + this.userPayroll <= SALARY_CAP) {
-        // only when signing new players check if the team enough has cap space
-        signPlayer(p, wage, length);
-        this.result = "successful";
-      }
-
-      if (this.result === "successful") {
-        // give some time to the user to see the result
-        setTimeout(this.props!.onClose, 2500);
-      }
+      this.result = "successful";
     } else {
       this.result = "rejected";
     }
@@ -90,15 +86,51 @@ class NegotiateContract extends HTMLElement {
     return "";
   }
 
+  renderForm() {
+    // when re-signing the salary cap doesn't apply (Larry Bird exception)
+    const maxWage = this.props!.newSign
+      ? Math.floor(within(SALARY_CAP - this.userPayroll, MIN_WAGE, MAX_WAGE))
+      : MAX_WAGE;
+
+    return html`
+      <form class="form-neg" @submit=${(e: Event) => e.preventDefault()}>
+        <label for="wage">wage offer</label>
+        <input
+          class="input-bg"
+          id="wage"
+          type="number"
+          min=${MIN_WAGE}
+          max=${maxWage}
+          step="100"
+          placeholder=${`wage request ${fakeWageRequest(this.props!.plr)}₡`}
+        />
+        <label for="length">contract duration</label>
+        <input
+          class="input-bg"
+          id="length"
+          type="number"
+          min="1"
+          max="4"
+          step="1"
+          placeholder="contract duration"
+        />
+        <button class="btn-sml btn--acc" @click=${this.onOffer} id="btn-offer">
+          offer
+        </button>
+        <output class=${this.result} for="btn-offer"
+          >${this.resultMessage()}</output
+        >
+      </form>
+    `;
+  }
+
   render() {
     if (!this.props) {
       return;
     }
-
-    // when re-signing the salary cap doesn't apply (Larry Bird exception)
-    const maxWage = this.props.sign
-      ? Math.floor(within(SALARY_CAP - this.userPayroll, MIN_WAGE, MAX_WAGE))
-      : MAX_WAGE;
+    html`<output class=${this.result} for="btn-offer"
+      >${this.resultMessage()}</output
+    >`;
 
     render(
       html`
@@ -109,38 +141,11 @@ class NegotiateContract extends HTMLElement {
           <h3 class="dig-label" slot="title">
             Negotiating with ${this.props?.plr.name}
           </h3>
-          <form class="form-neg" @submit=${(e: Event) => e.preventDefault()}>
-            <label for="wage">wage offer</label>
-            <input
-              class="input-bg"
-              id="wage"
-              type="number"
-              min=${MIN_WAGE}
-              max=${maxWage}
-              step="100"
-              placeholder=${`wage request ${fakeWageRequest(this.props.plr)}₡`}
-            />
-            <label for="length">contract duration</label>
-            <input
-              class="input-bg"
-              id="length"
-              type="number"
-              min="1"
-              max="4"
-              step="1"
-              placeholder="contract duration"
-            />
-            <button
-              class="btn-sml btn--acc"
-              @click=${this.onOffer}
-              id="btn-offer"
-            >
-              offer
-            </button>
-            <output class=${this.result} for="btn-offer"
-              >${this.resultMessage()}</output
-            >
-          </form>
+          ${this.result === "successful"
+            ? html`<output class=${this.result} for="btn-offer"
+                >${this.resultMessage()}</output
+              >`
+            : this.renderForm()}
         </sff-modal>
       `,
       this.shadowRoot!

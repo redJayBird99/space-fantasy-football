@@ -16,7 +16,6 @@ import {
 } from "../../character/user";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
-import { Team } from "../../character/team";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
@@ -155,24 +154,33 @@ class SignNewPlayer extends HTMLSFFGameElement {
   render() {
     const gs = window.$game.state!;
     const p = gs.players[this.dataset.plrId ?? ""];
-    const uPayroll = Team.getWagesAmount({ gs, t: gs.teams[gs.userTeam] });
-    const sign = canSignPlayer(gs, uPayroll, p);
+    // 3 quarters so there is some margin to start the negotiation
+    const sign = canSignPlayer(
+      gs,
+      (3 * Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) / 4,
+      p
+    );
+    console.log(sign, p.team);
 
     render(
       html`
         <div class="cnt-plr-sign">
-          <label>
-            <button
-              class="btn btn--acc sign-btn"
-              ?disabled=${!sign.can}
-              @click=${sign.can ? this.openNegotiation : nothing}
-            >
-              Negotiate</button
-            >${sign.can ? `` : sign.why}
-          </label>
+          <button
+            class="btn btn--acc sign-btn"
+            ?disabled=${!sign.can}
+            @click=${sign.can ? this.openNegotiation : nothing}
+            title=${sign.can ? "Negotiate contract" : sign.why}
+            aria-label=${sign.can ? "Negotiate contract" : sign.why}
+          >
+            Negotiate
+          </button>
           ${this.negotiating
             ? html`<negotiate-contract
-                .props=${{ plr: p, onClose: this.closeNegotiation, sign: true }}
+                .props=${{
+                  plr: p,
+                  onClose: this.closeNegotiation,
+                  newSign: true,
+                }}
               ></negotiate-contract>`
             : nothing}
         </div>

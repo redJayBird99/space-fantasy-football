@@ -9,6 +9,7 @@ import {
   addMail,
   DraftPickRecord,
   GameState,
+  SigningRecord,
   TradeRecord,
   TransRecord,
 } from "../game-state/game-state";
@@ -133,73 +134,112 @@ export function fakeWageRequest(p: Player) {
 }
 
 /**
- * check if the user team can sign the given player (team size, salary cap, player will and etc)
- * @param payroll the wages of the user's players
+ * check if the user team fullfil all requirements (team size, salary cap and etc)
+ * and the player is willing to negotiate, but it doesn't check if the player accept the offer
+ * @param wage the wage for the player
  */
 export function canSignPlayer(
   gs: GameState,
-  payroll: number,
+  wage: number,
   p: Player
 ): { can: boolean; why: string } {
   const user = gs.teams[gs.userTeam];
-  const wage = Player.wageRequest({ gs, t: user, p });
+  const payroll = Team.getWagesAmount({ gs, t: user });
 
   if (!gs.flags.openFreeSigningWindow) {
-    return { can: false, why: "the signing window is close" };
+    return { can: false, why: "The signing window is close" };
   }
   if (p.team !== "free agent") {
     return { can: false, why: "the player isn't free" };
   }
   if (gs.flags.signLimit && gs.flags.signedNewPlayer) {
-    return { can: false, why: "you can't sign others players for today" };
+    return { can: false, why: "You can't sign others players for today" };
   }
   if (gs.rejections[p.id]) {
-    return { can: false, why: "the player is unwilling to sign" };
+    return { can: false, why: "The player is unwilling to sign" };
   }
   if (user.playerIds.length >= MAX_TEAM_SIZE) {
     return {
       can: false,
-      why: `your team can't have more than ${MAX_TEAM_SIZE} players`,
+      why: `Your team can't have more than ${MAX_TEAM_SIZE} players`,
     };
   }
   if (wage > MIN_WAGE && wage + payroll > SALARY_CAP) {
     return {
       can: false,
-      why: "your team doesn't have enough free cap space to make an acceptable offer",
+      why: "Your team can't afford the player wage",
     };
   }
 
   return { can: true, why: "" };
 }
 
-/**
- * the user team sign a contract with the given player, and update the transaction history an related flags
- * @param length contract duration in seasons
- * @param reSign if true player is treated as a re-sign otherwise as a new sign
- */
-export function signPlayer(
-  p: Player,
+/** check if the user team fullfil all requirements and the player accepts the offer */
+export function canPlayerAcceptOffer(
+  gs: GameState,
   wage: number,
-  length: number,
-  reSign = false
-): void {
+  p: Player
+): { can: boolean; why: string } {
+  if (wage < Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
+    return { can: false, why: "The offer was rejected" };
+  }
+
+  return canSignPlayer(gs, wage, p);
+}
+
+/**
+ * the user team sign a contract with the given player
+ * @param length contract duration in seasons
+ */
+function signPlayer(p: Player, wage: number, length: number): SigningRecord {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
   Team.signPlayer({ gs, t, p }, wage, length);
-  const historyEntry = {
+  return {
     when: toISODateString(gs.date),
     plId: p.id,
     team: t.name,
   };
+}
 
-  if (reSign) {
-    gs.transactions.now.renewals.push(historyEntry);
-  } else {
-    gs.transactions.now.signings.push(historyEntry);
+/** sign the given player the player accept the offer and the user team fullfil all requirements
+ * and update the transaction history an related flags if the sign was successful
+ * @param wage the offered wage
+ * @param length the contract duration
+ * @returns true if the player was signed
+ */
+export function trySignNewPlayer(
+  p: Player,
+  wage: number,
+  length: number
+): boolean {
+  const gs = window.$game.state!;
+
+  if (canPlayerAcceptOffer(gs, wage, p).can) {
+    gs.transactions.now.signings.push(signPlayer(p, wage, length));
     gs.flags.signedNewPlayer = true;
+    window.$game.state = gs; // mutation notification
+    return true;
   }
 
-  window.$game.state = gs; // mutation notification
+  return false;
+}
+
+/** the user team sign the player and update the transaction history an related flags, if the player accepts the offer */
+export function tryReSignPlayer(
+  p: Player,
+  wage: number,
+  length: number
+): boolean {
+  const gs = window.$game.state!;
+
+  if (wage >= Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
+    gs.transactions.now.renewals.push(signPlayer(p, wage, length));
+    window.$game.state = gs; // mutation notification
+    return true;
+  }
+
+  return false;
 }
 
 /**
