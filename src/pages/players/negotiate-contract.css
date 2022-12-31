@@ -14,17 +14,13 @@ negotiate-contract {
 .form-neg {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 [for="wage"],
 [for="length"] {
   position: absolute;
   top: -9999rem;
-}
-
-.input-bg {
-  padding: 4px 2px 4px 8px;
 }
 
 output {

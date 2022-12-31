@@ -133,7 +133,7 @@ home-team-picker {
   border-radius: 2px;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 25%);
   display: flex;
-  gap: 3px;
+  gap: 5px;
   list-style-type: none;
   margin: 4px;
   padding: 0.2rem;
@@ -170,11 +170,7 @@ home-team-picker {
 .cnt-new-game-name {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.cnt-new-game-name > .input-bg {
-  background-color: var(--dk-bg-color-500, var(--lt-bg-color-200));
+  gap: 0.75rem;
 }
 
 .pick-team-btn {

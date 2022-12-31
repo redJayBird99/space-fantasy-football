@@ -6,7 +6,9 @@
   --lt-bg-color-100: hsl(275deg, 4%, 95%);
   --lt-bg-color-200: hsl(275deg, 4%, 90%);
   --lt-bg-color-300: hsl(275deg, 4%, 85%);
-  --lt-on-bg-color: #1f1f1f;
+  --lt-on-bg-color: hsl(0, 0%, 12%);
+  --lt-on-bg-color-50: hsl(0, 0%, 18%);
+  --lt-on-bg-color-100: hsl(0, 0%, 24%);
 
   /* TODO: pick a color for every one below */
   --lt-primary-color: hsl(276, 93%, 84%);
@@ -25,6 +27,7 @@
 
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(13px, 2vw, 16px);
+  line-height: 1.4;
 }
 
 /* default mode */
@@ -37,7 +40,9 @@
   --dk-bg-color-600: hsl(275deg, 4%, 32%);
   --dk-bg-color-500: hsl(275deg, 4%, 40%);
   --dk-bg-color-300: hsl(275deg, 4%, 56%);
-  --dk-on-bg-color: white;
+  --dk-on-bg-color: hsl(0, 0%, 100%);
+  --dk-on-bg-color-50: hsl(0, 0%, 95%);
+  --dk-on-bg-color-100: hsl(0, 0%, 90%);
 
   /* TODO: pick a color for every one below */
   --dk-primary-color: var(--lt-primary-color);
@@ -63,6 +68,24 @@ body {
   background-color: var(--dk-bg-color, var(--lt-bg-color));
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   margin: 0;
+}
+
+h1,
+h2 {
+  line-height: 1.1;
+}
+
+h3,
+h4 {
+  line-height: 1.25;
+}
+
+input,
+select,
+textarea,
+button,
+option {
+  font: inherit;
 }
 
 .cnt-404 {

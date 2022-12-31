@@ -40,7 +40,7 @@ class Draft extends HTMLSFFGameElement {
     return html`
       <div class="cnt-season-sel">
         <label for="season">Season: </label>
-        <select class="input-bg" id="season" @change=${this.onSeasonChange}>
+        <select class="form-select" id="season" @change=${this.onSeasonChange}>
           ${Object.keys(window.$game.state!.drafts).map(
             (k) =>
               html`<option ?selected=${k === this.season} value=${k}>

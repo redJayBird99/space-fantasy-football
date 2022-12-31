@@ -259,7 +259,7 @@ function tableControls(): TemplateResult {
     });
 
   return html`
-    <div>
+    <div class="ctl-tb-size">
       <button
         class="btn-sml arrow"
         ?disabled=${page === 1}
@@ -279,7 +279,7 @@ function tableControls(): TemplateResult {
       </button>
       <label class="tb-entries">
         Show:
-        <select class="input-bg" id="sizes" @change=${onSizeChange}>
+        <select class="form-select" id="sizes" @change=${onSizeChange}>
           ${sizes.map(
             (sz) => html`<option ?selected=${c.size === sz}>${sz}</option>`
           )}
@@ -287,14 +287,15 @@ function tableControls(): TemplateResult {
         entries
       </label>
     </div>
-    <label
-      >Search:
-      <input
-        class="input-bg"
-        type="search"
-        @input=${onSearchChange}
-        value=${c.search ?? ""}
-    /></label>
+    <label class="hide-form-label">Search</label>
+    <input
+      id="search-player"
+      class="form-control"
+      type="search"
+      @input=${onSearchChange}
+      placeholder="Search"
+      value=${c.search ?? ""}
+    />
   `;
 }
 
@@ -302,7 +303,7 @@ function tableControls(): TemplateResult {
 function inputAge(name: string, placeHld: string, lbl: string): TemplateResult {
   return html`
     <input
-      class="input-bg age-input"
+      class="form-number age-input"
       name=${name}
       type="number"
       min="15"
@@ -348,19 +349,19 @@ function filterControls(): TemplateResult {
       @submit=${onSummit}
       aria-label="filter players"
     >
-      <select class="input-bg" name="teams" aria-label="filter by team">
+      <select class="form-select" name="teams" aria-label="filter by team">
         <option selected value="">Filter by team</option>
         ${pgGb!.teams.map((t) => html`<option>${t}</option>`)}
       </select>
-      <select class="input-bg" name="pos" aria-label="filter by position">
+      <select class="form-select" name="pos" aria-label="filter by position">
         <option selected value="">Filter by position</option>
         ${POSITIONS.map((p) => html`<option>${p}</option>`)}
       </select>
-      <div>
+      <div class="cnt-age-range">
         age range ${inputAge("min-age", "min", "minimum age")} to
         ${inputAge("max-age", "max", "maximum age")}
       </div>
-      <button class="btn-sml">Apply filters</button>
+      <button class="btn-round">Apply filters</button>
     </form>
   `;
 }

@@ -278,14 +278,16 @@ function simOptions(onApply: () => void): TemplateResult {
   return html`
     <section class="sim-options">
       <label for="js-sim-duration">choose a simulation duration</label>
-      <select class="input-bg" id="js-sim-duration">
+      <select class="form-select" id="js-sim-duration">
         ${simSelectOptions(simDurationOptions())}
       </select>
       <label for="js-sim-speed">choose a simulation speed</label>
-      <select class="input-bg" id="js-sim-speed">
+      <select class="form-select" id="js-sim-speed">
         ${simSelectOptions(Object.entries(simOps.speed))}
       </select>
-      <button class="btn-sml btn--acc" @click=${handleClickApply}>apply</button>
+      <button class="btn-round btn--acc" @click=${handleClickApply}>
+        apply
+      </button>
     </section>
   `;
 }

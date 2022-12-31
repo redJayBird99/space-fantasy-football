@@ -24,6 +24,10 @@ players-table {
   padding: 6px 0.5rem;
 }
 
+#search-player {
+  max-width: 15rem;
+}
+
 .tb-pos {
   display: inline-block;
   text-align: center;
@@ -31,8 +35,12 @@ players-table {
   white-space: nowrap;
 }
 
-.tb-entries {
-  padding-left: 0.5rem;
+.tb-entries,
+.ctl-tb-size,
+.cnt-age-range {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
 }
 
 table {
@@ -151,13 +159,8 @@ th:first-child > .btn-txt {
 #js-filters {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.75rem;
   padding: 10px max(2%, 1rem);
-}
-
-#js-filters input,
-#js-filters > select {
-  background-color: var(--dk-bg-color-500, var(--lt-dg-color-100));
 }
 
 .age-input {

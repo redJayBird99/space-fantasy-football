@@ -281,7 +281,7 @@ function selectTactic(
   const id = `slc-${name}`;
   return html`
     <label class="hide" for=${id}>${label}</label>
-    <select id=${id} class="input-bg" aria-label=${label} name=${name}>
+    <select id=${id} class="form-select" aria-label=${label} name=${name}>
       <option value="">${label}</option>
       ${squad.map((p) => html`<option value=${p.id}>${p.name}</option>`)}
     </select>
@@ -463,7 +463,7 @@ function starter(s: Spot): SVGTemplateResult {
 function formationSelector(options: string[]): TemplateResult {
   return html`
     <label for="forms-slc" class="hide">Choose formation</label>
-    <select id="forms-slc" class="input-bg" name="formations">
+    <select id="forms-slc" class="form-select" name="formations">
       <option value="">Choose formation</option>
       ${options.map((f) => html`<option value=${f}>${f}</option>`)}
     </select>

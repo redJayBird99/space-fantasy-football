@@ -70,7 +70,8 @@ btn-sim-options > .btn {
 .sim-options {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.75rem;
+  min-width: max-content;
 }
 
 .sim-options > label {

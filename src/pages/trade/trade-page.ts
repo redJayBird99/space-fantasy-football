@@ -338,7 +338,7 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
     <label>
       select an offer
       <select
-        class="input-bg"
+        class="form-select"
         @change="${dis ? nothing : onSelect}"
         ?disabled=${dis}
       >
@@ -363,15 +363,15 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
 function otherTeamSelector(onSelect: hdl, cur: string): TemplateResult {
   const gs = window.$game.state!;
   return html`
-    <label>
+    <label for="trade-select-team" class="hide-form-label">
       select a team to trade with
-      <select class="input-bg" @change="${onSelect}">
-        <option ?selected=${!cur} value="">Select team</option>
-        ${Object.keys(gs.teams)
-          .filter((n) => n !== gs.userTeam)
-          .map((n) => html`<option ?selected=${cur === n}>${n}</option>`)}
-      </select>
     </label>
+    <select id="trade-select-team" class="form-select" @change="${onSelect}">
+      <option ?selected=${!cur} value="">Select team</option>
+      ${Object.keys(gs.teams)
+        .filter((n) => n !== gs.userTeam)
+        .map((n) => html`<option ?selected=${cur === n}>${n}</option>`)}
+    </select>
   `;
 }
 

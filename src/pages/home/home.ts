@@ -148,17 +148,21 @@ class NewGame extends HTMLElement {
     return html`
       <h2 class="dig-label" slot="title">Choose a game name</h2>
       <div class="cnt-new-game-name">
-        <label for="game-name">Game name (between 4 and 14 characters)</label>
-        <input
-          class="input-bg"
-          type="text"
-          id="game-name"
-          pattern="^\\w{4,14}$"
-          size="14"
-          required
-          placeholder="Name"
-        />
-        <button @click=${this.handleGameNameClick} class="btn btn-acc">
+        <div>
+          <label class="form-label" for="game-name"
+            >game name between 4 and 14 characters</label
+          >
+          <input
+            class="form-control"
+            type="text"
+            id="game-name"
+            pattern="^\\w{4,14}$"
+            size="14"
+            required
+            placeholder="Name"
+          />
+        </div>
+        <button @click=${this.handleGameNameClick} class="btn-round btn-acc">
           Apply
         </button>
       </div>
@@ -227,7 +231,7 @@ class LoadFile extends HTMLElement {
             <label
               for="game-file"
               tabindex="0"
-              class="btn-sml"
+              class="btn-sml btn-round"
               @keydown=${this.onLabelPressEnter}
               >Select Game File</label
             >

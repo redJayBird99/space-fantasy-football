@@ -96,7 +96,7 @@ class NegotiateContract extends HTMLElement {
       <form class="form-neg" @submit=${(e: Event) => e.preventDefault()}>
         <label for="wage">wage offer</label>
         <input
-          class="input-bg"
+          class="form-number"
           id="wage"
           type="number"
           min=${MIN_WAGE}
@@ -106,7 +106,7 @@ class NegotiateContract extends HTMLElement {
         />
         <label for="length">contract duration</label>
         <input
-          class="input-bg"
+          class="form-number"
           id="length"
           type="number"
           min="1"
@@ -114,8 +114,12 @@ class NegotiateContract extends HTMLElement {
           step="1"
           placeholder="contract duration"
         />
-        <button class="btn-sml btn--acc" @click=${this.onOffer} id="btn-offer">
-          offer
+        <button
+          class="btn-round btn--acc"
+          @click=${this.onOffer}
+          id="btn-offer"
+        >
+          Make Offer
         </button>
         <output class=${this.result} for="btn-offer"
           >${this.resultMessage()}</output
