@@ -285,7 +285,7 @@ function simOptions(onApply: () => void): TemplateResult {
       <select class="form-select" id="js-sim-speed">
         ${simSelectOptions(Object.entries(simOps.speed))}
       </select>
-      <button class="btn-round btn--acc" @click=${handleClickApply}>
+      <button class="btn btn-rounded btn--acc" @click=${handleClickApply}>
         apply
       </button>
     </section>

@@ -1,0 +1,34 @@
+/** this file apply the utility first approach, the naming convention try (mostly) to stick to Tailwind */
+
+/** _______________ PADDING __________________ */
+/**
+  padding: p{direction}-{size in rem, underscore for .} --> pr-0_5 === padding-right: 0.5rem
+  or p{direction}-{size in px}x --> pr-1x === padding-right: 1px
+  when no direction is specified set all sides */
+
+.py-0_3 {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+
+.px-0_75 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.py-0_1 {
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+}
+
+.px-0_25 {
+  padding-left: 0.25rem;
+  padding-right: 0.25em;
+}
+
+/** _______________ LAYOUT _________________**/
+
+.hide {
+  position: absolute;
+  left: -999rem;
+}

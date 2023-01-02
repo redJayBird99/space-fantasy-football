@@ -100,7 +100,7 @@ function expiringPlayer(p: Player, open: Negotiate): TemplateResult {
       )}
       <td>
         <button
-          class="btn-sml btn--acc sign-btn"
+          class="btn btn-sml btn--acc sign-btn"
           ?disabled=${!willing}
           @click=${willing ? call : nothing}
         >

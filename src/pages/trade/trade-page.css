@@ -1,6 +1,7 @@
 @import url("../util/button.css");
 @import url("../util/form.css");
 @import url("../util/common.css");
+@import "../util/utilities.css";
 
 sff-trade-page,
 sff-trade,

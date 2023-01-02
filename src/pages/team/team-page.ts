@@ -266,7 +266,7 @@ function customizeTactics(): TemplateResult {
         ${selectTactic(squad, "Choose short free kick taker", "short-kick")}
         ${selectTactic(squad, "Choose throw-ins taker", "throw-ins")}
 
-        <button class="btn-sml">Apply Tactics</button>
+        <button class="btn btn-sml">Apply Tactics</button>
       </form>
     </dialog>
   `;

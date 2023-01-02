@@ -1,5 +1,6 @@
 @import "../util/form.css";
 @import "../util/button.css";
+@import "../util/utilities.css";
 
 negotiate-contract {
   display: block;
@@ -15,12 +16,6 @@ negotiate-contract {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-}
-
-[for="wage"],
-[for="length"] {
-  position: absolute;
-  top: -9999rem;
 }
 
 output {

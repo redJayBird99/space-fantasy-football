@@ -167,7 +167,7 @@ class TradePage extends PageContent {
         <div class="trade-ctrl">
           ${otherTeamSelector(this.onTeamSelect, team ?? "")}
           <button
-            class="btn-sml"
+            class="btn btn-sml"
             id="btn-offer"
             ?disabled=${!canMakeOffer}
             @click=${canMakeOffer ? this.onSummitTrade : nothing}
@@ -253,14 +253,14 @@ class OffersPage extends PageContent {
         <div class="trade-ctrl">
           ${offersSelector(this.onOfferSelect, this.offer)}
           <button
-            class="btn-sml btn--acc"
+            class="btn btn-sml btn--acc"
             ?disabled=${dis}
             @click=${() => this.onOfferResponse(true)}
           >
             accept
           </button>
           <button
-            class="btn-sml btn--err"
+            class="btn btn-sml btn--err"
             ?disabled=${dis}
             @click=${() => this.onOfferResponse(false)}
           >
@@ -363,7 +363,7 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
 function otherTeamSelector(onSelect: hdl, cur: string): TemplateResult {
   const gs = window.$game.state!;
   return html`
-    <label for="trade-select-team" class="hide-form-label">
+    <label for="trade-select-team" class="hide">
       select a team to trade with
     </label>
     <select id="trade-select-team" class="form-select" @change="${onSelect}">

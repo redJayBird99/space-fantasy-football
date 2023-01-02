@@ -131,7 +131,7 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
       <td ?data-user=${rec.team === gs.userTeam}>${teamLink}</td>
       <td>
         <button
-          class="btn-sml btn-acc"
+          class="btn btn-sml btn-acc"
           ?disabled=${!canDraft}
           @click=${canDraft ? onDraftClick : nothing}
           aria-label="draft player"

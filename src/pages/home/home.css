@@ -1,6 +1,7 @@
 @import "../util/button.css";
 @import "../util/form.css";
 @import "../common/fork-me.css";
+@import "../util/utilities.css";
 
 sff-home,
 home-main,
@@ -158,13 +159,6 @@ home-team-picker {
   cursor: pointer;
   display: inline-block;
   width: 100%;
-}
-
-#game-file {
-  position: absolute;
-  top: -9999rem;
-  width: 1px;
-  height: 1px;
 }
 
 .cnt-new-game-name {

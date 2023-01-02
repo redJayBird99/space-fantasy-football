@@ -94,7 +94,7 @@ class NegotiateContract extends HTMLElement {
 
     return html`
       <form class="form-neg" @submit=${(e: Event) => e.preventDefault()}>
-        <label for="wage">wage offer</label>
+        <label class="hide" for="wage">wage offer</label>
         <input
           class="form-number"
           id="wage"
@@ -104,7 +104,7 @@ class NegotiateContract extends HTMLElement {
           step="100"
           placeholder=${`wage request ${fakeWageRequest(this.props!.plr)}₡`}
         />
-        <label for="length">contract duration</label>
+        <label class="hide" for="length">contract duration</label>
         <input
           class="form-number"
           id="length"
@@ -115,7 +115,7 @@ class NegotiateContract extends HTMLElement {
           placeholder="contract duration"
         />
         <button
-          class="btn-round btn--acc"
+          class="btn btn-rounded btn--acc"
           @click=${this.onOffer}
           id="btn-offer"
         >

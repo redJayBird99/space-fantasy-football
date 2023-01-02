@@ -2,6 +2,7 @@
 @import "../util/form.css";
 @import "../util/common.css";
 @import "../util/dialog.css";
+@import "../util/utilities.css";
 
 sff-players,
 players-table {

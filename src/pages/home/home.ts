@@ -162,7 +162,10 @@ class NewGame extends HTMLElement {
             placeholder="Name"
           />
         </div>
-        <button @click=${this.handleGameNameClick} class="btn-round btn-acc">
+        <button
+          @click=${this.handleGameNameClick}
+          class="btn btn-rounded btn-acc"
+        >
           Apply
         </button>
       </div>
@@ -231,13 +234,14 @@ class LoadFile extends HTMLElement {
             <label
               for="game-file"
               tabindex="0"
-              class="btn-sml btn-round"
+              class="btn btn-sml btn-rounded"
               @keydown=${this.onLabelPressEnter}
               >Select Game File</label
             >
             <input
               type="file"
               accept=".json"
+              class="hide"
               id="game-file"
               @change=${this.onFileLoad}
             />

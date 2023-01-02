@@ -2,6 +2,7 @@
 @import "../util/common.css";
 @import "../util/form.css";
 @import "../util/dialog.css";
+@import "../util/utilities.css";
 
 sff-team {
   display: block;
@@ -263,11 +264,6 @@ svg {
   inset-inline-start: unset;
   inset-inline-end: 0px;
   width: max-content;
-}
-
-.hide {
-  position: absolute;
-  top: -9999rem;
 }
 
 .tct-dig > form > * {

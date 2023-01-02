@@ -210,10 +210,10 @@ function filters(): TemplateResult {
 
   return html`
     <div class="cnt-filters">
-      <button class="btn-sml filter-btn" @click=${openControls}>
+      <button class="btn btn-sml filter-btn" @click=${openControls}>
         💡 Filter features
       </button>
-      <button class="btn-sml filter-btn" @click=${onClearClick}>
+      <button class="btn btn-sml filter-btn" @click=${onClearClick}>
         ⌫ Clear filters
       </button>
       <dialog
@@ -261,7 +261,7 @@ function tableControls(): TemplateResult {
   return html`
     <div class="ctl-tb-size">
       <button
-        class="btn-sml arrow"
+        class="btn btn-sml arrow"
         ?disabled=${page === 1}
         @click=${onPrev}
         aria-label="previous page"
@@ -270,7 +270,7 @@ function tableControls(): TemplateResult {
       </button>
       <span class="tb-pos"> ${page} / ${pages}</span>
       <button
-        class="btn-sml arrow"
+        class="btn btn-sml arrow"
         ?disabled=${page === pages}
         @click=${onNext}
         aria-label="next page"
@@ -287,7 +287,7 @@ function tableControls(): TemplateResult {
         entries
       </label>
     </div>
-    <label class="hide-form-label">Search</label>
+    <label class="hide">Search</label>
     <input
       id="search-player"
       class="form-control"
@@ -361,7 +361,7 @@ function filterControls(): TemplateResult {
         age range ${inputAge("min-age", "min", "minimum age")} to
         ${inputAge("max-age", "max", "maximum age")}
       </div>
-      <button class="btn-round">Apply filters</button>
+      <button class="btn btn-rounded">Apply filters</button>
     </form>
   `;
 }

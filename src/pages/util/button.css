@@ -1,31 +1,43 @@
 .btn,
-.btn-sml,
-.btn-round {
-  --btn-hover-border-color: var(--bg-primary);
-  --btn-focus-box-shadow: var(--ring-primary);
-  background-color: var(--bg-primary);
+.modal-close {
   border: var(--border-invisible);
-  border-radius: var(--rounded-sm);
-  box-shadow: var(--shadow);
   cursor: pointer;
   display: inline-block;
+  box-shadow: var(--shadow);
   font: inherit;
   font-weight: bold;
-  padding: var(--py-0_3) var(--px-0_75);
+  transition: border-color var(--duration-150) linear,
+    box-shadow var(--duration-150) linear, filter var(--duration-150) linear;
+  vertical-align: middle;
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
   text-align: center;
-  transition: border-color var(--duration-150) linear,
-    box-shadow var(--duration-150) linear, filter var(--duration-150) linear;
-  vertical-align: middle;
+}
+
+.btn {
+  --btn-hover-border-color: var(--bg-primary);
+  --btn-focus-box-shadow: var(--ring-primary);
+  background-color: var(--bg-primary);
+  border-radius: var(--rounded-sm);
+  color: var(--close-btn-color, var(--color-on-error));
+  padding: var(--py-0_3) var(--px-0_75);
+}
+
+.modal-close {
+  --btn-hover-border-color: var(--dk-error-color, var(--lt-error-color));
+  --btn-focus-box-shadow: var(--ring-error);
+  background-color: var(--close-btn-bg-color, var(--bg-error));
+  border-radius: var(--rounded-full);
+  color: var(--close-btn-color, var(--color-on-error));
+  padding: 0 6px;
 }
 
 .btn-sml {
   padding: var(--py-0_1) var(--px-0_25);
 }
 
-.btn-round {
+.btn-rounded {
   border-radius: var(--rounded-xl);
 }
 
@@ -46,43 +58,22 @@
   text-decoration-line: underline;
 }
 
-.modal-close {
-  --btn-hover-border-color: var(--dk-error-color, var(--lt-error-color));
-  --btn-focus-box-shadow: var(--ring-error);
-  background-color: var(--close-btn-bg-color, var(--bg-error));
-  border: var(--border-invisible);
-  border-radius: var(--rounded-full);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  color: var(--close-btn-color, var(--color-on-error));
-  font: inherit;
-  font-weight: bold;
-  padding: 0 6px;
-  transition: border-color var(--duration-150) linear,
-    box-shadow var(--duration-150) linear;
-}
-
 .btn:hover:not(:disabled),
-.btn-sml:hover:not(:disabled),
-.modal-close:hover:not(:disabled),
-.btn-round:hover:not(:disabled) {
+.modal-close:hover:not(:disabled) {
   filter: var(--brightness-130);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .btn,
-  .btn-sml,
   .modal-close {
     transition: none;
   }
 }
 
 .btn:focus-visible:not(:disabled),
-.btn-sml:focus-visible:not(:disabled),
 .modal-close:focus-visible:not(:disabled),
 .btn-txt:focus-visible:not(:disabled),
-.btn-link:focus-visible:not(:disabled),
-.btn-round:focus-visible:not(:disabled) {
+.btn-link:focus-visible:not(:disabled) {
   border-color: var(--btn-hover-border-color);
   outline: none;
   box-shadow: var(--btn-focus-box-shadow);
@@ -102,10 +93,8 @@
 }
 
 .btn:disabled,
-.btn-sml:disabled,
 .btn-link:disabled,
-.modal-close:disabled,
-.btn-round:disabled {
+.modal-close:disabled {
   filter: var(--brightness-50);
 }
 
