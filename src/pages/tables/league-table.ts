@@ -3,6 +3,7 @@ import { Entry, LeagueTable as League } from "../../game-state/league-table";
 import { html, render, TemplateResult } from "lit-html";
 import style from "./league-table.css";
 import { goLink } from "../util/go-link";
+import { mainStyleSheet } from "../style-sheets";
 
 const columns = [
   { full: "team", abbr: "team", data: (e: Entry) => e.teamName },
@@ -107,6 +108,7 @@ class LeagueTable extends HTMLElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

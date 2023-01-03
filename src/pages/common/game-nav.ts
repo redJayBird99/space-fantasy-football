@@ -2,6 +2,7 @@ import style from "./game-nav.css";
 import { render, html, nothing, TemplateResult } from "lit-html";
 import { HTMLSFFGameElement } from "./html-game-element";
 import { goLink } from "../util/go-link";
+import { mainStyleSheet } from "../style-sheets";
 
 /** the in game nav bar */
 class GameNav extends HTMLSFFGameElement {
@@ -20,6 +21,7 @@ class GameNav extends HTMLSFFGameElement {
 
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

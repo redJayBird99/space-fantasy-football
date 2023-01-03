@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import * as _ps from "../util/props-state";
 import * as db from "../../game-state/game-db";
 import style from "./menu-bar.css";
+import { mainStyleSheet } from "../style-sheets";
 
 /** menu with utils like game saver */
 class MenuBar extends HTMLElement {
@@ -20,6 +21,7 @@ class MenuBar extends HTMLElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

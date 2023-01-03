@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { mainStyleSheet } from "../style-sheets";
 import style from "./layout.css";
 import { afterRouteLeave } from "./router";
 
@@ -62,6 +63,7 @@ class Layout extends HTMLElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

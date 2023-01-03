@@ -7,10 +7,6 @@
   grid-template-columns: minmax(0px, auto) minmax(0px, 1fr);
 }
 
-* {
-  box-sizing: border-box;
-}
-
 nav {
   grid-area: navB;
   height: calc(100vh - var(--header-height));

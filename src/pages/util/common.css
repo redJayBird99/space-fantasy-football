@@ -5,3 +5,17 @@ a {
 abbr[title] {
   text-decoration: none;
 }
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea,
+button,
+option {
+  font: inherit;
+}

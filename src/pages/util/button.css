@@ -4,7 +4,6 @@
   cursor: pointer;
   display: inline-block;
   box-shadow: var(--shadow);
-  font: inherit;
   font-weight: bold;
   transition: border-color var(--duration-150) linear,
     box-shadow var(--duration-150) linear, filter var(--duration-150) linear;

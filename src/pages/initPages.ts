@@ -1,8 +1,8 @@
 import { init } from "./util/router";
 import defineComponents from "./define-components";
-import style from "./index.css";
 import { html } from "lit-html";
 import { page404 } from "./common/page-404";
+import { injectStyleSheet } from "./style-sheets";
 
 /** this function is specifically to handle a customized redirection from the 404 github pages,
  * because gitHub pages doesn't support Single Page Apps we need some hacks
@@ -27,7 +27,7 @@ function handleGitHubPages404Redirection() {
 export default function initPages(): void {
   defineComponents();
   document.documentElement.classList.add("dark");
-  document.head.insertAdjacentHTML("beforeend", `<style>${style}</style>`);
+  injectStyleSheet();
   const root = document.createElement("div");
   const modalRoot = (window.$modalRoot = document.createElement("div"));
   document.body.append(root, modalRoot);

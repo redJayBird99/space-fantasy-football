@@ -1,5 +1,4 @@
 @import "../util/led.css";
-@import "../util/button.css";
 
 :host {
   align-items: center;
@@ -12,12 +11,6 @@
   position: sticky;
   top: var(--header-height);
   z-index: 1;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
 }
 
 menu-save-file > a {

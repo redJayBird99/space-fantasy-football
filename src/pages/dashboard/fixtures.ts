@@ -3,6 +3,7 @@ import { getNextFixtures } from "../../character/user";
 import { Match } from "../../game-sim/tournament-scheduler";
 import style from "./fixtures.css";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { mainStyleSheet } from "../style-sheets";
 
 /** a preview of the next few matches for the user team */
 class Fixtures extends HTMLSFFGameElement {
@@ -17,6 +18,7 @@ class Fixtures extends HTMLSFFGameElement {
 
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

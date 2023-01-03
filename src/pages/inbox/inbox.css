@@ -1,17 +1,9 @@
-@import url("../util/button.css");
-
 :host {
   background-color: var(--dk-bg-color-700, var(--lt-bg-color-100));
   border-radius: 6px;
   display: block;
   box-shadow: 0px 1px 3px 0px hsl(0deg 0% 6% / 20%);
   padding: 4px 6px;
-}
-
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
 }
 
 .open-mail {

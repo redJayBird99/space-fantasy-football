@@ -7,6 +7,7 @@ import {
   trySignNewPlayer,
 } from "../../character/user";
 import { within } from "../../util/math";
+import { mainStyleSheet } from "../style-sheets";
 import style from "./negotiate-contract.css";
 
 /**
@@ -138,7 +139,9 @@ class NegotiateContract extends HTMLElement {
 
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
+
           ${style}
         </style>
         <sff-modal .closeHandler=${this.props?.onClose}>

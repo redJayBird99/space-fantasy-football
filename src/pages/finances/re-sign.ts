@@ -5,6 +5,7 @@ import { skillData } from "../players/player-page";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { Team } from "../../character/team";
+import { mainStyleSheet } from "../style-sheets";
 
 type Negotiate = (pl: Player) => unknown;
 
@@ -34,6 +35,7 @@ class ReSign extends HTMLSFFGameElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

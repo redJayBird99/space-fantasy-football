@@ -2,6 +2,7 @@ import { html, nothing, render, TemplateResult } from "lit-html";
 import { ref } from "lit-html/directives/ref.js";
 import { Match } from "../../game-sim/tournament-scheduler";
 import { GameState } from "../../game-state/game-state";
+import { mainStyleSheet } from "../style-sheets";
 import style from "./league-fixtures.css";
 
 class LeagueFixtures extends HTMLElement {
@@ -39,6 +40,7 @@ class LeagueFixtures extends HTMLElement {
 
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

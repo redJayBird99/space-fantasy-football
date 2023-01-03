@@ -4,6 +4,7 @@ import style from "./retiring.css";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { randomGauss } from "../../util/generator";
+import { mainStyleSheet } from "../style-sheets";
 
 class RetiringPlayers extends HTMLSFFGameElement {
   constructor() {
@@ -21,6 +22,7 @@ class RetiringPlayers extends HTMLSFFGameElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

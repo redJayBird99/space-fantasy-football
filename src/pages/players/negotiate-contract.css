@@ -1,15 +1,5 @@
-@import "../util/form.css";
-@import "../util/button.css";
-@import "../util/utilities.css";
-
 negotiate-contract {
   display: block;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
 }
 
 .form-neg {

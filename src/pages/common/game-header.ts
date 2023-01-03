@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import style from "./game-header.css";
 import teams from "../../asset/teams.json";
 import defineSimControls from "./sim-controls";
+import { mainStyleSheet } from "../style-sheets";
 defineSimControls();
 
 /** the header of the pages when in game */
@@ -22,6 +23,7 @@ class GameHeader extends HTMLElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

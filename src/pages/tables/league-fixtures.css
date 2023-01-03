@@ -2,12 +2,6 @@
   display: block;
 }
 
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
-}
-
 .rounds {
   display: grid;
   grid-auto-rows: max-content;

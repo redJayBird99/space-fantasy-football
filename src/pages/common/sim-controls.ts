@@ -13,6 +13,7 @@ import style from "./sim-controls.css";
 import { goTo } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";
 import { createRef, Ref, ref } from "lit-html/directives/ref.js";
+import { mainStyleSheet } from "../style-sheets";
 
 class SimControls extends HTMLSFFGameElement {
   gName?: string; // named group of the matched URL passed as property
@@ -25,6 +26,7 @@ class SimControls extends HTMLSFFGameElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

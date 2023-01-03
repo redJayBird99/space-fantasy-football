@@ -1,7 +1,8 @@
-@import "../util/button.css";
-@import "../util/form.css";
 @import "../common/fork-me.css";
-@import "../util/utilities.css";
+
+:host {
+  display: block;
+}
 
 sff-home,
 home-main,

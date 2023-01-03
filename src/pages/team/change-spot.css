@@ -2,12 +2,6 @@ change-pos {
   display: block;
 }
 
-*,
-*::after,
-*::before {
-  box-sizing: border-box;
-}
-
 .pitch {
   background-color: green;
   border: 1px solid white;

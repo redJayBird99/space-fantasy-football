@@ -9,6 +9,7 @@ import { LineupSpot, updateSetPiecesTakers } from "../../character/team";
 import { GameState } from "../../game-state/game-state";
 import { styleMap } from "lit-html/directives/style-map.js";
 import style from "./change-spot.css";
+import { mainStyleSheet } from "../style-sheets";
 
 /**
  * render th ui to change the staring player, has two arguments:
@@ -56,6 +57,7 @@ class ChangeSpot extends HTMLElement {
       window.$game.state!.players[this.getAttribute("data-pl-id") ?? ""];
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

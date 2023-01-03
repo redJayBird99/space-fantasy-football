@@ -1,9 +1,11 @@
 dialog {
-  background-color: var(--dk-bg-color-650, var(--lt-bg-color-200));
-  border: 2px solid var(--dk-bg-color-500, var(--lt-bg-color-300));
+  background-color: var(--dk-bg-color-700, var(--lt-bg-color-200));
+  border: 2px solid var(--dk-bg-color-600, var(--lt-bg-color-300));
   border-radius: 5px;
-  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 30%);
+  box-shadow: 0px 2px 4px 0px hsl(0deg 0% 4% / 40%);
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  max-width: 99vw;
+  max-height: 99vh;
   padding: 6px 1rem 1rem 1rem;
 }
 

@@ -5,6 +5,7 @@ import {
   TradeRecord,
   TransRecord,
 } from "../../game-state/game-state";
+import { mainStyleSheet } from "../style-sheets";
 import style from "./player-history.css";
 
 /** show the transaction history of the give player
@@ -33,6 +34,7 @@ class PlayerHistory extends HTMLElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

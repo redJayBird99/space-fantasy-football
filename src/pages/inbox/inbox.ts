@@ -5,6 +5,7 @@ import { Mail } from "../../character/mail";
 import { classMap } from "lit-html/directives/class-map.js";
 import { GameState } from "../../game-state/game-state";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import { mainStyleSheet } from "../style-sheets";
 
 /**
  * an inbox for listing and reading news feed, email etc, it has to mode
@@ -90,6 +91,7 @@ class Inbox extends HTMLSFFGameElement {
   render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>

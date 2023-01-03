@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
 import { createRef, Ref, ref } from "lit-html/directives/ref.js";
+import { mainStyleSheet } from "../style-sheets";
 import style from "./modal.css";
 
 /**
@@ -47,6 +48,7 @@ class Modal extends HTMLElement {
   private render(): void {
     render(
       html`
+        ${mainStyleSheet.cloneNode(true)}
         <style>
           ${style}
         </style>
