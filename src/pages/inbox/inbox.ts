@@ -69,10 +69,10 @@ class Inbox extends HTMLSFFGameElement {
         ? this.onDeleteMail(m)
         : this.handleOpenMail(m);
     const fullCols = (e: Mail) => html`
-      <span class="date-cell">${e.sendDate}</span>
-      <span class="close-cell">
-        <button class="btn btn--err" aria-label="delete mail">✘</button>
-      </span>
+      <div class="date-cell">${e.sendDate}</div>
+      <div class="close-cell">
+        <button class="btn-close w-5 h-5" aria-label="delete mail"></button>
+      </div>
     `;
 
     return mails.map(
@@ -81,8 +81,8 @@ class Inbox extends HTMLSFFGameElement {
           class=${classMap({ "mail--new": !e.opened })}
           @click=${onClick(e)}
         >
-          <span>${e.sender}</span>
-          <span>${e.subject}</span>
+          <div>${e.sender}</div>
+          <div>${e.subject}</div>
           ${this.hasAttribute("data-compact") ? nothing : fullCols(e)}
         </li>`
     );

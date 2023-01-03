@@ -250,12 +250,10 @@ function customizeTactics(): TemplateResult {
         <h3 class="dig-title" id="dig-tactics-title">Customize Tactics</h3>
         <button
           autofocus
-          class="modal-close"
+          class="btn-close"
           @click=${closeDig}
           aria-label="close"
-        >
-          𐄂
-        </button>
+        ></button>
       </div>
       <form @submit=${onSummit} method="dialog">
         ${formationSelector(fms)}
@@ -266,7 +264,7 @@ function customizeTactics(): TemplateResult {
         ${selectTactic(squad, "Choose short free kick taker", "short-kick")}
         ${selectTactic(squad, "Choose throw-ins taker", "throw-ins")}
 
-        <button class="btn btn-sml">Apply Tactics</button>
+        <button class="btn btn-rounded">Apply Tactics</button>
       </form>
     </dialog>
   `;

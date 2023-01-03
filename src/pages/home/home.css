@@ -177,8 +177,3 @@ home-team-picker {
   flex-direction: column;
   overflow: hidden;
 }
-
-.team-name {
-  font-style: italic;
-  font-size: 1.3rem;
-}

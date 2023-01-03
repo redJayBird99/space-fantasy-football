@@ -225,12 +225,10 @@ function filters(): TemplateResult {
           <h2 class="dig-title" id="filters-dialog-title">Customize filters</h2>
           <button
             autofocus
-            class="modal-close"
+            class="btn-close"
             @click=${closeControls}
             aria-label="close"
-          >
-            𐄂
-          </button>
+          ></button>
         </div>
         ${filterControls()}
       </dialog>

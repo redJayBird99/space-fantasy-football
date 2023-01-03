@@ -35,7 +35,7 @@ li {
   width: 100%;
 }
 
-li > span {
+li > div {
   flex-shrink: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -43,7 +43,7 @@ li > span {
 }
 
 li > :first-child,
-li > span:nth-child(3) {
+li > div:nth-child(3) {
   width: 9rem;
 }
 
@@ -51,9 +51,11 @@ li > span:nth-child(3) {
   flex-shrink: 0;
   text-align: right;
   width: 2.5rem;
+  padding-right: 0.3rem;
+  overflow: unset;
 }
 
-li > span:nth-child(2) {
+li > div:nth-child(2) {
   flex-grow: 1;
   flex-shrink: 2;
 }

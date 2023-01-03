@@ -57,12 +57,10 @@ class Modal extends HTMLElement {
             <slot name="title"></slot>
             <button
               autofocus
-              class="modal-close"
+              class="btn-close"
               aria-label="close modal"
               @click=${this.handleClose}
-            >
-              𐄂
-            </button>
+            ></button>
           </header>
           <slot></slot>
         </dialog>

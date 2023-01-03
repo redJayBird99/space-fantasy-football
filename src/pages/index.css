@@ -20,14 +20,14 @@
   --lt-on-positive-color: var(--lt-on-bg-color);
   --lt-positive-color-tsp-300: hsla(133, 58%, 66%, 0.7);
   --lt-error-color: #eb5d5d;
-  --lt-on-error-color: black;
+  --lt-on-error-color: #1c1c1c;
   --lt-neutral-color: #e1c457;
 
   --pitch-color: #195905;
 
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(13px, 2vw, 16px);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 /* default mode */
@@ -54,7 +54,7 @@
   --dk-on-positive-color: var(--lt-on-bg-color);
   --dk-positive-color-tsp-300: var(--lt-positive-color-tsp-300);
   --dk-error-color: var(--lt-error-color);
-  --dk-on-error-color: hsl(275deg, 4%, 8%);
+  --dk-on-error-color: #1c1c1c;
   --dk-neutral-color: var(--lt-neutral-color);
 }
 
@@ -66,12 +66,12 @@ body {
 
 h1,
 h2 {
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 h3,
 h4 {
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
 .cnt-404 {
@@ -126,4 +126,8 @@ multiple files it isn't really possible */
 
   /* _____________________ TRANSITIONS _________________ */
   --duration-150: 150ms;
+
+  /* ____________________ Sizing ______________________ */
+  --w-6: 1.5rem;
+  --h-6: 1.5rem;
 }

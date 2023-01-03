@@ -13,6 +13,7 @@ dialog {
   border-bottom: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-200));
   display: flex;
   gap: 2rem;
+  justify-content: space-between;
   min-height: 30px;
   margin-bottom: 1rem;
   padding-left: 5px;

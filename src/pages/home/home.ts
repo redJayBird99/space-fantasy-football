@@ -132,8 +132,8 @@ class NewGame extends HTMLElement {
           @click=${this.handleTeamClick}
           value=${t}
         >
-          <span class="team-name"> ${t}</span>
-          <span>${teams[t].fanBase} fanbase</span>
+          <span class="text-2xl italic"> ${t}</span>
+          <span class="text-sm font-light">${teams[t].fanBase} fanbase</span>
         </button>
       `;
     });

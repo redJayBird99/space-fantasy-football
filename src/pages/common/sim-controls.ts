@@ -242,11 +242,9 @@ class BtnSimOptions extends HTMLSFFGameElement {
             <button
               autofocus
               @click=${this.handleCloseOptions}
-              class="modal-close"
+              class="btn-close self-center"
               aria-label="close dialog"
-            >
-              𐄂
-            </button>
+            ></button>
           </div>
           ${simOptions(this.handleCloseOptions)}
         </dialog>

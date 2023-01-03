@@ -1,17 +1,29 @@
 .btn,
-.modal-close {
+.btn-close {
   border: var(--border-invisible);
   cursor: pointer;
   display: inline-block;
   box-shadow: var(--shadow);
-  font-weight: bold;
   transition: border-color var(--duration-150) linear,
     box-shadow var(--duration-150) linear, filter var(--duration-150) linear;
-  vertical-align: middle;
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
   text-align: center;
+  vertical-align: middle;
+}
+
+.btn-close {
+  --btn-hover-border-color: var(--dk-error-color, var(--lt-error-color));
+  --btn-focus-box-shadow: var(--ring-error);
+  background-color: var(--close-btn-bg-color, var(--bg-error));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='48' width='48' fill='%2338363a'%3E%3Cpath d='m12.45 37.65-2.1-2.1L21.9 24 10.35 12.45l2.1-2.1L24 21.9l11.55-11.55 2.1 2.1L26.1 24l11.55 11.55-2.1 2.1L24 26.1Z'/%3E%3C/svg%3E%0A");
+  background-position: center;
+  border-radius: var(--rounded-full);
+  background-repeat: no-repeat;
+  background-size: 100%;
+  height: var(--h-6);
+  width: var(--w-6);
 }
 
 .btn {
@@ -20,16 +32,8 @@
   background-color: var(--bg-primary);
   border-radius: var(--rounded-sm);
   color: var(--close-btn-color, var(--color-on-error));
+  font-weight: bold;
   padding: var(--py-0_3) var(--px-0_75);
-}
-
-.modal-close {
-  --btn-hover-border-color: var(--dk-error-color, var(--lt-error-color));
-  --btn-focus-box-shadow: var(--ring-error);
-  background-color: var(--close-btn-bg-color, var(--bg-error));
-  border-radius: var(--rounded-full);
-  color: var(--close-btn-color, var(--color-on-error));
-  padding: 0 6px;
 }
 
 .btn-sml {
@@ -58,19 +62,19 @@
 }
 
 .btn:hover:not(:disabled),
-.modal-close:hover:not(:disabled) {
+.btn-close:hover:not(:disabled) {
   filter: var(--brightness-130);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .btn,
-  .modal-close {
+  .btn-close {
     transition: none;
   }
 }
 
 .btn:focus-visible:not(:disabled),
-.modal-close:focus-visible:not(:disabled),
+.btn-close:focus-visible:not(:disabled),
 .btn-txt:focus-visible:not(:disabled),
 .btn-link:focus-visible:not(:disabled) {
   border-color: var(--btn-hover-border-color);
@@ -93,7 +97,7 @@
 
 .btn:disabled,
 .btn-link:disabled,
-.modal-close:disabled {
+.btn-close:disabled {
   filter: var(--brightness-50);
 }
 
