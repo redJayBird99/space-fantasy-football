@@ -255,7 +255,11 @@ function customizeTactics(): TemplateResult {
           aria-label="close"
         ></button>
       </div>
-      <form @submit=${onSummit} method="dialog">
+      <form
+        @submit=${onSummit}
+        method="dialog"
+        class="grid .grid-cols-1 sm-grid-cols-2 gap-2 w-max"
+      >
         ${formationSelector(fms)}
         ${selectTactic(squad, "Choose captain", "captain")}
         ${selectTactic(squad, "Choose penalties taker", "penalties")}

@@ -29,7 +29,9 @@ class GameHeader extends HTMLElement {
         </style>
         <div class="ctn-team">
           ${userTeamColor()}
-          <h2>${window.$game.state!.userTeam}</h2>
+          <h2 class="bg-700 italic absolute leading-5">
+            ${window.$game.state!.userTeam}
+          </h2>
         </div>
         <sim-controls .gName=${this.gName!} class="cts"></sim-controls>
       `,

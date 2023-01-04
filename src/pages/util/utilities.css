@@ -1,5 +1,11 @@
 /** this file apply the utility first approach, the naming convention try (mostly) to stick to Tailwind */
 
+/*_______________ colors ________________*/
+
+.bg-700 {
+  background-color: var(--bg-700);
+}
+
 /** _______________ PADDING __________________ */
 /**
   padding: p{direction}-{size in rem, underscore for .} --> pr-0_5 === padding-right: 0.5rem
@@ -33,6 +39,14 @@
   left: -999rem;
 }
 
+.grid {
+  display: grid;
+}
+
+.absolute {
+  position: absolute;
+}
+
 /** ______________ Typography ______________ **/
 
 .text-sm {
@@ -53,6 +67,10 @@
   font-weight: 300;
 }
 
+.leading-5 {
+  line-height: 1.25;
+}
+
 /* ___________________Sizing____________________ */
 
 .w-5 {
@@ -71,8 +89,26 @@
   height: 1.5rem;
 }
 
+.w-max {
+  width: max-content;
+}
+
 /*________________________Flexbox & Grid___________*/
 
 .self-center {
   align-self: center;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 40rem) {
+  .sm-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.gap-2 {
+  gap: 0.5rem;
 }

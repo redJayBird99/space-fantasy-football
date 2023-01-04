@@ -3,6 +3,7 @@
   box-shadow: 0px 3px 5px 0px hsla(0, 0%, 5%, 0.25);
   display: flex;
   gap: 3px;
+  height: calc(100% - 6px);
   margin-right: 3px;
   position: relative;
   text-align: center;
@@ -31,8 +32,9 @@
   border: 1px solid var(--dk-bg-color-500, var(--lk-bg-color-200));
   display: flex;
   flex-direction: column;
-  font-size: 0.85rem;
-  padding: 0.5rem 0.85rem;
+  justify-content: center;
+  padding-left: 1rem;
+  padding-right: 0.5rem;
 }
 
 :where(btn-sim-options, play-sim) > .btn {
@@ -40,10 +42,6 @@
   box-shadow: none;
   height: 100%;
   width: 100%;
-}
-
-btn-sim-options > .btn {
-  padding: 0.7rem 1.2rem;
 }
 
 btn-sim-options {
@@ -55,6 +53,7 @@ btn-sim-options > .btn {
   border-left: none;
   border-right: none;
   color: var(--dk-on-bg-color, var(--lt-on-bg-color));
+  padding: 0;
 }
 
 .sim-options {
@@ -69,9 +68,21 @@ btn-sim-options > .btn {
   top: -100rem;
 }
 
+.play-btn,
+.sim-btn {
+  --icon-size: 16px;
+  width: calc(2.8 * var(--icon-size));
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: var(--icon-size) auto;
+}
+
 .play-btn {
-  padding-left: 0.6rem;
-  padding-right: 0.6rem;
+  background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%23524e55' xml:space='preserve'%3E%3Cpath d='M464.7,221.5L86.1,7.3C52.5-11.7,25,7.5,25,50v412c0,42.5,27.5,61.7,61.1,42.7l378.6-214.1 C498.2,271.5,498.2,240.5,464.7,221.5z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.sim-btn {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='48' width='48' fill='%23eee'%3E%3Cpath d='m19.15 44.3-1.05-6.4q-.85-.3-1.85-.875T14.5 35.85L8.55 38.6 3.6 29.9l5.5-4q-.1-.4-.125-.95-.025-.55-.025-.95 0-.4.025-.95.025-.55.125-.95l-5.5-4 4.95-8.7 6 2.75q.7-.6 1.7-1.15 1-.55 1.85-.85l1.05-6.45h9.7l1.05 6.4q.85.35 1.875.875T33.5 12.15l6-2.75 4.9 8.7-5.5 3.9q.1.45.125 1 .025.55.025 1 0 .45-.025.975-.025.525-.125.975l5.5 3.95-4.95 8.7-6-2.75q-.7.6-1.675 1.2-.975.6-1.875.85l-1.05 6.4ZM24 30.5q2.7 0 4.6-1.9 1.9-1.9 1.9-4.6 0-2.7-1.9-4.6-1.9-1.9-4.6-1.9-2.7 0-4.6 1.9-1.9 1.9-1.9 4.6 0 2.7 1.9 4.6 1.9 1.9 4.6 1.9Z'/%3E%3C/svg%3E");
 }
 
 .sim-ops-dialog {

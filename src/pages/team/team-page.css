@@ -257,11 +257,4 @@ svg {
 .tct-dig {
   inset-inline-start: unset;
   inset-inline-end: 0px;
-  width: max-content;
-}
-
-.tct-dig > form > * {
-  display: block;
-  margin-bottom: 4px;
-  width: 100%;
 }

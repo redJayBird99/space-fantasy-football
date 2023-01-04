@@ -47,7 +47,7 @@ function gameDate(): TemplateResult {
     }) ?? "";
 
   return html`
-    <div class="game-date">
+    <div class="game-date text-sm">
       <div><time>${date}</time></div>
       <div>${dateEventInfo()}</div>
     </div>
@@ -199,9 +199,7 @@ class PlaySim extends HTMLSFFGameElement {
           class="btn btn--acc play-btn"
           aria-label="play the simulation"
           aria-describedby=${dis ? "play-disabled-desc" : nothing}
-        >
-          play
-        </button>
+        ></button>
         ${dis ? this.renderDisabledDescription() : nothing}
         ${isSimulating() ? this.renderSim() : nothing}
       `,
@@ -228,10 +226,8 @@ class BtnSimOptions extends HTMLSFFGameElement {
         <button
           aria-label="open sim options"
           @click=${this.handleOpenOptions}
-          class="btn btn--acc"
-        >
-          ⚙
-        </button>
+          class="btn sim-btn"
+        ></button>
         <dialog
           ${ref(this.dialogRef)}
           class="sim-ops-dialog"
