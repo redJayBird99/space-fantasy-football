@@ -93,6 +93,7 @@ multiple files it isn't really possible */
   --bg-form-control: var(--dk-bg-color-500, var(--lt-bg-color));
   --bg-primary-300: var(--dk-primary-color-300, var(--lt-primary-color-300));
   --bg-700: var(--dk-bg-color-700, var(--lt-bg-color-300));
+  --bg-650: var(--dk-bg-color-650, var(--lt-bg-color-300));
   --color-on-bg: var(--dk-on-bg-color, var(--lt-on-bg-color));
   --color-on-bg-100: var(--dk-on-bg-color-100, var(--lt-on-bg-color-100));
   --color-on-error: var(--dk-on-error-color, var(--lt-on-error-color));

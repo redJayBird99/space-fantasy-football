@@ -196,7 +196,7 @@ class PlaySim extends HTMLSFFGameElement {
         <button
           @click=${this.handlePlayClick}
           ?disabled=${dis}
-          class="btn btn--acc play-btn"
+          class="btn btn--acc icon-bg-btn play-btn"
           aria-label="play the simulation"
           aria-describedby=${dis ? "play-disabled-desc" : nothing}
         ></button>
@@ -226,11 +226,11 @@ class BtnSimOptions extends HTMLSFFGameElement {
         <button
           aria-label="open sim options"
           @click=${this.handleOpenOptions}
-          class="btn sim-btn"
+          class="btn sim-btn icon-bg-btn"
         ></button>
         <dialog
           ${ref(this.dialogRef)}
-          class="sim-ops-dialog"
+          class="sim-ops-dialog bg-650"
           aria-labelledby="dig-ops-title"
         >
           <div class="dig-head">

@@ -6,6 +6,14 @@
   background-color: var(--bg-700);
 }
 
+.bg-650 {
+  background-color: var(--bg-650);
+}
+
+.bg-transparent {
+  background-color: transparent;
+}
+
 /** _______________ PADDING __________________ */
 /**
   padding: p{direction}-{size in rem, underscore for .} --> pr-0_5 === padding-right: 0.5rem
@@ -45,6 +53,15 @@
 
 .absolute {
   position: absolute;
+}
+
+/* underscore for percentage */
+.top_50 {
+  top: 50%;
+}
+
+.left-2 {
+  left: 0.375rem;
 }
 
 /** ______________ Typography ______________ **/
@@ -111,4 +128,16 @@
 
 .gap-2 {
   gap: 0.5rem;
+}
+
+/* __________________ effect ________________*/
+
+.shadow-none {
+  box-shadow: none;
+}
+
+/* ____________________ transform _______________ */
+
+.translate-y_-50 {
+  transform: translateY(-50%);
 }

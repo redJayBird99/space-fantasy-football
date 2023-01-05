@@ -108,3 +108,10 @@ button:disabled {
 .btn-link:disabled {
   cursor: default;
 }
+
+.icon-bg-btn {
+  --icon-size: 1rem;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: var(--icon-size) auto;
+}

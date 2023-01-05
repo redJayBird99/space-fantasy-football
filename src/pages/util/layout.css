@@ -17,15 +17,18 @@ nav {
 }
 
 .btn-toggle-nav {
-  background-color: transparent;
-  border: none;
-  bottom: 1px;
-  color: var(--dk-on-bg-color, var(--lt-on-bg-color));
   display: none;
-  font-size: 1.5rem;
-  font-weight: bold;
-  left: 1px;
-  position: absolute;
+  --icon-size: 1.75rem;
+  width: calc(1.15 * var(--icon-size));
+  height: calc(1.15 * var(--icon-size));
+}
+
+.btn-toggle-nav[data-open="true"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='48' width='48' fill='%23eee'%3E%3Cpath d='M6 36v-3h36v3Zm0-10.5v-3h36v3ZM6 15v-3h36v3Z'/%3E%3C/svg%3E");
+}
+
+.btn-toggle-nav[data-open="false"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='48' width='48' fill='%23eee'%3E%3Cpath d='m12.45 37.65-2.1-2.1L21.9 24 10.35 12.45l2.1-2.1L24 21.9l11.55-11.55 2.1 2.1L26.1 24l11.55 11.55-2.1 2.1L24 26.1Z'/%3E%3C/svg%3E%0A");
 }
 
 @media screen and (max-width: 36rem) {

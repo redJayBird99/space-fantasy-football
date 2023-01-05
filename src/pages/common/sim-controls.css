@@ -70,11 +70,7 @@ btn-sim-options > .btn {
 
 .play-btn,
 .sim-btn {
-  --icon-size: 16px;
   width: calc(2.8 * var(--icon-size));
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: var(--icon-size) auto;
 }
 
 .play-btn {

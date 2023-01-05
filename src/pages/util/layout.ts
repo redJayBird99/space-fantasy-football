@@ -39,8 +39,12 @@ class Layout extends HTMLElement {
   /** toggle the mb-nav-close btn, opening and closing the nav bar */
   toggleNav = () => {
     const nav = this.shadowRoot!.querySelector("#js-nav") as HTMLElement;
+    const btn = this.shadowRoot!.querySelector(
+      ".btn-toggle-nav"
+    ) as HTMLElement;
 
     if (nav.classList.contains("mb-nav-close")) {
+      btn.setAttribute("data-open", "false");
       nav.classList.remove("mb-nav-close");
       nav.style.opacity = "0";
       // setTimeout without delay on firefox sometimes doesn't fire the transition
@@ -48,6 +52,7 @@ class Layout extends HTMLElement {
         requestAnimationFrame(() => (nav.style.opacity = ""))
       );
     } else {
+      btn.setAttribute("data-open", "true");
       const clear = () => {
         nav.style.opacity = "";
         nav.classList.add("mb-nav-close");
@@ -69,9 +74,11 @@ class Layout extends HTMLElement {
         </style>
         <header>
           <slot name="in-header"></slot>
-          <button class="btn-toggle-nav" @click=${this.toggleNav}>
-            <span>☰</span>
-          </button>
+          <button
+            data-open="true"
+            class="btn btn-toggle-nav icon-bg-btn absolute bg-transparent left-2 top_50 shadow-none translate-y_-50"
+            @click=${this.toggleNav}
+          ></button>
         </header>
         <nav id="js-nav" class="mb-nav-close">
           <slot name="in-nav"></slot>

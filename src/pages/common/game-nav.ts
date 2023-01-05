@@ -28,25 +28,25 @@ class GameNav extends HTMLSFFGameElement {
         <ul>
           <li class="home">${link("/", "⌂ home")}</li>
           <li class="inbox">
-            ${link(`/${gn}/inbox`, html`📬 inbox${mailBadge()}`)}
+            ${link(`/${gn}/inbox`, html`inbox${mailBadge()}`)}
           </li>
-          <li>${link(`/${gn}/dashboard`, "🎮 dashboard")}</li>
-          <li>${link(`/${gn}/players`, "🏃 players")}</li>
-          <li>${link(`/${gn}/league`, "🏆 league")}</li>
-          <li>${link(`/${gn}/team`, "🏟 team")}</li>
-          <li>${link(`/${gn}/finances`, "🏦 finances")}</li>
-          <li>${link(`/${gn}/transactions`, "🧳 transactions")}</li>
-          <li>${link(`/${gn}/draft`, "🥇 draft")}</li>
-          <li>${link(`/${gn}/trade`, "⚖ trade")}</li>
+          <li>${link(`/${gn}/dashboard`, "dashboard")}</li>
+          <li>${link(`/${gn}/players`, "players")}</li>
+          <li>${link(`/${gn}/league`, "league")}</li>
+          <li>${link(`/${gn}/team`, "team")}</li>
+          <li>${link(`/${gn}/finances`, "finances")}</li>
+          <li>${link(`/${gn}/transactions`, "transactions")}</li>
+          <li>${link(`/${gn}/draft`, "draft")}</li>
+          <li>${link(`/${gn}/trade`, "trade")}</li>
           ${gs.tradeOffers.length > 0
             ? html`<li class="offers">
-                ${link(`/${gn}/trade-offers`, html`📲 offers${offerBadge()}`)}
+                ${link(`/${gn}/trade-offers`, html`offers${offerBadge()}`)}
               </li>`
             : nothing}
           ${gs.flags.onGameEvent === "retiring"
-            ? html`<li>${link(`/${gn}/retiring`, "🎽 retiring")}</li>`
+            ? html`<li>${link(`/${gn}/retiring`, "retiring")}</li>`
             : nothing}
-          <li>${link(`/${gn}/game-manual`, "📘 manual")}</li>
+          <li>${link(`/${gn}/game-manual`, "manual")}</li>
         </ul>
       `,
       this.shadowRoot!

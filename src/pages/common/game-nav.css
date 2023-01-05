@@ -12,6 +12,7 @@
 
 ul {
   margin: 0;
+  min-width: 9rem;
   padding: 0;
 }
 
