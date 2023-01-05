@@ -651,7 +651,6 @@ function enqueueSimRoundEvent(gs: GameState, round: number): void {
 }
 
 function simulateMatch(gs: GameState, matchId: string): void {
-  // TODO: implement a real one
   const match = gs.matches[matchId];
   const getScore = (l?: LineupSpot[]) =>
     l?.reduce(

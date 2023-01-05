@@ -11,7 +11,12 @@ module.exports = {
   experiments: {
     topLevelAwait: true,
   },
-  plugins: [new HtmlWebpackPlugin()],
+  plugins: [
+    new HtmlWebpackPlugin({
+      favicon: "./src/asset/favicon/favicon-32x32.png",
+      template: "./src/template.html",
+    }),
+  ],
   module: {
     rules: [
       {
