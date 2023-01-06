@@ -77,7 +77,7 @@ abstract class PageContent extends HTMLSFFGameElement {
 
 function windowStatus() {
   return window.$game.state?.flags.openTradeWindow
-    ? nothing
+    ? ""
     : " ⚠ The trade window is closed";
 }
 
@@ -164,17 +164,19 @@ class TradePage extends PageContent {
 
     render(
       html`
-        <div class="trade-ctrl">
+        <div
+          class="trade-ctrl flex gap-2 bg-750 right-0 fixed rounded-bl-xl fixed z-2 px-4 py-2 border-b-1 border-l-1 border-solid border-bg-500 border-0 shadow"
+        >
           ${otherTeamSelector(this.onTeamSelect, team ?? "")}
           <button
-            class="btn btn-sml"
+            title=${windowStatus()}
+            class="btn btn-rounded"
             id="btn-offer"
             ?disabled=${!canMakeOffer}
             @click=${canMakeOffer ? this.onSummitTrade : nothing}
           >
             Make offer
           </button>
-          ${windowStatus()}
         </div>
         <section class="cnt-traders">
           ${tradingTeam({ team: user, get, give })}
@@ -250,23 +252,25 @@ class OffersPage extends PageContent {
 
     render(
       html`
-        <div class="trade-ctrl">
+        <div
+          class="trade-ctrl flex gap-2 bg-750 right-0 fixed rounded-bl-xl fixed z-2 px-4 py-2 border-b-1 border-l-1 border-solid border-bg-500 border-0 shadow"
+        >
           ${offersSelector(this.onOfferSelect, this.offer)}
           <button
-            class="btn btn-sml btn--acc"
+            title=${windowStatus()}
+            class="btn btn-rounded btn--acc"
             ?disabled=${dis}
             @click=${() => this.onOfferResponse(true)}
           >
             accept
           </button>
           <button
-            class="btn btn-sml btn--err"
+            class="btn btn-rounded btn--err"
             ?disabled=${dis}
             @click=${() => this.onOfferResponse(false)}
           >
             reject
           </button>
-          ${windowStatus()}
         </div>
         ${dis ? nothing : this.renderOffer()}
       `,
@@ -335,23 +339,21 @@ function offersSelector(onSelect: hdl, cur?: TradeRecord): TemplateResult {
   // we use keyed (line doesn't work with selected) because firefox doesn't
   // update the selected element after the offer was processed
   return html`
-    <label>
-      select an offer
-      <select
-        class="form-select"
-        @change="${dis ? nothing : onSelect}"
-        ?disabled=${dis}
-      >
-        ${keyed(
-          !cur,
-          html`<option ?selected=${!cur} value="">Select offer</option>`
-        )}
-        ${offers.map(
-          (o, i) =>
-            html`<option ?selected=${cur === o} value=${i}>by ${by(o)}</option>`
-        )}
-      </select>
-    </label>
+    <label class="hide"> select an offer </label>
+    <select
+      class="form-select max-w-max"
+      @change="${dis ? nothing : onSelect}"
+      ?disabled=${dis}
+    >
+      ${keyed(
+        !cur,
+        html`<option ?selected=${!cur} value="">Select offer</option>`
+      )}
+      ${offers.map(
+        (o, i) =>
+          html`<option ?selected=${cur === o} value=${i}>by ${by(o)}</option>`
+      )}
+    </select>
   `;
 }
 
@@ -366,7 +368,11 @@ function otherTeamSelector(onSelect: hdl, cur: string): TemplateResult {
     <label for="trade-select-team" class="hide">
       select a team to trade with
     </label>
-    <select id="trade-select-team" class="form-select" @change="${onSelect}">
+    <select
+      id="trade-select-team"
+      class="form-select max-w-max"
+      @change="${onSelect}"
+    >
       <option ?selected=${!cur} value="">Select team</option>
       ${Object.keys(gs.teams)
         .filter((n) => n !== gs.userTeam)

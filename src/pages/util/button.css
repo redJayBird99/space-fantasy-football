@@ -33,11 +33,11 @@
   border-radius: var(--rounded-sm);
   color: var(--close-btn-color, var(--color-on-error));
   font-weight: bold;
-  padding: var(--py-0_3) var(--px-0_75);
+  padding: var(--py-2) var(--px-6);
 }
 
 .btn-sml {
-  padding: var(--py-0_1) var(--px-0_25);
+  padding: var(--py-1) var(--px-2);
 }
 
 .btn-rounded {

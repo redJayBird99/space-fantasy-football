@@ -13,7 +13,7 @@
   font: inherit;
   transition: border-color var(--duration-150) linear,
     box-shadow var(--duration-150) linear;
-  padding: var(--py-0_3) var(--px-0_75);
+  padding: var(--py-2) var(--px-6);
   width: 100%;
 }
 
@@ -24,10 +24,10 @@
 .form-select {
   --select-icon-width: 1rem;
   --select-icon-height: 0.75rem;
-  padding-right: calc(var(--select-icon-width) * 1.5 + var(--px-0_75));
+  padding-right: calc(var(--select-icon-width) * 1.5 + var(--px-6));
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e6e6e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right var(--px-0_75) center;
+  background-position: right var(--px-6) center;
   background-size: var(--select-icon-width) var(--select-icon-height);
 }
 

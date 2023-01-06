@@ -114,7 +114,7 @@ function readMail(e: Mail, onCloseMail: () => void): TemplateResult {
         <h2>${e.sender}</h2>
         <span>${e.sendDate}</span>
       </div>
-      <article class="open-mail">
+      <article class="open-mail max-w-prose">
         <p>${e.subject}</p>
         <p>${e.content}</p>
       </article>

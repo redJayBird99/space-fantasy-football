@@ -258,7 +258,7 @@ function customizeTactics(): TemplateResult {
       <form
         @submit=${onSummit}
         method="dialog"
-        class="grid .grid-cols-1 sm-grid-cols-2 gap-2 w-max"
+        class="grid .grid-cols-1 sm-grid-cols-2 gap-4 w-max"
       >
         ${formationSelector(fms)}
         ${selectTactic(squad, "Choose captain", "captain")}

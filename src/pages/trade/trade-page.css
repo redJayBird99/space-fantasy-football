@@ -4,6 +4,10 @@ sff-offers {
   display: block;
 }
 
+sff-trade {
+  margin-top: 3rem;
+}
+
 .cnt-traders {
   display: flex;
   flex-wrap: wrap;
@@ -16,13 +20,8 @@ sff-offers {
 }
 
 .trade-ctrl {
-  margin-bottom: 3px;
-}
-
-.trade-ctrl > button {
-  padding-top: 0.1rem;
-  padding-bottom: 0.1rem;
-  vertical-align: bottom;
+  top: calc(var(--header-height) + var(--menu-bar-height));
+  border-bottom: 1px solid var(--dk-bg-color-500, var(--lt-bg-color-100));
 }
 
 .team-name {

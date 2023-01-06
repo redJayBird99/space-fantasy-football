@@ -88,7 +88,6 @@ li > div:nth-child(2) {
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: 1px 6px;
   justify-content: space-between;
   width: 100%;
 }

@@ -1,6 +1,7 @@
 :root {
   --header-height: 3.5rem;
   --footer-height: 2.5rem;
+  --menu-bar-height: 1.9rem;
 
   --lt-bg-color: hsl(275deg, 4%, 100%);
   --lt-bg-color-100: hsl(275deg, 4%, 95%);
@@ -92,8 +93,10 @@ multiple files it isn't really possible */
   --positive-color: var(--dk-positive-color, var(--lt-positive-color));
   --bg-form-control: var(--dk-bg-color-500, var(--lt-bg-color));
   --primary-color-300: var(--dk-primary-color-300, var(--lt-primary-color-300));
+  --bg-750: var(--dk-bg-color-750, var(--lt-bg-color-300));
   --bg-700: var(--dk-bg-color-700, var(--lt-bg-color-300));
   --bg-650: var(--dk-bg-color-650, var(--lt-bg-color-300));
+  --bg-500: var(--dk-bg-color-500, var(--lt-bg-color-300));
   --color-on-bg: var(--dk-on-bg-color, var(--lt-on-bg-color));
   --color-on-bg-100: var(--dk-on-bg-color-100, var(--lt-on-bg-color-100));
   --color-on-error: var(--dk-on-error-color, var(--lt-on-error-color));
@@ -111,10 +114,10 @@ multiple files it isn't really possible */
     padding: p{direction}-{size in rem, underscore for .} --> pr-0_5 === padding-right: 0.5rem
     or p{direction}-{size in px}x --> pr-1x === padding-right: 1px
     when no direction is specified set all sides */
-  --py-0_3: 0.3rem;
-  --px-0_75: 0.75rem;
-  --py-0_1: 0.1rem;
-  --px-0_25: 0.25rem;
+  --py-1: 0.125rem;
+  --py-2: 0.25rem;
+  --px-2: 0.25rem;
+  --px-6: 0.75rem;
 
   /** ______________ EFFECTS _________________*/
   --shadow: 0px 1px 3px 0px hsl(0deg 0% 5% / 20%);
