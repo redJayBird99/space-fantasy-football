@@ -210,8 +210,3 @@ th:first-child > .btn-txt {
 .cnt-filters > .filter-btn:nth-child(2) {
   margin-left: 1px;
 }
-
-.arrow {
-  background-color: var(--dk-primary-color-300, var(--lt-bg-color-200));
-  padding: 0 0.5rem;
-}

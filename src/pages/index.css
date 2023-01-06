@@ -87,11 +87,11 @@ multiple files it isn't really possible */
 
 :root {
   /** _____________________ Colors ____________________ */
-  --bg-primary: var(--dk-primary-color, var(--lt-primary-color));
-  --bg-error: var(--dk-error-color, var(--lt-error-color));
-  --bg-positive: var(--dk-positive-color, var(--lt-positive-color));
+  --primary-color: var(--dk-primary-color, var(--lt-primary-color));
+  --error-color: var(--dk-error-color, var(--lt-error-color));
+  --positive-color: var(--dk-positive-color, var(--lt-positive-color));
   --bg-form-control: var(--dk-bg-color-500, var(--lt-bg-color));
-  --bg-primary-300: var(--dk-primary-color-300, var(--lt-primary-color-300));
+  --primary-color-300: var(--dk-primary-color-300, var(--lt-primary-color-300));
   --bg-700: var(--dk-bg-color-700, var(--lt-bg-color-300));
   --bg-650: var(--dk-bg-color-650, var(--lt-bg-color-300));
   --color-on-bg: var(--dk-on-bg-color, var(--lt-on-bg-color));
@@ -100,9 +100,10 @@ multiple files it isn't really possible */
 
   /** _____________________ BORDERS __________________ */
   --border-invisible: 1px solid transparent;
-  --rounded-sm: 0.1rem;
-  --rounded: 0.3rem;
-  --rounded-xl: 0.9rem;
+  --rounded-sm: 0.125rem;
+  --rounded: 0.25rem;
+  --rounded-xl: 0.75rem;
+  --rounded-2xl: 1rem;
   --rounded-full: 50%;
 
   /** _______________ BOX SPACING __________________ */

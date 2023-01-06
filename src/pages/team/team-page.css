@@ -97,7 +97,7 @@ sff-team {
 }
 
 table {
-  min-width: 32rem;
+  min-width: 35rem;
   table-layout: fixed;
   text-align: center;
   width: 100%;
@@ -129,7 +129,7 @@ table {
 }
 
 .plr-n {
-  width: 1.3rem;
+  width: 1.5rem;
 }
 
 .plr-pos {

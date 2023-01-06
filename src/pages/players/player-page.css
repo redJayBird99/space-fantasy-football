@@ -86,11 +86,9 @@ sign-new-player {
 }
 
 .skill-score {
-  border-radius: 3px;
   color: var(--lt-on-bg-color);
   display: inline-block;
   margin: 0.25rem 0;
-  padding: 0.1rem 0.2rem;
 }
 
 .plr-skills > ul {
@@ -116,7 +114,7 @@ sign-new-player {
 .plr-high__val-stl {
   background-color: var(--dk-bg-color-600, var(--lt-bg-color--200));
   border-radius: 3px;
-  width: 2.4rem;
+  width: 2.6rem;
 }
 
 .plr-high__val-stl {

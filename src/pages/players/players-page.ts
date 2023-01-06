@@ -259,21 +259,21 @@ function tableControls(): TemplateResult {
   return html`
     <div class="ctl-tb-size">
       <button
-        class="btn btn-sml arrow"
+        class="btn btn-sml bg-primary-300"
         ?disabled=${page === 1}
         @click=${onPrev}
         aria-label="previous page"
       >
-        Previous
+        <abbr title="previous">prev</abbr>
       </button>
       <span class="tb-pos"> ${page} / ${pages}</span>
       <button
-        class="btn btn-sml arrow"
+        class="btn btn-sml bg-primary-300"
         ?disabled=${page === pages}
         @click=${onNext}
         aria-label="next page"
       >
-        Next
+        next
       </button>
       <label class="tb-entries">
         Show:

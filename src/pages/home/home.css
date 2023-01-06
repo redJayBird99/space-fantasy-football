@@ -126,7 +126,7 @@ home-team-picker {
 
 .saves {
   margin-bottom: 0;
-  min-width: clamp(21rem, 50vw, 40rem);
+  min-width: clamp(23rem, 50vw, 40rem);
 }
 
 .saves > li {
@@ -151,7 +151,7 @@ home-team-picker {
 
 .saves > li > button {
   flex-shrink: 0;
-  width: clamp(4rem, 15%, 6rem);
+  width: clamp(4.75rem, 15%, 6rem);
 }
 
 [for="game-file"] {

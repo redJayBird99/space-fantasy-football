@@ -16,7 +16,7 @@
 .btn-close {
   --btn-hover-border-color: var(--dk-error-color, var(--lt-error-color));
   --btn-focus-box-shadow: var(--ring-error);
-  background-color: var(--close-btn-bg-color, var(--bg-error));
+  background-color: var(--close-btn-bg-color, var(--error-color));
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='48' width='48' fill='%2338363a'%3E%3Cpath d='m12.45 37.65-2.1-2.1L21.9 24 10.35 12.45l2.1-2.1L24 21.9l11.55-11.55 2.1 2.1L26.1 24l11.55 11.55-2.1 2.1L24 26.1Z'/%3E%3C/svg%3E%0A");
   background-position: center;
   border-radius: var(--rounded-full);
@@ -27,9 +27,9 @@
 }
 
 .btn {
-  --btn-hover-border-color: var(--bg-primary);
+  --btn-hover-border-color: var(--primary-color);
   --btn-focus-box-shadow: var(--ring-primary);
-  background-color: var(--bg-primary);
+  background-color: var(--primary-color);
   border-radius: var(--rounded-sm);
   color: var(--close-btn-color, var(--color-on-error));
   font-weight: bold;
@@ -41,12 +41,12 @@
 }
 
 .btn-rounded {
-  border-radius: var(--rounded-xl);
+  border-radius: var(--rounded-2xl);
 }
 
 .btn-txt,
 .btn-link {
-  --btn-hover-border-color: var(--bg-primary);
+  --btn-hover-border-color: var(--primary-color);
   --btn-focus-box-shadow: var(--ring-primary);
   background-color: transparent;
   border: none;

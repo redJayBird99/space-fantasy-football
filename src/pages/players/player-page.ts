@@ -117,7 +117,7 @@ function playerBio(p: Player): TemplateResult {
         <div>${teamLink ? goLink(teamLink, p.team) : p.team}</div>
       </div>
     </div>
-    <div class="plr-bio">
+    <div class="plr-bio text-sm">
       <div>
         ${Player.age(p, gs.date)} y. o. ${new Date(p.birthday).toDateString()}
       </div>
@@ -228,7 +228,11 @@ function skillString(s: Skill): string | TemplateResult {
 function playersSkillScore(score: number): TemplateResult {
   const d = skillData(score);
   const sl = `background-color: ${d.color}`;
-  return html`<span class="skill-score" style=${sl}>${d.score}</span>`;
+  return html`<span
+    class="skill-score w-7 text-center font-bold rounded-md"
+    style=${sl}
+    >${d.score}</span
+  >`;
 }
 
 export function skillData(score: number): { color: string; score: string } {
