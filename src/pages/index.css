@@ -1,7 +1,7 @@
 :root {
   --header-height: 3.5rem;
   --footer-height: 2.5rem;
-  --menu-bar-height: 1.9rem;
+  --menu-bar-height: 1.75rem;
 
   --lt-bg-color: hsl(275deg, 4%, 100%);
   --lt-bg-color-100: hsl(275deg, 4%, 95%);
@@ -136,4 +136,7 @@ multiple files it isn't really possible */
   /* ____________________ Sizing ______________________ */
   --w-6: 1.5rem;
   --h-6: 1.5rem;
+
+  /* typography */
+  --leading-4: 1;
 }

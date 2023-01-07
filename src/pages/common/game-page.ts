@@ -28,7 +28,7 @@ class GamePage extends HTMLElement {
         <sff-game-header .gName=${gName} slot="in-header"></sff-game-header>
         <sff-game-nav .gName=${gName} slot="in-nav"></sff-game-nav>
         <div slot="in-main">
-          <menu-bar></menu-bar>
+          <menu-bar class="text-sm"></menu-bar>
           <div class="game-main">${main}</div>
         </div>
         <div slot="in-footer">${footerInfos()} ${forkMe()}</div>

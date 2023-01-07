@@ -36,12 +36,12 @@ import { changeFormation, updateFormation } from "../../character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
-import { onLinkClick } from "../util/router";
 import { breakCamelCase } from "../../util/util";
 import { createRef, ref, Ref } from "lit-html/directives/ref.js";
 import plrImg from "../../asset/player.svg";
 import phyImg from "../../asset/pharmacy.png";
 import pitchSvg from "../../asset/half-pitch3.svg";
+import settings from "../../asset/settings.svg";
 
 defineChangeSpot();
 
@@ -156,14 +156,8 @@ function teamMain(
           <article class="cnt-tactics">
             <header class="tactics-head">
               <h3>Tactics</h3>
-              <div>
+              <div class="self-start">
                 ${t.name === gs.userTeam ? customizeTactics() : nothing}
-                <a
-                  aria-label="manual about finances"
-                  @click=${onLinkClick}
-                  href="game-manual#players"
-                  >🛈</a
-                >
               </div>
             </header>
             ${tactics(t)}
@@ -239,11 +233,11 @@ function customizeTactics(): TemplateResult {
 
   return html`
     <button
-      class="btn-txt"
+      class="btn-txt leading-4 rounded-full"
       @click=${openDig}
       aria-label="open customize tactics"
     >
-      ⚙
+      <img class="w-4" src=${settings} alt="gear" />
     </button>
     <dialog ${ref(refDig)} aria-labelledby="dig-tactics-title" class="tct-dig">
       <div class="dig-head">

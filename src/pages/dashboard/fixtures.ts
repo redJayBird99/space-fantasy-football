@@ -22,7 +22,7 @@ class Fixtures extends HTMLSFFGameElement {
         <style>
           ${style}
         </style>
-        <h3>${user} Fixtures</h3>
+        <h3>Fixtures</h3>
         <ul>
           ${ms.length > 0
             ? ms.map((m) => fixture(m, user))
@@ -35,9 +35,14 @@ class Fixtures extends HTMLSFFGameElement {
 }
 
 function fixture(m: Match, user: string): TemplateResult {
+  const userClass = (team: string) => (user === team ? "font-bold" : "");
   return html`
     <li>
-      <span>🌗 ${m.away === user ? m.home : m.away}</span>
+      <div>
+        <span class=${`pr-2 ${userClass(m.home)}`}>${m.home}</span>
+        -
+        <span class=${`pl-2 ${userClass(m.away)}`}>${m.away}</span>
+      </div>
       <span>${m.away === user ? "away" : "home"}</span>
       <time>${new Date(m.date).toLocaleDateString()}</time>
     </li>

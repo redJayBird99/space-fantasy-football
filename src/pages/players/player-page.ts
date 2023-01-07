@@ -19,7 +19,6 @@ import pImg from "../../asset/player.svg";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import definePlayerHistory from "./player-history";
-import { onLinkClick } from "../util/router";
 import { daysBetween } from "../../util/math";
 import defineNegotiate from "./negotiate-contract";
 definePlayerHistory();
@@ -60,13 +59,6 @@ function getSearchParamPlayer(): Player | undefined {
 function playerCtn(p: Player): TemplateResult {
   return html`
     <section class="plr-info">
-      <a
-        aria-label="manual about finances"
-        @click=${onLinkClick}
-        href="../game-manual#players"
-        class="info-link"
-        >🛈</a
-      >
       <div class="cnt-plr-img">
         <h3 class="plr-info__name">${p?.name}</h3>
         <img class="plr-img" src=${pImg} alt="a football player" />

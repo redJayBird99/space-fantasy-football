@@ -23,6 +23,7 @@
   background-repeat: no-repeat;
   background-size: 100%;
   height: var(--h-6);
+  line-height: var(--leading-4);
   width: var(--w-6);
 }
 
@@ -97,6 +98,7 @@
 
 .btn:disabled,
 .btn-link:disabled,
+.btn-txt:disabled,
 .btn-close:disabled {
   filter: var(--brightness-50);
 }

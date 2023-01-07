@@ -15,6 +15,7 @@ import {
 } from "../../character/user";
 import { draftPlayer } from "../../game-sim/game-simulation";
 import { HTMLSFFGameElement } from "../common/html-game-element";
+import addPlayer from "../../asset/person_add.svg";
 
 /** the page where all drafts are collected */
 class Draft extends HTMLSFFGameElement {
@@ -131,13 +132,13 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
       <td ?data-user=${rec.team === gs.userTeam}>${teamLink}</td>
       <td>
         <button
-          class="btn btn-sml btn-acc"
+          class="btn-txt leading-4"
           ?disabled=${!canDraft}
           @click=${canDraft ? onDraftClick : nothing}
           aria-label="draft player"
           value=${rec.plId}
         >
-          Draft
+          <img class="w-6 align-middle" src=${addPlayer} alt="person profile">
         </button>
       </td>
     </tr>

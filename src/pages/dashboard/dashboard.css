@@ -59,7 +59,7 @@ league-table {
   }
 }
 
-@media screen and (max-width: 55rem) {
+@media screen and (max-width: 62rem) {
   sff-dashboard {
     grid-template-areas: "nx nx" "fx ix" "lg lg";
     grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr);

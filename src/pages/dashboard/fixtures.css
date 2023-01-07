@@ -31,8 +31,7 @@ li > time {
   width: 20%;
 }
 
-li :first-child {
-  font-weight: bold;
+li > :first-child {
   flex-grow: 1;
 }
 
