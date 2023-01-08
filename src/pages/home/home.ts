@@ -111,7 +111,8 @@ class NewGame extends HTMLElement {
   };
 
   /** when the name is valid a new game will be created and it will redirect to the dashboard */
-  private handleGameNameClick = (): void => {
+  private onSubmitGameName = (e: Event): void => {
+    e.preventDefault();
     const input = this.querySelector("#game-name") as HTMLInputElement;
 
     if (input.value && /^\w{4,14}$/.test(input.value)) {
@@ -147,7 +148,7 @@ class NewGame extends HTMLElement {
   private gameName(): TemplateResult {
     return html`
       <h2 class="dig-label" slot="title">Choose a game name</h2>
-      <div class="cnt-new-game-name">
+      <form class="cnt-new-game-name" @submit=${this.onSubmitGameName}>
         <div>
           <label class="form-label" for="game-name"
             >game name between 4 and 14 characters</label
@@ -162,13 +163,8 @@ class NewGame extends HTMLElement {
             placeholder="Name"
           />
         </div>
-        <button
-          @click=${this.handleGameNameClick}
-          class="btn btn-rounded btn-acc"
-        >
-          Apply
-        </button>
-      </div>
+        <button class="btn btn-rounded btn-acc">Apply</button>
+      </form>
     `;
   }
 

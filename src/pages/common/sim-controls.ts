@@ -262,7 +262,8 @@ function visualSim(gs?: Readonly<GameState>): TemplateResult {
  */
 function simOptions(onApply: () => void): TemplateResult {
   /** update the simOptions with what the user chooses and call the onApply */
-  const handleClickApply = (e: Event) => {
+  const onSubmit = (e: Event) => {
+    e.preventDefault();
     const cnt = (e.target as HTMLElement).parentElement!;
     const dur = cnt.querySelector("#js-sim-duration") as HTMLSelectElement;
     const speed = cnt.querySelector("#js-sim-speed") as HTMLSelectElement;
@@ -272,7 +273,7 @@ function simOptions(onApply: () => void): TemplateResult {
   };
 
   return html`
-    <section class="sim-options">
+    <form class="sim-options" @submit=${onSubmit}>
       <label for="js-sim-duration">choose a simulation duration</label>
       <select class="form-select" id="js-sim-duration">
         ${simSelectOptions(simDurationOptions())}
@@ -281,10 +282,8 @@ function simOptions(onApply: () => void): TemplateResult {
       <select class="form-select" id="js-sim-speed">
         ${simSelectOptions(Object.entries(simOps.speed))}
       </select>
-      <button class="btn btn-rounded btn--acc" @click=${handleClickApply}>
-        apply
-      </button>
-    </section>
+      <button class="btn btn-rounded btn--acc">apply</button>
+    </form>
   `;
 }
 
