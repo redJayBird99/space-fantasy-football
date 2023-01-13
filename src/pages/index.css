@@ -10,11 +10,14 @@
   --lt-on-bg-color: hsl(0, 0%, 12%);
   --lt-on-bg-color-50: hsl(0, 0%, 18%);
   --lt-on-bg-color-100: hsl(0, 0%, 24%);
+  --lt-on-bg-color-200: hsl(0, 0%, 30%);
+  --lt-on-bg-color-300: hsl(0, 0%, 40%);
 
   /* TODO: pick a color for every one below */
   --lt-primary-color: hsl(276, 93%, 84%);
   --lt-primary-color-700: hsl(279, 43%, 63%);
   --lt-primary-color-300: hsl(300, 100%, 93%);
+
   --lt-on-primary-color: var(--lt-on-bg-color);
   --lt-secondary-color: #a8d085;
   --lt-positive-color: #76db8c;
@@ -33,17 +36,20 @@
 
 /* default mode */
 :root.dark {
-  --dk-bg-color: hsl(275deg, 4%, 16%);
-  --dk-bg-color-750: hsl(275deg, 4%, 20%);
-  --dk-bg-color-725: hsl(275deg, 4%, 22%);
-  --dk-bg-color-700: hsl(275deg, 4%, 24%);
-  --dk-bg-color-650: hsl(275deg, 4%, 28%);
-  --dk-bg-color-600: hsl(275deg, 4%, 32%);
-  --dk-bg-color-500: hsl(275deg, 4%, 40%);
-  --dk-bg-color-300: hsl(275deg, 4%, 56%);
-  --dk-on-bg-color: hsl(0, 0%, 100%);
-  --dk-on-bg-color-50: hsl(0, 0%, 95%);
-  --dk-on-bg-color-100: hsl(0, 0%, 90%);
+  --dk-bg-color: hsl(215deg, 10%, 8%);
+  --dk-bg-color-750: hsl(215deg, 10%, 12%);
+  --dk-bg-color-725: hsl(215deg, 10%, 14%);
+  --dk-bg-color-700: hsl(215deg, 10%, 16%);
+  --dk-bg-color-650: hsl(215deg, 10%, 20%);
+  --dk-bg-color-600: hsl(215deg, 10%, 24%);
+  --dk-bg-color-500: hsl(215deg, 10%, 32%);
+  --dk-bg-color-300: hsl(215deg, 10%, 48%);
+
+  --dk-on-bg-color: hsl(0, 0%, 96%);
+  --dk-on-bg-color-50: hsl(0, 0%, 92%);
+  --dk-on-bg-color-100: hsl(0, 0%, 88%);
+  --dk-on-bg-color-200: hsl(0, 0%, 80%);
+  --dk-on-bg-color-300: hsl(0, 0%, 70%);
 
   /* TODO: pick a color for every one below */
   --dk-primary-color: var(--lt-primary-color);
