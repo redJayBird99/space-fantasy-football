@@ -18,6 +18,8 @@ const teams: { [team: string]: any } = teamsJson;
 const MAX_SCOUTING_OFFSET = 0.2;
 export const MAX_TEAM_SIZE = 30;
 export const MIN_TEAM_SIZE = 18;
+export const MAX_APPEAL = 5;
+export const MIN_APPEAL = 0;
 
 type GsTm = { gs: GameState; t: Team }; // eslint-disable-line no-use-before-define
 type GsTmPl = { p: Player } & GsTm; // eslint-disable-line no-use-before-define
@@ -287,11 +289,13 @@ class Team {
   // 1 point for the fanBase
   // 1 point for the position in facilityRanking ( the order of the array is the ranking )
   static calcAppeal(t: Team, ranking: Team[], facilityRanking: Team[]): number {
-    const fanPoints = fanBaseScore[t.fanBase] / fanBaseScore.huge;
-    const rankNth = ranking.indexOf(t);
-    const facilityNth = facilityRanking.indexOf(t);
-    const l = ranking.length - 1;
-    return fanPoints + 3 * ((l - rankNth) / l) + (l - facilityNth) / l;
+    const frAppeal = MAX_APPEAL / 5;
+    const teams = ranking.length - 1;
+    const rankPts = 3 * frAppeal * ((teams - ranking.indexOf(t)) / teams);
+    const fanPts = (fanBaseScore[t.fanBase] / fanBaseScore.huge) * frAppeal;
+    const facilityPts =
+      ((teams - facilityRanking.indexOf(t)) / teams) * frAppeal;
+    return within(fanPts + rankPts + facilityPts, MIN_APPEAL, MAX_APPEAL);
   }
 
   // returns a weighted score of a player between the current score and the

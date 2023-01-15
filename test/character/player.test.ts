@@ -5,7 +5,7 @@ import * as _pl from "../../src/character/player";
 import * as _gs from "../../src/game-state/game-state";
 import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
 import { mean, variance } from "../../src/util/math";
-import { Team } from "../../src/character/team";
+import { MAX_APPEAL, Team } from "../../src/character/team";
 import { exportedForTesting as _u } from "../../src/character/util";
 jest.mock("../../src/pages/util/router");
 jest.mock("../../src/game-sim/sim-worker-interface");
@@ -420,16 +420,21 @@ describe("Player.approachable()", () => {
   const gs = _gs.GameState.init("abcd".split(""));
   const team = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
-  const plr = new _pl.Player(p, new Date(), 28);
+  const pls = Array.from(
+    { length: 10 },
+    () => new _pl.Player(p, new Date(), Math.floor(Math.random() * 15) + 28)
+  );
 
   describe("for a good player", () => {
-    const pr: _pl.Player = JSON.parse(JSON.stringify(plr));
-    Object.keys(pr.skills).forEach((s) => (pr.skills[s as _pl.Skill] = 90));
+    const cpPls: _pl.Player[] = JSON.parse(JSON.stringify(pls));
+    cpPls.forEach((p) =>
+      Object.keys(p.skills).forEach((s) => (p.skills[s as _pl.Skill] = 90))
+    );
 
     test("should return true most of the time when the appeal is greater 3", () => {
-      team.appeal = 3.1;
-      const sample = Array.from({ length: 5 }, () =>
-        _pl.Player.approachable({ p: pr, gs, t: team })
+      team.appeal = MAX_APPEAL;
+      const sample = cpPls.map((p) =>
+        _pl.Player.approachable({ p, gs, t: team })
       );
       expect(sample.filter((r) => r).length).toBeGreaterThanOrEqual(
         sample.filter((r) => !r).length
@@ -437,9 +442,9 @@ describe("Player.approachable()", () => {
     });
 
     describe("for low appeal", () => {
-      team.appeal = 1;
-      const sample = Array.from({ length: 30 }, () =>
-        _pl.Player.approachable({ p: pr, gs, t: team })
+      team.appeal = MAX_APPEAL / 5;
+      const sample = cpPls.map((p) =>
+        _pl.Player.approachable({ p, gs, t: team })
       );
 
       test("should return true sometimes", () => {
@@ -455,13 +460,15 @@ describe("Player.approachable()", () => {
   });
 
   test("should return true most of the time when the appeal is less 2.5 for a mediocre player", () => {
-    Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
-    team.appeal = 1;
-    const length = 5;
-    const sample = Array.from({ length }, () =>
-      _pl.Player.approachable({ p: plr, gs, t: team })
+    const cpPls: _pl.Player[] = JSON.parse(JSON.stringify(pls));
+    cpPls.forEach((p) =>
+      Object.keys(p.skills).forEach((s) => (p.skills[s as _pl.Skill] = 60))
     );
-    expect(sample.filter((r) => r).length).toBeGreaterThan(length / 2);
+    team.appeal = 1;
+    const sample = cpPls.map((p) =>
+      _pl.Player.approachable({ p, gs, t: team })
+    );
+    expect(sample.filter((r) => r).length).toBeGreaterThan(sample.length / 2);
   });
 });
 
