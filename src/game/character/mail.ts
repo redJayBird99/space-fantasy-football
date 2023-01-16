@@ -1,6 +1,6 @@
-import { createId } from "../util/generator";
-import { interpolate } from "../util/util";
-import mails from "../asset/mails.json";
+import { createId } from "../../util/generator";
+import { interpolate } from "../../util/util";
+import mails from "../../asset/mails.json";
 import { MIN_TEAM_SIZE, Team } from "./team";
 import { Trade } from "../game-sim/trade";
 import { TradeRecord } from "../game-state/game-state";

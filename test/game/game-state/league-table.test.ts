@@ -2,7 +2,7 @@ import {
   processResult,
   LeagueTable,
   Entry,
-} from "../../src/game-state/league-table";
+} from "../../../src/game/game-state/league-table";
 
 describe("processResult()", () => {
   test("when home has more goals should be the winner", () => {

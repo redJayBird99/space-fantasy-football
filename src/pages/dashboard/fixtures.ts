@@ -1,6 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
-import { getNextFixtures } from "../../character/user";
-import { Match } from "../../game-sim/tournament-scheduler";
+import { getNextFixtures } from "../../game/character/user";
+import { Match } from "../../game/game-sim/tournament-scheduler";
 import style from "./fixtures.css";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { mainStyleSheet } from "../style-sheets";

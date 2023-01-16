@@ -8,8 +8,8 @@ import {
   Team,
 } from "../character/team";
 import { GameState, toTradeRecord } from "../game-state/game-state";
-import { shuffle } from "../util/generator";
-import { dayFromLastBirthday, dist, within } from "../util/math";
+import { shuffle } from "../../util/generator";
+import { dayFromLastBirthday, dist, within } from "../../util/math";
 
 /** the content is what the team is giving */
 type TradeSide = { by: Team; content: Player[] };

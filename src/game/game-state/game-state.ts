@@ -11,12 +11,12 @@ import {
   enqueueEventFor,
 } from "../game-sim/game-simulation";
 import { Mail, welcome } from "../character/mail";
-import teamsJson from "../asset/teams.json";
+import teamsJson from "../../asset/teams.json";
 import { getPopStats, PopStats } from "./population-stats";
 import * as db from "./game-db";
 import { sendSyncUpdatedGame } from "./game-sync";
 import { Trade } from "../game-sim/trade";
-import { toISODateString } from "../util/util";
+import { toISODateString } from "../../util/util";
 
 const INIT_MONTH = 7; // august
 const INIT_DATE = 1;

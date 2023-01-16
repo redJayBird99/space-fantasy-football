@@ -1,11 +1,16 @@
 import { html, render } from "lit-html";
-import { MAX_WAGE, MIN_WAGE, Player, SALARY_CAP } from "../../character/player";
-import { Team } from "../../character/team";
+import {
+  MAX_WAGE,
+  MIN_WAGE,
+  Player,
+  SALARY_CAP,
+} from "../../game/character/player";
+import { Team } from "../../game/character/team";
 import {
   fakeWageRequest,
   tryReSignPlayer,
   trySignNewPlayer,
-} from "../../character/user";
+} from "../../game/character/user";
 import { within } from "../../util/math";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./negotiate-contract.css";

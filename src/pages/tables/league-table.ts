@@ -1,5 +1,8 @@
-import { GameState } from "../../game-state/game-state";
-import { Entry, LeagueTable as League } from "../../game-state/league-table";
+import { GameState } from "../../game/game-state/game-state";
+import {
+  Entry,
+  LeagueTable as League,
+} from "../../game/game-state/league-table";
 import { html, render, TemplateResult } from "lit-html";
 import style from "./league-table.css";
 import { goLink } from "../util/go-link";

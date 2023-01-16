@@ -7,7 +7,7 @@ import {
   POSITIONS,
   Skill,
   SKILLS,
-} from "../../character/player";
+} from "../../game/character/player";
 import { goLink } from "../util/go-link";
 import style from "./players-page.css";
 import {
@@ -15,15 +15,15 @@ import {
   sortByMacroSkill,
   sortBySkill,
   updateSort,
-} from "../../character/util";
+} from "../../game/character/util";
 import * as qsSync from "../util/query-string-sync";
 import {
   estimateImprovabilityRating,
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
-} from "../../character/user";
-import { GameState } from "../../game-state/game-state";
+} from "../../game/character/user";
+import { GameState } from "../../game/game-state/game-state";
 import { createRef, ref, Ref } from "lit-html/directives/ref.js";
 
 /** filters applicable to players, when null or undefined the filter won't be applied */

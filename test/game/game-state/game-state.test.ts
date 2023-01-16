@@ -1,14 +1,14 @@
-import "../../src/game-sim/sim-worker-interface";
-import "../mock/broadcast-channel.mock";
-import "../../src/pages/util/router";
-import * as _gs from "../../src/game-state/game-state";
-import * as _sm from "../../src/game-sim/game-simulation";
-import * as _pl from "../../src/character/player";
-import * as _tm from "../../src/character/team";
-import { Schedule } from "../../src/game-sim/tournament-scheduler";
-import teamsJson from "../../src/asset/team-names.json";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/pages/util/router";
+import * as _gs from "../../../src/game/game-state/game-state";
+import * as _sm from "../../../src/game/game-sim/game-simulation";
+import * as _pl from "../../../src/game/character/player";
+import * as _tm from "../../../src/game/character/team";
+import { Schedule } from "../../../src/game/game-sim/tournament-scheduler";
+import teamsJson from "../../../src/asset/team-names.json";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 const rdmYear = 1990 + Math.floor(Math.random() * 35);
 const startD = new Date(rdmYear, _gs.INIT_MONTH, _gs.INIT_DATE);

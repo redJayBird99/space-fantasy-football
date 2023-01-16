@@ -1,4 +1,4 @@
-import { shuffle } from "../util/generator";
+import { shuffle } from "../../util/generator";
 
 type MatchPair = [string, string];
 

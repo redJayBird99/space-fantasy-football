@@ -1,5 +1,5 @@
 import { TemplateResult, render, html, nothing } from "lit-html";
-import { GameState } from "../../game-state/game-state";
+import { GameState } from "../../game/game-state/game-state";
 import simOps from "../../app-state/sim-options.json";
 import { daysBetween } from "../../util/math";
 import * as _ps from "../util/props-state";
@@ -8,7 +8,7 @@ import {
   isSimulating,
   isSimDisabled,
   SimEndEvent,
-} from "../../game-sim/game-simulation";
+} from "../../game/game-sim/game-simulation";
 import style from "./sim-controls.css";
 import { goTo } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";

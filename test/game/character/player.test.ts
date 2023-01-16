@@ -1,14 +1,14 @@
-import "../mock/broadcast-channel.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../../src/pages/util/router";
-import * as _pl from "../../src/character/player";
-import * as _gs from "../../src/game-state/game-state";
-import { isMoreFrequent, getAgeAt } from "../../src/util/generator";
-import { mean, variance } from "../../src/util/math";
-import { MAX_APPEAL, Team } from "../../src/character/team";
-import { exportedForTesting as _u } from "../../src/character/util";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+import "../../mock/broadcast-channel.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../../src/pages/util/router";
+import * as _pl from "../../../src/game/character/player";
+import * as _gs from "../../../src/game/game-state/game-state";
+import { isMoreFrequent, getAgeAt } from "../../../src/util/generator";
+import { mean, variance } from "../../../src/util/math";
+import { MAX_APPEAL, Team } from "../../../src/game/character/team";
+import { exportedForTesting as _u } from "../../../src/game/character/util";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 const poss: _pl.Position[] = [
   "gk",

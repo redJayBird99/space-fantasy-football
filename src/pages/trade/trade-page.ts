@@ -5,8 +5,13 @@ import {
   MAX_SKILL,
   Player,
   SALARY_CAP,
-} from "../../character/player";
-import { luxuryTax, minSalaryTax, sumWages, Team } from "../../character/team";
+} from "../../game/character/player";
+import {
+  luxuryTax,
+  minSalaryTax,
+  sumWages,
+  Team,
+} from "../../game/character/team";
 import {
   canTrade,
   estimateImprovabilityRating,
@@ -14,15 +19,15 @@ import {
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
   makeTrade,
-} from "../../character/user";
-import { GameState, TradeRecord } from "../../game-state/game-state";
+} from "../../game/character/user";
+import { GameState, TradeRecord } from "../../game/game-state/game-state";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
 import { keyed } from "lit-html/directives/keyed.js";
 import { trade } from "../transactions/transactions";
 import isEqual from "lodash-es/isEqual";
-import { tradeRequirements } from "../../game-sim/trade";
+import { tradeRequirements } from "../../game/game-sim/trade";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 
 type hdl = (e: Event) => unknown;

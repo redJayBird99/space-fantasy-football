@@ -5,8 +5,8 @@ import {
   SigningRecord,
   TradeRecord,
   TransRecord,
-} from "../../game-state/game-state";
-import { Player } from "../../character/player";
+} from "../../game/game-state/game-state";
+import { Player } from "../../game/character/player";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   entry: {
     main: "./src/index.ts",
-    "sim-worker": "./src/game-sim/sim-worker.ts",
+    "sim-worker": "./src/game/game-sim/sim-worker.ts",
   },
   output: {
     publicPath: "/space-fantasy-football/",

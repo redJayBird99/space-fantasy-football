@@ -1,6 +1,6 @@
-import "../mock/broadcast-channel.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../../src/pages/util/router";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../../src/pages/util/router";
 import {
   exportedForTesting as _u,
   updateSort,
@@ -8,11 +8,11 @@ import {
   sortByAge,
   sortByInfo,
   bestAtPos,
-} from "../../src/character/util";
-import { Player } from "../../src/character/player";
-import { GameState } from "../../src/game-state/game-state";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+} from "../../../src/game/character/util";
+import { Player } from "../../../src/game/character/player";
+import { GameState } from "../../../src/game/game-state/game-state";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 Player.getScore = jest.fn();
 const mockPlrGetScore = Player.getScore as jest.Mock;

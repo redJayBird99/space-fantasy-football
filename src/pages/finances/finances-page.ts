@@ -1,5 +1,9 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { MIN_SALARY_CAP, Player, SALARY_CAP } from "../../character/player";
+import {
+  MIN_SALARY_CAP,
+  Player,
+  SALARY_CAP,
+} from "../../game/character/player";
 import {
   Contract,
   fanBaseScore,
@@ -7,9 +11,9 @@ import {
   luxuryTax,
   minSalaryTax,
   Team,
-} from "../../character/team";
-import { sortByFinances, sortTeamsBy } from "../../character/util";
-import { GameState } from "../../game-state/game-state";
+} from "../../game/character/team";
+import { sortByFinances, sortTeamsBy } from "../../game/character/util";
+import { GameState } from "../../game/game-state/game-state";
 import defineReSign from "./re-sign";
 import style from "./finances-page.css";
 import { goLink } from "../util/go-link";

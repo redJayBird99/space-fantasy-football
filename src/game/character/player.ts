@@ -5,8 +5,8 @@ import {
   createBirthday,
   getAgeAt,
   hash,
-} from "../util/generator";
-import { within } from "../util/math";
+} from "../../util/generator";
+import { within } from "../../util/math";
 import { createSkills } from "./create-skills";
 import { Team, GsTmPl } from "./team";
 import { GameState } from "../game-state/game-state";

@@ -1,20 +1,20 @@
-import "../mock/broadcast-channel.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../../src/pages/util/router";
-import * as _trd from "../../src/game-sim/trade";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../../src/pages/util/router";
+import * as _trd from "../../../src/game/game-sim/trade";
 import {
   canTrade,
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
   tradeOfferIsStillValid,
-} from "../../src/character/user";
-import * as _gs from "../../src/game-state/game-state";
-import { MAX_GROWTH_RATE, Player } from "../../src/character/player";
-import { Team } from "../../src/character/team";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
-jest.mock("../../src/game-sim/trade");
+} from "../../../src/game/character/user";
+import * as _gs from "../../../src/game/game-state/game-state";
+import { MAX_GROWTH_RATE, Player } from "../../../src/game/character/player";
+import { Team } from "../../../src/game/character/team";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
+jest.mock("../../../src/game/game-sim/trade");
 
 (_trd.tradeRequirements as jest.Mock) = jest.fn(() => ({ ok: true }));
 const mockTradeRequirements = _trd.tradeRequirements as jest.Mock;

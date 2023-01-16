@@ -1,11 +1,11 @@
-import * as _p from "../../src/character/player";
+import * as _p from "../../../src/game/character/player";
 import {
   exportedForTesting as _etL,
   exportedTypesForTesting as _ettL,
-} from "../../src/character/formation-finder";
-import { FORMATIONS, Spot } from "../../src/character/formation";
+} from "../../../src/game/character/formation-finder";
+import { FORMATIONS, Spot } from "../../../src/game/character/formation";
 
-jest.mock("../../src/character/player");
+jest.mock("../../../src/game/character/player");
 /* eslint-disable no-import-assign */
 // @ts-ignore
 _p.Player = jest.fn((p) => ({ position: p, name: Math.random().toString(36) }));

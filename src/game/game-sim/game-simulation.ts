@@ -18,8 +18,8 @@ import {
   updateSquadNumber,
   updateCaptain,
 } from "../character/team";
-import { shuffle } from "../util/generator";
-import { within } from "../util/math";
+import { shuffle } from "../../util/generator";
+import { within } from "../../util/math";
 import { getPopStats } from "../game-state/population-stats";
 import { commitTrade, findTrades } from "./trade";
 import {
@@ -34,7 +34,7 @@ import {
   tradeOffer,
 } from "../character/mail";
 import { updateTradeOffers } from "../character/user";
-import { cubicBezierY, toISODateString } from "../util/util";
+import { cubicBezierY, toISODateString } from "../../util/util";
 import { sortByFinances } from "../character/util";
 
 const SIM_TIME_SLICE = 12; // in hours of game time

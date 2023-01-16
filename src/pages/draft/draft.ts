@@ -4,16 +4,16 @@ import {
   DraftPickRecord,
   DraftRecord,
   GameState,
-} from "../../game-state/game-state";
+} from "../../game/game-state/game-state";
 import { goLink } from "../util/go-link";
-import { Player } from "../../character/player";
+import { Player } from "../../game/character/player";
 import {
   estimateImprovabilityRating,
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
-} from "../../character/user";
-import { draftPlayer } from "../../game-sim/game-simulation";
+} from "../../game/character/user";
+import { draftPlayer } from "../../game/game-sim/game-simulation";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import addPlayer from "../../asset/person_add.svg";
 

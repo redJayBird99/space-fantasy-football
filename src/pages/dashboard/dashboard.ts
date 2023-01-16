@@ -1,7 +1,7 @@
 import { html, render, TemplateResult } from "lit-html";
-import { GameState } from "../../game-state/game-state";
-import { Match, playing } from "../../game-sim/tournament-scheduler";
-import { processResult } from "../../game-state/league-table";
+import { GameState } from "../../game/game-state/game-state";
+import { Match, playing } from "../../game/game-sim/tournament-scheduler";
+import { processResult } from "../../game/game-state/league-table";
 import { daysBetween } from "../../util/math";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import style from "./dashboard.css";

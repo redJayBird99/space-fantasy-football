@@ -1,19 +1,19 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { GameState } from "../../game-state/game-state";
+import { GameState } from "../../game/game-state/game-state";
 import {
   Player,
   MACRO_SKILLS,
   MacroSkill,
   MAX_SKILL,
   Skill,
-} from "../../character/player";
+} from "../../game/character/player";
 import {
   canSignPlayer,
   estimateImprovabilityRating,
   getPlayerRating,
   getPlayerRatingSymbol,
   improvabilityRatingSymbol,
-} from "../../character/user";
+} from "../../game/character/user";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
 import { goLink } from "../util/go-link";

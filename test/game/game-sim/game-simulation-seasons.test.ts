@@ -1,13 +1,13 @@
-import "../mock/app-state.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../mock/broadcast-channel.mock";
-import "../../src/pages/util/router";
-import * as _pl from "../../src/character/player";
-import { Team } from "../../src/character/team";
-import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
-import * as _gs from "../../src/game-state/game-state";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+import "../../mock/app-state.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/pages/util/router";
+import * as _pl from "../../../src/game/character/player";
+import { Team } from "../../../src/game/character/team";
+import { exportedForTesting as _sm } from "../../../src/game/game-sim/game-simulation";
+import * as _gs from "../../../src/game/game-state/game-state";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 async function sim10Years(st: _gs.GameState): Promise<_gs.GameState> {
   const end = new Date(

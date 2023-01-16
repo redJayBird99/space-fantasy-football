@@ -9,9 +9,9 @@ import {
   Position,
 } from "./player";
 import { GameState } from "../game-state/game-state";
-import teamsJson from "../asset/teams.json";
-import { hash } from "../util/generator";
-import { within } from "../util/math";
+import teamsJson from "../../asset/teams.json";
+import { hash } from "../../util/generator";
+import { within } from "../../util/math";
 import { Formation, Formations, Spot } from "./formation";
 import { bestAtPos, bestWithSkill } from "./util";
 const teams: { [team: string]: any } = teamsJson;

@@ -7,16 +7,16 @@ import {
   nothing,
 } from "lit-html";
 import { styleMap } from "lit-html/directives/style-map.js";
-import { GameState } from "../../game-state/game-state";
+import { GameState } from "../../game/game-state/game-state";
 import {
   getOutOfPositionPenalty,
   MacroSkill,
   MACRO_SKILLS,
   Player,
-} from "../../character/player";
+} from "../../game/character/player";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
-import { sortByPosition } from "../../character/util";
+import { sortByPosition } from "../../game/character/util";
 import {
   Formations,
   FORMATIONS,
@@ -24,15 +24,15 @@ import {
   getY,
   Spot,
   Starter,
-} from "../../character/formation";
+} from "../../game/character/formation";
 import {
   completeLineup,
   findSetPiecesTakers,
   getFormation,
   Team,
-} from "../../character/team";
+} from "../../game/character/team";
 import defineChangeSpot from "./change-spot";
-import { changeFormation, updateFormation } from "../../character/user";
+import { changeFormation, updateFormation } from "../../game/character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";

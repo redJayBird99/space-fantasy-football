@@ -1,6 +1,6 @@
-import { MAX_GROWTH_RATE, Player } from "../character/player";
-import { endSimOnEvent } from "../game-sim/game-simulation";
-import { GameState } from "../game-state/game-state";
+import { MAX_GROWTH_RATE, Player } from "../game/character/player";
+import { endSimOnEvent } from "../game/game-sim/game-simulation";
+import { GameState } from "../game/game-state/game-state";
 
 // some util scripts for testing (and cheating)
 export default {

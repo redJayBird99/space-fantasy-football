@@ -1,5 +1,5 @@
-import { createSkill } from "../../src/character/create-skills";
-import { mean } from "../../src/util/math";
+import { createSkill } from "../../../src/game/character/create-skills";
+import { mean } from "../../../src/util/math";
 
 describe("createSkills()", () => {
   const sample = Array.from({ length: 1_000 }, () => createSkill(50, 20));

@@ -1,5 +1,5 @@
 import { html, render, TemplateResult } from "lit-html";
-import { Player } from "../../character/player";
+import { Player } from "../../game/character/player";
 import style from "./retiring.css";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";

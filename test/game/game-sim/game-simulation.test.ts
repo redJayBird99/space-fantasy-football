@@ -1,22 +1,22 @@
-import "../mock/app-state.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../mock/broadcast-channel.mock";
-import "../../src/pages/util/router";
+import "../../mock/app-state.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/pages/util/router";
 import {
   draftPlayer,
   exportedForTesting as _sm,
   GameEvent,
   prepareSeasonStart,
   enqueueEventFor,
-} from "../../src/game-sim/game-simulation";
-import * as _gs from "../../src/game-state/game-state";
-import { LeagueTable } from "../../src/game-state/league-table";
-import * as _pl from "../../src/character/player";
-import * as _t from "../../src/character/team";
-import teamsJson from "../../src/asset/team-names.json";
-import { getPopStats } from "../../src/game-state/population-stats";
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+} from "../../../src/game/game-sim/game-simulation";
+import * as _gs from "../../../src/game/game-state/game-state";
+import { LeagueTable } from "../../../src/game/game-state/league-table";
+import * as _pl from "../../../src/game/character/player";
+import * as _t from "../../../src/game/character/team";
+import teamsJson from "../../../src/asset/team-names.json";
+import { getPopStats } from "../../../src/game/game-state/population-stats";
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 const rdmYear = 1990 + Math.floor(Math.random() * 35);
 let startD = new Date(rdmYear, _sm.SEASON_START_MONTH, _sm.SEASON_START_DATE);

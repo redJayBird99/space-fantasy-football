@@ -1,10 +1,10 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
-import { getTransferHistoryOf } from "../../character/user";
+import { getTransferHistoryOf } from "../../game/character/user";
 import {
   SigningRecord,
   TradeRecord,
   TransRecord,
-} from "../../game-state/game-state";
+} from "../../game/game-state/game-state";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./player-history.css";
 

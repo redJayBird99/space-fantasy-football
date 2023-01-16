@@ -1,16 +1,16 @@
-import "../mock/broadcast-channel.mock";
-import "../../src/game-sim/sim-worker-interface";
-import "../../src/pages/util/router";
-import * as _t from "../../src/character/team";
-import { exportedForTesting as _sm } from "../../src/game-sim/game-simulation";
-import * as _p from "../../src/character/player";
-import * as _gs from "../../src/game-state/game-state";
-import * as utl from "../../src/character/util";
-import { swap } from "../../src/util/generator";
-import { mean } from "../../src/util/math";
+import "../../mock/broadcast-channel.mock";
+import "../../../src/game/game-sim/sim-worker-interface";
+import "../../../src/pages/util/router";
+import * as _t from "../../../src/game/character/team";
+import { exportedForTesting as _sm } from "../../../src/game/game-sim/game-simulation";
+import * as _p from "../../../src/game/character/player";
+import * as _gs from "../../../src/game/game-state/game-state";
+import * as utl from "../../../src/game/character/util";
+import { swap } from "../../../src/util/generator";
+import { mean } from "../../../src/util/math";
 const _u = utl.exportedForTesting;
-jest.mock("../../src/pages/util/router");
-jest.mock("../../src/game-sim/sim-worker-interface");
+jest.mock("../../../src/pages/util/router");
+jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
 // eslint-disable-next-line no-import-assign
 const mockBestAtPos = ((utl.bestAtPos as jest.Mock) = jest.fn());

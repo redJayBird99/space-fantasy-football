@@ -1,7 +1,7 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { getSavesNames, SAVES_PREFIX } from "../../game-state/game-db";
-import { GameState } from "../../game-state/game-state";
+import { getSavesNames, SAVES_PREFIX } from "../../game/game-state/game-db";
+import { GameState } from "../../game/game-state/game-state";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
 import { forkMe } from "../common/fork-me";

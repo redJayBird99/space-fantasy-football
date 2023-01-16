@@ -1,5 +1,5 @@
 import { Position, Skills, MAX_SKILL, MIN_SKILL } from "./player";
-import { customGaussian } from "../util/generator";
+import { customGaussian } from "../../util/generator";
 
 const SKILL_NOISE = 20;
 const SKILL_EXTRA_NOISE = SKILL_NOISE + 10;
