@@ -1,27 +1,27 @@
-import { GameState } from "../../game/game-state/game-state";
-import {
-  Entry,
-  LeagueTable as League,
-} from "../../game/game-state/league-table";
+import { GameState, table } from "../../game/game";
 import { html, render, TemplateResult } from "lit-html";
 import style from "./league-table.css";
 import { goLink } from "../util/go-link";
 import { mainStyleSheet } from "../style-sheets";
 
 const columns = [
-  { full: "team", abbr: "team", data: (e: Entry) => e.teamName },
-  { full: "played", abbr: "pl", data: (e: Entry) => e.played },
-  { full: "won", abbr: "w", data: (e: Entry) => e.won },
-  { full: "drawn", abbr: "d", data: (e: Entry) => e.drawn },
-  { full: "lost", abbr: "l", data: (e: Entry) => e.lost },
-  { full: "goals for", abbr: "GF", data: (e: Entry) => e.goalsFor },
-  { full: "goals against", abbr: "GA", data: (e: Entry) => e.goalsAgainst },
+  { full: "team", abbr: "team", data: (e: table.Entry) => e.teamName },
+  { full: "played", abbr: "pl", data: (e: table.Entry) => e.played },
+  { full: "won", abbr: "w", data: (e: table.Entry) => e.won },
+  { full: "drawn", abbr: "d", data: (e: table.Entry) => e.drawn },
+  { full: "lost", abbr: "l", data: (e: table.Entry) => e.lost },
+  { full: "goals for", abbr: "GF", data: (e: table.Entry) => e.goalsFor },
+  {
+    full: "goals against",
+    abbr: "GA",
+    data: (e: table.Entry) => e.goalsAgainst,
+  },
   {
     full: "goal difference",
     abbr: "GD",
-    data: (e: Entry) => e.goalsFor - e.goalsAgainst,
+    data: (e: table.Entry) => e.goalsFor - e.goalsAgainst,
   },
-  { full: "points", abbr: "pts", data: (e: Entry) => e.points },
+  { full: "points", abbr: "pts", data: (e: table.Entry) => e.points },
 ];
 
 const cmpctCols = columns.filter(
@@ -84,7 +84,7 @@ class LeagueTable extends HTMLElement {
   }
 
   /** when the table is in large mode add supplementary data columns */
-  renderData(e: Entry): TemplateResult[] {
+  renderData(e: table.Entry): TemplateResult[] {
     return (this.dataset.mode === "compact" ? cmpctCols : columns).map((c) => {
       const rst = c.data(e);
       return html`<td>
@@ -98,12 +98,14 @@ class LeagueTable extends HTMLElement {
   renderRows() {
     const user = window.$game.state?.userTeam;
     const season = this.dataset.season ?? "now";
-    const renderRow = (e: Entry, i: number) =>
+    const renderRow = (e: table.Entry, i: number) =>
       html`<tr class=${e.teamName === user ? "user-row" : ""}>
         <td>${i + 1}</td>
         ${this.renderData(e)}
       </tr>`;
-    return new League(GameState.getSeasonMatches(window.$game.state!, season))
+    return new table.LeagueTable(
+      GameState.getSeasonMatches(window.$game.state!, season)
+    )
       .getSortedTable()
       .map(renderRow);
   }

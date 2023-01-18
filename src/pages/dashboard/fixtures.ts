@@ -1,6 +1,5 @@
 import { html, render, TemplateResult } from "lit-html";
-import { getNextFixtures } from "../../game/character/user";
-import { Match } from "../../game/game-sim/tournament-scheduler";
+import { user, tour } from "../../game/game";
 import style from "./fixtures.css";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { mainStyleSheet } from "../style-sheets";
@@ -13,8 +12,8 @@ class Fixtures extends HTMLSFFGameElement {
   }
 
   render(): void {
-    const ms = getNextFixtures().slice(0, 8);
-    const user = window.$game.state!.userTeam!;
+    const ms = user.getNextFixtures().slice(0, 8);
+    const userTeam = window.$game.state!.userTeam!;
 
     render(
       html`
@@ -25,7 +24,7 @@ class Fixtures extends HTMLSFFGameElement {
         <h3>Fixtures</h3>
         <ul>
           ${ms.length > 0
-            ? ms.map((m) => fixture(m, user))
+            ? ms.map((m) => fixture(m, userTeam))
             : html`<li>nothing to do</li>`}
         </ul>
       `,
@@ -34,7 +33,7 @@ class Fixtures extends HTMLSFFGameElement {
   }
 }
 
-function fixture(m: Match, user: string): TemplateResult {
+function fixture(m: tour.Match, user: string): TemplateResult {
   const userClass = (team: string) => (user === team ? "font-bold" : "");
   return html`
     <li>

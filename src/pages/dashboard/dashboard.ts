@@ -1,7 +1,5 @@
 import { html, render, TemplateResult } from "lit-html";
-import { GameState } from "../../game/game-state/game-state";
-import { Match, playing } from "../../game/game-sim/tournament-scheduler";
-import { processResult } from "../../game/game-state/league-table";
+import { GameState, tour, table } from "../../game/game";
 import { daysBetween } from "../../util/math";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import style from "./dashboard.css";
@@ -37,9 +35,9 @@ class Dashboard extends HTMLSFFGameElement {
 /** displays the user team next match and the last 5 results of both teams */
 class NextMatch extends HTMLSFFGameElement {
   /** get the symbol of the given team result, returns "-" when no result was found */
-  resultSymbol(team: string, m?: Match): "won" | "lost" | "drawn" | "-" {
+  resultSymbol(team: string, m?: tour.Match): "won" | "lost" | "drawn" | "-" {
     if (m && m.result) {
-      const r = processResult(m.result);
+      const r = table.processResult(m.result);
       return m.home === team ? r.home.state : r.away.state;
     }
 
@@ -47,7 +45,7 @@ class NextMatch extends HTMLSFFGameElement {
   }
 
   /** get a box with a symbol result of the given match */
-  private historyBox(team: string, m?: Match): TemplateResult {
+  private historyBox(team: string, m?: tour.Match): TemplateResult {
     // TODO: add tooltip
     const symbol = this.resultSymbol(team, m);
     return html`
@@ -60,7 +58,7 @@ class NextMatch extends HTMLSFFGameElement {
   }
 
   /** get a team box with always the last 5 matches played of the given team */
-  private teamBox(team: string, history: Match[]): TemplateResult {
+  private teamBox(team: string, history: tour.Match[]): TemplateResult {
     return html`
       <div class="team">
         <div>
@@ -86,15 +84,15 @@ class NextMatch extends HTMLSFFGameElement {
    * return the entire structure of the next match, when the match doesn't
    * exist the informational content is empty
    */
-  private renderNextMarch(next?: Match): TemplateResult {
+  private renderNextMarch(next?: tour.Match): TemplateResult {
     const gs = window.$game.state!;
     const home = next?.home ?? "";
     const away = next?.away ?? "";
     const matches = GameState.getSeasonMatches(gs, "now").filter(
       (m) => m.result
     );
-    const homeHistory = matches.filter((m) => playing(m, home)).slice(-5);
-    const awayHistory = matches.filter((m) => playing(m, away)).slice(-5);
+    const homeHistory = matches.filter((m) => tour.playing(m, home)).slice(-5);
+    const awayHistory = matches.filter((m) => tour.playing(m, away)).slice(-5);
     const days = next ? `(${daysBetween(next.date, gs.date)} days)` : "";
 
     return html`
@@ -117,7 +115,9 @@ class NextMatch extends HTMLSFFGameElement {
 
     if (rnd !== undefined) {
       return this.renderNextMarch(
-        GameState.getRound(gs, rnd, "now")?.find((m) => playing(m, gs.userTeam))
+        GameState.getRound(gs, rnd, "now")?.find((m) =>
+          tour.playing(m, gs.userTeam)
+        )
       );
     }
 

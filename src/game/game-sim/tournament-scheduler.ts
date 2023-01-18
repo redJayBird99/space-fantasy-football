@@ -1,15 +1,14 @@
-import { shuffle } from "../../util/generator";
+import { createId, shuffle } from "../../util/generator";
 
 type MatchPair = [string, string];
 
-export class Match {
+export type Match = {
   id: string;
   result?: { home: number; away: number };
-
-  constructor(public date: Date, public home: string, public away: string) {
-    this.id = `${home}${away}${date.getTime()}`;
-  }
-}
+  date: Date;
+  home: string;
+  away: string;
+};
 
 interface Round {
   date: Date;
@@ -33,7 +32,12 @@ export class Schedule {
       date.setDate(start.getDate() + i * 7);
       return {
         date,
-        matches: round.map(([home, away]) => new Match(date, home, away)),
+        matches: round.map(([home, away]) => ({
+          id: createId(),
+          date,
+          home,
+          away,
+        })),
       };
     });
   }

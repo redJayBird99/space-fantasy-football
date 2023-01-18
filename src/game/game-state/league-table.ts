@@ -1,6 +1,6 @@
 import { Match } from "../game-sim/tournament-scheduler";
 
-class Entry {
+export class Entry {
   teamName: string;
   played = 0;
   won = 0;
@@ -29,7 +29,7 @@ interface EntryResults {
   away: EntryResult;
 }
 
-class LeagueTable {
+export class LeagueTable {
   private entries = new Map<string, Entry>();
 
   constructor(matches: Match[]) {
@@ -78,7 +78,7 @@ class LeagueTable {
 }
 
 // returns the resulting team infos from the given Match result
-function processResult(r: { home: number; away: number }): EntryResults {
+export function processResult(r: { home: number; away: number }): EntryResults {
   if (r.home > r.away) {
     return { home: WIN, away: LOSE };
   } else if (r.home < r.away) {
@@ -87,5 +87,3 @@ function processResult(r: { home: number; away: number }): EntryResults {
 
   return { home: DRAW, away: DRAW };
 }
-
-export { LeagueTable, Entry, processResult };

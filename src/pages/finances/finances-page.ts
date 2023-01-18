@@ -3,17 +3,15 @@ import {
   MIN_SALARY_CAP,
   Player,
   SALARY_CAP,
-} from "../../game/character/player";
-import {
   Contract,
   fanBaseScore,
   Finances,
   luxuryTax,
   minSalaryTax,
   Team,
-} from "../../game/character/team";
-import { sortByFinances, sortTeamsBy } from "../../game/character/util";
-import { GameState } from "../../game/game-state/game-state";
+  util,
+  GameState,
+} from "../../game/game";
 import defineReSign from "./re-sign";
 import style from "./finances-page.css";
 import { goLink } from "../util/go-link";
@@ -115,7 +113,9 @@ function teamFinances(t: Team): TemplateResult {
  * @param ascending the ranking sort order
  */
 function finInfo(ts: Teams, k: keyof Finances, ascending = false): TeamInfo {
-  const i = sortByFinances(ts.all, k, ascending).findIndex((tm) => ts.t === tm);
+  const i = util
+    .sortByFinances(ts.all, k, ascending)
+    .findIndex((tm) => ts.t === tm);
   return { v: frt.format(ts.t?.finances[k] ?? 0), rank: i + 1 };
 }
 
@@ -125,7 +125,9 @@ function finInfo(ts: Teams, k: keyof Finances, ascending = false): TeamInfo {
  * @param ascending the ranking sort order
  */
 function teamInfo(ts: Teams, k: keyof Team, ascending = false): TeamInfo {
-  const i = sortTeamsBy(ts.all, k, ascending).findIndex((tm) => ts.t === tm);
+  const i = util
+    .sortTeamsBy(ts.all, k, ascending)
+    .findIndex((tm) => ts.t === tm);
   return { v: ts.t[k]?.toString() ?? "", rank: i + 1 };
 }
 

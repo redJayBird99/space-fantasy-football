@@ -1,10 +1,10 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
-import { getTransferHistoryOf } from "../../game/character/user";
 import {
-  SigningRecord,
-  TradeRecord,
-  TransRecord,
-} from "../../game/game-state/game-state";
+  type SigningRecord,
+  type TradeRecord,
+  type TransRecord,
+  user,
+} from "../../game/game";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./player-history.css";
 
@@ -49,7 +49,7 @@ class PlayerHistory extends HTMLElement {
 }
 
 function renderHistory(plId: string): TemplateResult | void {
-  const h = getTransferHistoryOf(plId);
+  const h = user.getTransferHistoryOf(plId);
 
   if (!h) {
     return;

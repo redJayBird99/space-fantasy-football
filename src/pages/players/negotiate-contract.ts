@@ -4,13 +4,9 @@ import {
   MIN_WAGE,
   Player,
   SALARY_CAP,
-} from "../../game/character/player";
-import { Team } from "../../game/character/team";
-import {
-  fakeWageRequest,
-  tryReSignPlayer,
-  trySignNewPlayer,
-} from "../../game/character/user";
+  Team,
+  user,
+} from "../../game/game";
 import { within } from "../../util/math";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./negotiate-contract.css";
@@ -51,7 +47,7 @@ class NegotiateContract extends HTMLElement {
   }
 
   trySignPlayer() {
-    return this.props!.newSign ? trySignNewPlayer : tryReSignPlayer;
+    return this.props!.newSign ? user.trySignNewPlayer : user.tryReSignPlayer;
   }
 
   /** handle the submitted offer, if the offer is successful the player is sign and the onclose sign called */
@@ -108,7 +104,9 @@ class NegotiateContract extends HTMLElement {
           min=${MIN_WAGE}
           max=${maxWage}
           step="100"
-          placeholder=${`wage request ${fakeWageRequest(this.props!.plr)}₡`}
+          placeholder=${`wage request ${user.fakeWageRequest(
+            this.props!.plr
+          )}₡`}
         />
         <label class="hide" for="length">contract duration</label>
         <input

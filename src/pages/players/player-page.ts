@@ -1,19 +1,13 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { GameState } from "../../game/game-state/game-state";
 import {
+  GameState,
   Player,
   MACRO_SKILLS,
   MacroSkill,
   MAX_SKILL,
   Skill,
-} from "../../game/character/player";
-import {
-  canSignPlayer,
-  estimateImprovabilityRating,
-  getPlayerRating,
-  getPlayerRatingSymbol,
-  improvabilityRatingSymbol,
-} from "../../game/character/user";
+  user,
+} from "../../game/game";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
 import { goLink } from "../util/go-link";
@@ -79,8 +73,10 @@ function playerBio(p: Player): TemplateResult {
   const wage = new Intl.NumberFormat("en-GB").format(c?.wage ?? 0);
   const seasons = c?.duration;
   const bgColor = (c: string) => `background-color: ${c}`;
-  const rColor = `hsl(${getPlayerRating(p, gs) * 120}deg 100% 60%)`;
-  const iColor = `hsl(${estimateImprovabilityRating(p, t) * 120}deg 100% 60%)`;
+  const rColor = `hsl(${user.getPlayerRating(p, gs) * 120}deg 100% 60%)`;
+  const iColor = `hsl(${
+    user.estimateImprovabilityRating(p, t) * 120
+  }deg 100% 60%)`;
   const teamLink = gs.teams[p.team] ? `../team?team=${p.team}` : "";
   const injury = gs.injuries[p.id];
 
@@ -93,7 +89,7 @@ function playerBio(p: Player): TemplateResult {
       <div class="plr-high">
         <div>Rating</div>
         <div class="plr-high__val-stl" style=${bgColor(rColor)}>
-          ${getPlayerRatingSymbol(p, gs)}
+          ${user.getPlayerRatingSymbol(p, gs)}
         </div>
       </div>
       <div class="plr-high">
@@ -101,7 +97,7 @@ function playerBio(p: Player): TemplateResult {
           <abbr title="Improvability">Improv.</abbr>
         </div>
         <div class="plr-high__val-stl" style=${bgColor(iColor)}>
-          ${improvabilityRatingSymbol(p, t)}
+          ${user.improvabilityRatingSymbol(p, t)}
         </div>
       </div>
       <div class="plr-high">
@@ -147,7 +143,7 @@ class SignNewPlayer extends HTMLSFFGameElement {
     const gs = window.$game.state!;
     const p = gs.players[this.dataset.plrId ?? ""];
     // 3 quarters so there is some margin to start the negotiation
-    const sign = canSignPlayer(
+    const sign = user.canSignPlayer(
       gs,
       (3 * Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) / 4,
       p

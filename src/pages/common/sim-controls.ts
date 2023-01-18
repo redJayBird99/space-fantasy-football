@@ -1,14 +1,8 @@
 import { TemplateResult, render, html, nothing } from "lit-html";
-import { GameState } from "../../game/game-state/game-state";
 import simOps from "../../app-state/sim-options.json";
 import { daysBetween } from "../../util/math";
 import * as _ps from "../util/props-state";
-import {
-  simulate,
-  isSimulating,
-  isSimDisabled,
-  SimEndEvent,
-} from "../../game/game-sim/game-simulation";
+import { sim, type GameState } from "../../game/game";
 import style from "./sim-controls.css";
 import { goTo } from "../util/router";
 import { HTMLSFFGameElement } from "./html-game-element";
@@ -83,7 +77,7 @@ function dateEventInfo(): string {
 /** the play button to start the game simulation and customizable options */
 class PlaySim extends HTMLSFFGameElement {
   gName?: string; // named group of the matched URL passed as property
-  private simCloser: ReturnType<typeof simulate> | undefined;
+  private simCloser: ReturnType<typeof sim.simulate> | undefined;
   private state = _ps.newState({} as { simGs?: Readonly<GameState> }, () =>
     this.render()
   );
@@ -125,18 +119,18 @@ class PlaySim extends HTMLSFFGameElement {
   /** only play a simulation at the time */
   handlePlayClick = () => {
     if (
-      isSimulating() ||
-      isSimDisabled(window.$game.state!) ||
+      sim.isSimulating() ||
+      sim.isSimDisabled(window.$game.state!) ||
       !this.askPermissionToProceed()
     ) {
       return;
     }
 
-    this.simCloser = simulate(
+    this.simCloser = sim.simulate(
       structuredClone(window.$game.state!),
       this.handleSimTick,
       this.handleSimEnd,
-      window.$appState.simOptions.duration as SimEndEvent | undefined
+      window.$appState.simOptions.duration as sim.SimEndEvent | undefined
     );
 
     window.$appState.simOptions.duration = undefined; // clean after the usage, return to the default
@@ -189,7 +183,7 @@ class PlaySim extends HTMLSFFGameElement {
   }
 
   render(): void {
-    const dis = isSimDisabled(window.$game.state!);
+    const dis = sim.isSimDisabled(window.$game.state!);
 
     render(
       html`
@@ -201,7 +195,7 @@ class PlaySim extends HTMLSFFGameElement {
           aria-describedby=${dis ? "play-disabled-desc" : nothing}
         ></button>
         ${dis ? this.renderDisabledDescription() : nothing}
-        ${isSimulating() ? this.renderSim() : nothing}
+        ${sim.isSimulating() ? this.renderSim() : nothing}
       `,
       this
     );
@@ -299,7 +293,7 @@ function simSelectOptions(options: [string, any][]): TemplateResult[] {
   );
 }
 
-type durOps = [string, SimEndEvent][];
+type durOps = [string, sim.SimEndEvent][];
 
 /** find some sim duration options, usually are:
  * - oneDay
@@ -311,7 +305,7 @@ function simDurationOptions(): durOps {
   const gs = window.$game.state!;
   const userDrafted = !gs.drafts.now.lottery.some((t) => t === gs.userTeam);
   const eQueue = gs.eventQueue;
-  const hasEvent = (e: SimEndEvent) => eQueue.some((evt) => evt.type === e);
+  const hasEvent = (e: sim.SimEndEvent) => eQueue.some((evt) => evt.type === e);
   const immediate: durOps = [
     ["until draft", "draftStart"],
     [userDrafted ? "until end of draft" : "until your pick", "draft"],

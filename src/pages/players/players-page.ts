@@ -7,23 +7,13 @@ import {
   POSITIONS,
   Skill,
   SKILLS,
-} from "../../game/character/player";
+  util,
+  user,
+  GameState,
+} from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./players-page.css";
-import {
-  sortByInfo,
-  sortByMacroSkill,
-  sortBySkill,
-  updateSort,
-} from "../../game/character/util";
 import * as qsSync from "../util/query-string-sync";
-import {
-  estimateImprovabilityRating,
-  getPlayerRating,
-  getPlayerRatingSymbol,
-  improvabilityRatingSymbol,
-} from "../../game/character/user";
-import { GameState } from "../../game/game-state/game-state";
 import { createRef, ref, Ref } from "lit-html/directives/ref.js";
 
 /** filters applicable to players, when null or undefined the filter won't be applied */
@@ -105,11 +95,11 @@ function sortPlayersBy(key: string, ascending: boolean) {
   const gs = window.$game.state!;
 
   if (key in MACRO_SKILLS) {
-    sortByMacroSkill(key as MacroSkill, pgGb!.players, ascending);
+    util.sortByMacroSkill(key as MacroSkill, pgGb!.players, ascending);
   } else if (SKILLS.includes(key as Skill)) {
-    sortBySkill(key as Skill, pgGb!.players, ascending);
+    util.sortBySkill(key as Skill, pgGb!.players, ascending);
   } else {
-    sortByInfo(key as keyof Player, pgGb!.players, ascending, gs);
+    util.sortByInfo(key as keyof Player, pgGb!.players, ascending, gs);
   }
 }
 
@@ -403,7 +393,7 @@ class PlayersTable extends HTMLElement {
   /** sort the table according to the clicked th */
   onHeadClick = (key: string) => {
     const s = { by: pgGb!.state.sortBy, ascending: pgGb!.state.sortAsc };
-    sortPlayersBy(key, updateSort(s, key));
+    sortPlayersBy(key, util.updateSort(s, key));
     qsSync.save({ ...pgGb!.state, sortBy: s.by, sortAsc: s.ascending });
   };
 
@@ -494,13 +484,16 @@ function renderRows(players: Player[]) {
 function improvabilityCell(p: Player, gs: GameState): TemplateResult {
   const u = gs.teams[gs.userTeam];
   return rtgCell(
-    improvabilityRatingSymbol(p, u),
-    estimateImprovabilityRating(p, u)
+    user.improvabilityRatingSymbol(p, u),
+    user.estimateImprovabilityRating(p, u)
   );
 }
 
 function ratingCell(p: Player, gs: GameState): TemplateResult {
-  return rtgCell(getPlayerRatingSymbol(p, gs), getPlayerRating(p, gs));
+  return rtgCell(
+    user.getPlayerRatingSymbol(p, gs),
+    user.getPlayerRating(p, gs)
+  );
 }
 
 function rtgCell(symbol: string, rating: number): TemplateResult {

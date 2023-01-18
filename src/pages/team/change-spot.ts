@@ -5,8 +5,11 @@ import {
   getStarterX,
   getStarterY,
 } from "./team-page";
-import { LineupSpot, updateSetPiecesTakers } from "../../game/character/team";
-import { GameState } from "../../game/game-state/game-state";
+import {
+  type LineupSpot,
+  updateSetPiecesTakers,
+  GameState,
+} from "../../game/game";
 import { styleMap } from "lit-html/directives/style-map.js";
 import style from "./change-spot.css";
 import { mainStyleSheet } from "../style-sheets";

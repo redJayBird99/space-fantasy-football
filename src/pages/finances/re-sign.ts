@@ -1,10 +1,9 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { macroSkills, Player } from "../../game/character/player";
+import { macroSkills, Player, Team } from "../../game/game";
 import style from "./re-sign.css";
 import { skillData } from "../players/player-page";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
-import { Team } from "../../game/character/team";
 import { mainStyleSheet } from "../style-sheets";
 
 type Negotiate = (pl: Player) => unknown;

@@ -7,32 +7,28 @@ import {
   nothing,
 } from "lit-html";
 import { styleMap } from "lit-html/directives/style-map.js";
-import { GameState } from "../../game/game-state/game-state";
 import {
   getOutOfPositionPenalty,
   MacroSkill,
   MACRO_SKILLS,
   Player,
-} from "../../game/character/player";
-import style from "./team-page.css";
-import { skillData } from "../players/player-page";
-import { sortByPosition } from "../../game/character/util";
-import {
+  GameState,
+  util,
   Formations,
   FORMATIONS,
   getX,
   getY,
   Spot,
   Starter,
-} from "../../game/character/formation";
-import {
   completeLineup,
   findSetPiecesTakers,
   getFormation,
   Team,
-} from "../../game/character/team";
+  user,
+} from "../../game/game";
+import style from "./team-page.css";
+import { skillData } from "../players/player-page";
 import defineChangeSpot from "./change-spot";
-import { changeFormation, updateFormation } from "../../game/character/user";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { setAutoOptions } from "../../app-state/app-state";
 import { goLink } from "../util/go-link";
@@ -136,7 +132,7 @@ function teamMain(
     (gs.userTeam !== t.name || window.$appState.userSettings.autoFormation)
   ) {
     // the update will rerender with the new formation
-    updateFormation(gs, t);
+    user.updateFormation(gs, t);
     return nothing;
   }
 
@@ -225,7 +221,7 @@ function customizeTactics(): TemplateResult {
     };
 
     if (fms.includes(form.formations.value)) {
-      changeFormation(form.formations.value as Formations);
+      user.changeFormation(form.formations.value as Formations);
     } else {
       window.$game.state = gs; // mutation notification
     }
@@ -289,7 +285,7 @@ function teamPlayersTable(
   sts: Starter[],
   openUpdateLineup?: (id: string) => void
 ): TemplateResult {
-  sortByPosition(pls, true);
+  util.sortByPosition(pls, true);
   const mSkills = Object.keys(MACRO_SKILLS) as MacroSkill[];
   const starter = (p: Player) => sts.find((s) => s.pl?.id === p.id);
 
@@ -472,7 +468,7 @@ function autoUpdateFormation(): TemplateResult {
 
   const onChange = (e: Event) => {
     if ((e.target as HTMLInputElement).checked) {
-      updateFormation(gs, gs.teams[gs.userTeam]);
+      user.updateFormation(gs, gs.teams[gs.userTeam]);
     }
 
     setAutoOptions({ autoFormation: (e.target as HTMLInputElement).checked });

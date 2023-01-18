@@ -1,7 +1,6 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { ref } from "lit-html/directives/ref.js";
-import { Match } from "../../game/game-sim/tournament-scheduler";
-import { GameState } from "../../game/game-state/game-state";
+import { tour, GameState } from "../../game/game";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./league-fixtures.css";
 
@@ -68,7 +67,7 @@ class LeagueFixtures extends HTMLElement {
   }
 }
 
-function match(m: Match): TemplateResult {
+function match(m: tour.Match): TemplateResult {
   const user = window.$game.state!.userTeam;
 
   return html`

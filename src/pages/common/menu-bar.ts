@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import * as _ps from "../util/props-state";
-import * as db from "../../game/game-state/game-db";
+import { db } from "../../game/game";
 import style from "./menu-bar.css";
 import { mainStyleSheet } from "../style-sheets";
 

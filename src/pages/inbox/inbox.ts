@@ -1,9 +1,8 @@
 import style from "./inbox.css";
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { Mail } from "../../game/character/mail";
+import { type Mail, GameState } from "../../game/game";
 import { classMap } from "lit-html/directives/class-map.js";
-import { GameState } from "../../game/game-state/game-state";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import { mainStyleSheet } from "../style-sheets";
 

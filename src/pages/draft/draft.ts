@@ -1,19 +1,14 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
 import style from "./draft.css";
 import {
-  DraftPickRecord,
-  DraftRecord,
   GameState,
-} from "../../game/game-state/game-state";
+  Player,
+  user,
+  sim,
+  type DraftPickRecord,
+  type DraftRecord,
+} from "../../game/game";
 import { goLink } from "../util/go-link";
-import { Player } from "../../game/character/player";
-import {
-  estimateImprovabilityRating,
-  getPlayerRating,
-  getPlayerRatingSymbol,
-  improvabilityRatingSymbol,
-} from "../../game/character/user";
-import { draftPlayer } from "../../game/game-sim/game-simulation";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import addPlayer from "../../asset/person_add.svg";
 
@@ -78,7 +73,7 @@ function onDraftClick(e: Event): void {
   const plId = (e.target as HTMLButtonElement).value;
 
   if (gs.flags.userDrafting) {
-    draftPlayer(gs, gs.players[plId]);
+    sim.draftPlayer(gs, gs.players[plId]);
     gs.flags.userDrafting = false;
     window.$game.state = gs; // mutation notification
   }
@@ -151,8 +146,8 @@ function improvabilitySymbol(plId: string): TemplateResult {
   const p = gs.players[plId];
   const t = gs.teams[gs.userTeam];
   return ratingSymbol(
-    improvabilityRatingSymbol(p, t),
-    estimateImprovabilityRating(p, t)
+    user.improvabilityRatingSymbol(p, t),
+    user.estimateImprovabilityRating(p, t)
   );
 }
 
@@ -160,7 +155,10 @@ function improvabilitySymbol(plId: string): TemplateResult {
 function PlayerRatingSymbol(plId: string): TemplateResult {
   const gs = window.$game.state!;
   const p = gs.players[plId];
-  return ratingSymbol(getPlayerRatingSymbol(p, gs), getPlayerRating(p, gs));
+  return ratingSymbol(
+    user.getPlayerRatingSymbol(p, gs),
+    user.getPlayerRating(p, gs)
+  );
 }
 
 function ratingSymbol(symbol: string, rating: number): TemplateResult {

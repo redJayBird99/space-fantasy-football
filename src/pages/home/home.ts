@@ -1,7 +1,6 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { getSavesNames, SAVES_PREFIX } from "../../game/game-state/game-db";
-import { GameState } from "../../game/game-state/game-state";
+import { db, GameState } from "../../game/game";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
 import { forkMe } from "../common/fork-me";
@@ -116,7 +115,7 @@ class NewGame extends HTMLElement {
     const input = this.querySelector("#game-name") as HTMLInputElement;
 
     if (input.value && /^\w{4,14}$/.test(input.value)) {
-      const gName = `${SAVES_PREFIX}${input.value}`;
+      const gName = `${db.SAVES_PREFIX}${input.value}`;
       window.$game.newGame(this.pickedTeam, gName);
       goTo(`${gName}/dashboard`);
     } else {
@@ -192,7 +191,7 @@ class LoadFile extends HTMLElement {
   private openSave = (json: string): void => {
     // TODO check if state is a valid GameState
     const gs = GameState.parse(json);
-    const name = gs.name.substring(SAVES_PREFIX.length);
+    const name = gs.name.substring(db.SAVES_PREFIX.length);
     const warning = `are you sure do you want to open this file?, any other autosave with the name ${name} will be overridden`;
 
     if (confirm(warning)) {
@@ -270,7 +269,7 @@ class LoadGame extends HTMLElement {
   /** ask for confirmation before deleting the clicked game save */
   private handleDeleteGame = (e: Event): void => {
     const v = (e.target as HTMLButtonElement).value;
-    const name = v.substring(SAVES_PREFIX.length);
+    const name = v.substring(db.SAVES_PREFIX.length);
 
     if (confirm(`are you sure you want to delete ${name}`)) {
       window.$game.deleteGame(v, () => this.render());
@@ -279,8 +278,8 @@ class LoadGame extends HTMLElement {
 
   /** list of all the available game saves */
   private saves(): TemplateResult[] {
-    return getSavesNames().map((s) => {
-      const name = s.substring(SAVES_PREFIX.length);
+    return db.getSavesNames().map((s) => {
+      const name = s.substring(db.SAVES_PREFIX.length);
       return html`
         <li>
           <em>${name}</em>

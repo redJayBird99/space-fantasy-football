@@ -5,29 +5,21 @@ import {
   MAX_SKILL,
   Player,
   SALARY_CAP,
-} from "../../game/character/player";
-import {
   luxuryTax,
   minSalaryTax,
   sumWages,
   Team,
-} from "../../game/character/team";
-import {
-  canTrade,
-  estimateImprovabilityRating,
-  getPlayerRating,
-  getPlayerRatingSymbol,
-  improvabilityRatingSymbol,
-  makeTrade,
-} from "../../game/character/user";
-import { GameState, TradeRecord } from "../../game/game-state/game-state";
+  user as userMod,
+  GameState,
+  TradeRecord,
+  tradeRequirements,
+} from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
 import { repeat } from "lit-html/directives/repeat.js";
 import { keyed } from "lit-html/directives/keyed.js";
 import { trade } from "../transactions/transactions";
 import isEqual from "lodash-es/isEqual";
-import { tradeRequirements } from "../../game/game-sim/trade";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 
 type hdl = (e: Event) => unknown;
@@ -148,10 +140,10 @@ class TradePage extends PageContent {
       const other = gs.teams[team];
       const gv = give.map((id) => gs.players[id]);
       const gt = get.map((id) => gs.players[id]);
-      this.offerResult = canTrade(other, gt, gv);
+      this.offerResult = userMod.canTrade(other, gt, gv);
 
       if (this.offerResult.ok) {
-        makeTrade(other, gt, gv); // on the mutation notification clean the offer and re-render
+        userMod.makeTrade(other, gt, gv); // on the mutation notification clean the offer and re-render
       } else {
         this.render();
       }
@@ -234,7 +226,7 @@ class OffersPage extends PageContent {
     // the game handler will take care of the remaining trades validity after the mutation
     if (accept) {
       this.offerResult = { ok: true, why: "" };
-      makeTrade(other, get, give);
+      userMod.makeTrade(other, get, give);
     } else {
       this.offerResult = { ok: false, why: "the user rejected the offer" };
       window.$game.state = gs; // mutation notification
@@ -533,13 +525,13 @@ function playerSkills(p: Player): TemplateResult {
     <div class="plr-skills">
       ${playerSkill(
         "rating",
-        getPlayerRatingSymbol(p, gs),
-        getPlayerRating(p, gs)
+        userMod.getPlayerRatingSymbol(p, gs),
+        userMod.getPlayerRating(p, gs)
       )}
       ${playerSkill(
         "improvability",
-        improvabilityRatingSymbol(p, user),
-        estimateImprovabilityRating(p, user)
+        userMod.improvabilityRatingSymbol(p, user),
+        userMod.estimateImprovabilityRating(p, user)
       )}
       ${mSkills.map((s) => {
         const rating = Math.round(Player.getMacroSkill(p, s));
