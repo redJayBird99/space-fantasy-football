@@ -105,7 +105,7 @@ describe("createPlayers()", () => {
   test("when a genAge is given should be used to set the players age", () => {
     const gen = () => 20;
     _gs.createPlayers(st, at, n, gen).forEach((player) => {
-      expect(_pl.Player.age(player, st.date)).toBe(20);
+      expect(_pl.getAge(player, st.date)).toBe(20);
     });
   });
 });

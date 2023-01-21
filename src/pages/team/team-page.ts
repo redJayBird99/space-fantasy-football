@@ -25,6 +25,7 @@ import {
   getFormation,
   Team,
   user,
+  getMacroSkill,
 } from "../../game/game";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
@@ -353,7 +354,7 @@ function teamPlayerRow(
     </td>
     <td class="plr-n"><span class="sqd-number">${p.number}</span></td>
     <td class="plr-name">${goLink(`players/player?id=${p.id}`, p.name)}</td>
-    ${skl.map((s) => playersSkillScore(s, Player.getMacroSkill(p, s)))}
+    ${skl.map((s) => playersSkillScore(s, getMacroSkill(p, s)))}
   </tr>`;
 }
 

@@ -8,9 +8,9 @@ module.exports = merge(common, {
   devServer: {
     static: './dev',
     devMiddleware: {
-      publicPath: '/space-fantasy-football/',
+      publicPath: '/fg/',
     },
-    open: ["/space-fantasy-football/"],
+    open: ["/fg/"],
   },
   output: {
     filename: "[name].js",

@@ -580,8 +580,8 @@ describe("Team.renewExpiringContracts()", () => {
     _t.Team.renewExpiringContracts({ gs: st, t: team });
     const renewed = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
     const expired = _t.Team.getExpiringPlayers({ gs: st, t: team });
-    expect(mean(renewed.map((p) => _p.Player.getScore(p)))).toBeGreaterThan(
-      mean(expired.map((p) => _p.Player.getScore(p)))
+    expect(mean(renewed.map((p) => _p.getScore(p)))).toBeGreaterThan(
+      mean(expired.map((p) => _p.getScore(p)))
     );
   });
 
@@ -662,10 +662,15 @@ describe("Team.pickDraftPlayer()", () => {
   });
 
   test("should the player with the highest score prediction", () => {
-    const original = _p.Player.predictScore;
-    _p.Player.predictScore = jest.fn((p) => (pls[0] === p ? 60 : 10));
+    // @ts-ignore
+    const original = _p.predictScore;
+    // @ts-ignore
+    // eslint-disable-next-line no-import-assign
+    _p.predictScore = jest.fn((p) => (pls[0] === p ? 60 : 10));
     expect(_t.Team.pickDraftPlayer({ gs: st, t: team }, pls)).toBe(pls[0]);
-    _p.Player.predictScore = original;
+    // @ts-ignore
+    // eslint-disable-next-line no-import-assign
+    _p.predictScore = original;
   });
 });
 
@@ -733,7 +738,7 @@ describe("Team.evaluatePlayer()", () => {
   test("should return a value equal to the current score for a mature player", () => {
     const p = new _p.Player("gk", new Date(), _p.END_GROWTH_AGE + 1);
     expect(_t.Team.evaluatePlayer({ t: team, p, gs: st })).toBeCloseTo(
-      _p.Player.getScore(p)
+      _p.getScore(p)
     );
   });
 
@@ -741,7 +746,7 @@ describe("Team.evaluatePlayer()", () => {
     const p = new _p.Player("gk", new Date(), 18);
     expect(
       _t.Team.evaluatePlayer({ t: team, p, gs: st })
-    ).toBeGreaterThanOrEqual(_p.Player.getScore(p));
+    ).toBeGreaterThanOrEqual(_p.getScore(p));
   });
 });
 
@@ -902,7 +907,7 @@ describe("updateCaptain", () => {
 
   test("te captain should be preferably an older player", () => {
     expect(
-      _p.Player.age(st.players[team.captain!], st.date)
+      _p.getAge(st.players[team.captain!], st.date)
     ).toBeGreaterThanOrEqual(25);
   });
 });

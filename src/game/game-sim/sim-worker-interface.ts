@@ -1,5 +1,5 @@
-import { Formation, Formations } from "../character/formation";
-import { Player } from "../character/player";
+import { type Formation, type Formations } from "../character/formation";
+import { type Player } from "../character/player";
 import { GameState } from "../game-state/game-state";
 
 type FormRes = { team: string; f: Formation };

@@ -1,5 +1,5 @@
 import { Formation, Formations, FORMATIONS, Spot } from "./formation";
-import { Player, Position } from "./player";
+import { getScore, type Player, type Position } from "./player";
 // this file is meant to be used by a background threads via teh sim-worker interface
 
 /** pick the best fitting player at a position and cache the score answer */
@@ -16,7 +16,7 @@ class PlayersPicker {
   /** get the player score for the given position and cache the answer */
   private getScore(p: Player, pos: Position): number {
     if (!this.cacheScores.get(p)?.has(pos)) {
-      this.cacheScores.get(p)?.set(pos, Player.getScore(p, pos));
+      this.cacheScores.get(p)?.set(pos, getScore(p, pos));
     }
 
     return this.cacheScores.get(p)!.get(pos)!;
@@ -108,7 +108,7 @@ function fillLineup(st: LineupState, pkr: PlayersPicker): LineupState {
     const sub = pkr.pickBest(st.picked, spot.pos, false);
     const pl = st.lineup.get(spot)!;
 
-    if (sub && Player.getScore(pl, spot.pos) < Player.getScore(sub, spot.pos)) {
+    if (sub && getScore(pl, spot.pos) < getScore(sub, spot.pos)) {
       st.lineup.set(spot, sub);
       st.picked.add(sub);
       st.picked.delete(pl);
@@ -124,7 +124,7 @@ function lineupScore(lineup: Map<Spot, Player>): number {
   let score = 0;
 
   for (const [spot, player] of lineup) {
-    score += Player.getScore(player, spot.pos);
+    score += getScore(player, spot.pos);
   }
 
   return score;

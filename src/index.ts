@@ -22,6 +22,6 @@ if (!globalThis.URLPattern) {
 window.$appState = appState;
 window.$game = new GameStateHandle();
 /** the currently given github page path */
-window.$PUBLIC_PATH = "/space-fantasy-football/";
+window.$PUBLIC_PATH = "/fg/";
 window.$script = script;
 initPages();

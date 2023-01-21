@@ -10,7 +10,7 @@ import {
   tradeOfferIsStillValid,
 } from "../../../src/game/character/user";
 import * as _gs from "../../../src/game/game-state/game-state";
-import { MAX_GROWTH_RATE, Player } from "../../../src/game/character/player";
+import * as _p from "../../../src/game/character/player";
 import { Team } from "../../../src/game/character/team";
 jest.mock("../../../src/pages/util/router");
 jest.mock("../../../src/game/game-sim/sim-worker-interface");
@@ -21,23 +21,25 @@ const mockTradeRequirements = _trd.tradeRequirements as jest.Mock;
 (_trd.acceptable as jest.Mock) = jest.fn();
 const mockTradeAcceptable = _trd.acceptable as jest.Mock;
 
-Player.getScore = jest.fn();
-const mockPlrGetScore = Player.getScore as jest.Mock;
+// @ts-ignore
+// eslint-disable-next-line no-import-assign
+_p.getScore = jest.fn();
+const mockPlrGetScore = _p.getScore as jest.Mock;
 Team.estimateGrowthRate = jest.fn();
 const mockEstimateGrowthRate = Team.estimateGrowthRate as jest.Mock;
 
 describe("improvabilityRatingSymbol()", () => {
   const gs = new _gs.GameState(new Date("2000-10-10"));
-  const p = new Player("am", gs.date);
+  const p = new _p.Player("am", gs.date);
   const t = new Team("a");
 
   test("should return C when a player growth rate is half MAX_GROWTH_RATE", () => {
-    mockEstimateGrowthRate.mockImplementation(() => MAX_GROWTH_RATE / 2);
+    mockEstimateGrowthRate.mockImplementation(() => _p.MAX_GROWTH_RATE / 2);
     expect(improvabilityRatingSymbol(p, t)).toBe("C");
   });
 
   test("should return A+ when a player growth rate is MAX_GROWTH_RATE", () => {
-    mockEstimateGrowthRate.mockImplementation(() => MAX_GROWTH_RATE);
+    mockEstimateGrowthRate.mockImplementation(() => _p.MAX_GROWTH_RATE);
     expect(improvabilityRatingSymbol(p, t)).toBe("A+");
   });
 
@@ -53,7 +55,7 @@ describe("getPlayerRating()", () => {
   const stdDev = 5;
   gs.popStats.meanScore = mean;
   gs.popStats.standardDev = stdDev;
-  const p = new Player("am", gs.date);
+  const p = new _p.Player("am", gs.date);
 
   test("should not exceed 0 or 1", () => {
     mockPlrGetScore.mockImplementation(() => mean + 4 * stdDev);
@@ -74,7 +76,7 @@ describe("getPlayerRatingSymbol()", () => {
   const stdDev = 5;
   gs.popStats.meanScore = mean;
   gs.popStats.standardDev = stdDev;
-  const p = new Player("am", gs.date);
+  const p = new _p.Player("am", gs.date);
 
   test("should return C when a player on the mean", () => {
     mockPlrGetScore.mockImplementation(() => gs.popStats.meanScore);

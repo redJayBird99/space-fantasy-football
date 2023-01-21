@@ -1,4 +1,10 @@
-import { Injury, Player, PositionArea } from "../character/player";
+import {
+  createPlayerAt,
+  Injury,
+  Player,
+  PositionArea,
+  wantedWage,
+} from "../character/player";
 import { Team, Contract, pickBest } from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
@@ -436,7 +442,7 @@ function createPlayers(
   genAge?: () => number
 ): Player[] {
   return Array.from({ length: n }, () => {
-    const p = Player.createPlayerAt(s.date, at, genAge ? genAge() : undefined);
+    const p = createPlayerAt(s.date, at, genAge ? genAge() : undefined);
     GameState.savePlayer(s, p);
     return p;
   });
@@ -450,7 +456,7 @@ function initTeams(gs: GameState, names: string[]): Team[] {
     GameState.saveTeam(gs, team);
     const signPlayers = (pls: Player[]) =>
       pls.forEach((p) =>
-        Team.signPlayer({ gs, t: team, p }, Player.wantedWage(gs, p))
+        Team.signPlayer({ gs, t: team, p }, wantedWage(gs, p))
       );
 
     const arg = { gs, t: team };

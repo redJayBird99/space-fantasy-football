@@ -1,4 +1,4 @@
-import { Player, Position } from "./player";
+import { type Player, type Position } from "./player";
 
 /** the player spot in a formation */
 export type Spot = Readonly<{ pos: Position; row: number; col: number }>;

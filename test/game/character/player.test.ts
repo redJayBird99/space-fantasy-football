@@ -65,7 +65,7 @@ describe("createAge()", () => {
   });
 });
 
-describe("Player.retire()", () => {
+describe("retire()", () => {
   const date = new Date();
 
   test("under 30 shouldn't return true", () => {
@@ -74,7 +74,7 @@ describe("Player.retire()", () => {
     Array.from(
       { length: 25 },
       () => new _pl.Player("cm", date, rdmAge())
-    ).forEach((p) => expect(_pl.Player.retire(p, date)).toBe(false));
+    ).forEach((p) => expect(_pl.retire(p, date)).toBe(false));
   });
 
   test("over 30 should sometimes return true", () => {
@@ -82,13 +82,13 @@ describe("Player.retire()", () => {
     const retired = Array.from(
       { length: 25 },
       () => new _pl.Player("cm", date, rdmAge())
-    ).filter((p) => _pl.Player.retire(p, date));
+    ).filter((p) => _pl.retire(p, date));
     expect(retired.length).toBeGreaterThan(0);
   });
 
   test("should return true when player is MAX_AGE", () => {
     const p = new _pl.Player("cm", date, _pl.MAX_AGE);
-    expect(_pl.Player.retire(p, date)).toBe(true);
+    expect(_pl.retire(p, date)).toBe(true);
   });
 });
 
@@ -165,18 +165,18 @@ describe("getOutOfPositionPenalty()", () => {
   });
 });
 
-describe("Player.getSkill()", () => {
+describe("getSkill()", () => {
   test("when growth argument is false shouldn't apply the growthState", () => {
     const p = new _pl.Player("cf", new Date(), 18);
     expect(p.skills.passing).toBeCloseTo(
-      _pl.Player.getSkill(p, "passing", undefined, false)
+      _pl.getSkill(p, "passing", undefined, false)
     );
   });
 
   _pl.SKILLS_APPLICABLE_PENALTY.forEach((sk) => {
     test(`when is playing out of position the ${sk} value is reduced`, () => {
-      expect(_pl.Player.getSkill(smpPlr, sk)).toBeGreaterThan(
-        _pl.Player.getSkill(smpPlr, sk, atPos)
+      expect(_pl.getSkill(smpPlr, sk)).toBeGreaterThan(
+        _pl.getSkill(smpPlr, sk, atPos)
       );
     });
   });
@@ -186,7 +186,7 @@ describe("Player.getSkill()", () => {
     plr.growthState = 0.8;
 
     test(`growthState shouldn't be applied to noGrowthSkill skills`, () => {
-      expect(plr.skills[sk]).toBeCloseTo(_pl.Player.getSkill(plr, sk));
+      expect(plr.skills[sk]).toBeCloseTo(_pl.getSkill(plr, sk));
     });
   });
 
@@ -196,47 +196,45 @@ describe("Player.getSkill()", () => {
     if (!_pl.NO_GROWTH_SKILL.has(sk)) {
       test(`should take in account the growthState`, () => {
         const skl = smpPlr.skills[sk] * smpPlr.growthState;
-        expect(skl).toBeCloseTo(_pl.Player.getSkill(smpPlr, sk));
+        expect(skl).toBeCloseTo(_pl.getSkill(smpPlr, sk));
       });
     }
 
     test(`${sk} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
-      expect(_pl.Player.getSkill(smpPlr, sk, atPos)).toBeGreaterThan(
-        _pl.MIN_SKILL
-      );
+      expect(_pl.getSkill(smpPlr, sk, atPos)).toBeGreaterThan(_pl.MIN_SKILL);
     });
 
     test(`${sk} value is less than or equal ${_pl.MAX_SKILL}`, () => {
-      expect(_pl.Player.getSkill(smpPlr, sk, atPos)).toBeLessThanOrEqual(
+      expect(_pl.getSkill(smpPlr, sk, atPos)).toBeLessThanOrEqual(
         _pl.MAX_SKILL
       );
     });
   });
 });
 
-describe("Player.getMacroSkill()", () => {
+describe("getMacroSkill()", () => {
   Object.keys(_pl.MACRO_SKILLS).forEach((m) => {
     const s = m as _pl.MacroSkill;
 
     test(`${s} value is greater than or equal ${_pl.MIN_SKILL}`, () => {
-      expect(_pl.Player.getMacroSkill(smpPlr, s, atPos)).toBeGreaterThan(
+      expect(_pl.getMacroSkill(smpPlr, s, atPos)).toBeGreaterThan(
         _pl.MIN_SKILL
       );
     });
 
     test(`${s} value is less than or equal ${_pl.MAX_SKILL}`, () => {
-      expect(_pl.Player.getMacroSkill(smpPlr, s, atPos)).toBeLessThanOrEqual(
+      expect(_pl.getMacroSkill(smpPlr, s, atPos)).toBeLessThanOrEqual(
         _pl.MAX_SKILL
       );
     });
   });
 });
 
-describe("Player.createPlayerAt()", () => {
+describe("createPlayerAt()", () => {
   Object.keys(_pl.POSITION_AREA).forEach((area) => {
     const pArea = area as _pl.PositionArea;
     const pls = Array.from({ length: 100 }, () =>
-      _pl.Player.createPlayerAt(new Date(), pArea)
+      _pl.createPlayerAt(new Date(), pArea)
     );
 
     describe(`when at is ${pArea}`, () => {
@@ -265,26 +263,24 @@ describe("positionScoreFactors", () => {
   });
 });
 
-describe("Player.getScore()", () => {
+describe("getScore()", () => {
   test(`when is playing out of position the score is reduced`, () => {
-    expect(_pl.Player.getScore(smpPlr)).toBeGreaterThan(
-      _pl.Player.getScore(smpPlr, atPos)
-    );
+    expect(_pl.getScore(smpPlr)).toBeGreaterThan(_pl.getScore(smpPlr, atPos));
   });
 
   test(`should return a value greater than or equal ${_pl.MIN_SKILL}`, () => {
-    expect(_pl.Player.getScore(smpPlr)).toBeGreaterThan(_pl.MIN_SKILL);
+    expect(_pl.getScore(smpPlr)).toBeGreaterThan(_pl.MIN_SKILL);
   });
 
   test(`should return a value less than or equal ${_pl.MAX_SKILL}`, () => {
-    expect(_pl.Player.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
+    expect(_pl.getScore(smpPlr)).toBeLessThanOrEqual(_pl.MAX_SKILL);
   });
 
   describe.each(poss)(
     "for a 28 years old (full grown) player at position %s ",
     (pos) => {
       const sample = Array.from({ length: 500 }, () =>
-        _pl.Player.getScore(new _pl.Player(pos, new Date(), 28))
+        _pl.getScore(new _pl.Player(pos, new Date(), 28))
       );
 
       test("should return a mean score loosely around 64.5", () => {
@@ -308,28 +304,25 @@ describe("predictScore()", () => {
   const p = new _pl.Player("lm", dt, 17);
 
   test("should be deterministic given the same input", () => {
-    expect(_pl.Player.predictScore(p, dt, team)).toBe(
-      _pl.Player.predictScore(p, dt, team)
-    );
+    expect(_pl.predictScore(p, dt, team)).toBe(_pl.predictScore(p, dt, team));
   });
 
   test("should return the current score when older than END_GROWTH_AGE", () => {
     const p = new _pl.Player("gk", dt, _pl.END_GROWTH_AGE + 1);
-    expect(_pl.Player.getScore(p)).toBe(_pl.Player.predictScore(p, dt, team));
+    expect(_pl.getScore(p)).toBe(_pl.predictScore(p, dt, team));
   });
 
   test("should usually return a different score when younger than END_GROWTH_AGE", () => {
     team.scoutOffset = 0.2;
-    expect(_pl.Player.getScore(p, undefined, false)).not.toBe(
-      _pl.Player.predictScore(p, dt, team)
+    expect(_pl.getScore(p, undefined, false)).not.toBe(
+      _pl.predictScore(p, dt, team)
     );
   });
 
   test("should return a value within scoutOffset% of the real score", () => {
     team.scoutOffset = 0.1;
     const fct =
-      _pl.Player.getScore(p, undefined, false) /
-      _pl.Player.predictScore(p, dt, team);
+      _pl.getScore(p, undefined, false) / _pl.predictScore(p, dt, team);
     expect(fct).toBeGreaterThanOrEqual(1 - team.scoutOffset);
     expect(fct).toBeLessThanOrEqual(1 + team.scoutOffset);
   });
@@ -338,27 +331,24 @@ describe("predictScore()", () => {
     const now = new Date(dt);
     const p = new _pl.Player("gk", now, _pl.MIN_AGE);
     const after3Years = new Date(now.getFullYear() + 3, now.getMonth() + 1);
-    const peakScore = _pl.Player.getScore(p, undefined, false);
+    const peakScore = _pl.getScore(p, undefined, false);
     expect(
-      Math.abs(peakScore - _pl.Player.predictScore(p, after3Years, team))
-    ).toBeLessThanOrEqual(
-      Math.abs(peakScore - _pl.Player.predictScore(p, dt, team))
-    );
+      Math.abs(peakScore - _pl.predictScore(p, after3Years, team))
+    ).toBeLessThanOrEqual(Math.abs(peakScore - _pl.predictScore(p, dt, team)));
   });
 
   test("two different teams should get two different score", () => {
     // cause the function random nature in rare occasions they could be the same
     const team2 = new Team("insert name");
-    expect(_pl.Player.predictScore(p, dt, team2)).not.toBe(
-      _pl.Player.predictScore(p, dt, team)
+    expect(_pl.predictScore(p, dt, team2)).not.toBe(
+      _pl.predictScore(p, dt, team)
     );
   });
 
   test("lower is team.scoutOffset closer should be to the real score", () => {
     const dist = (p: _pl.Player, team: Team) =>
       Math.abs(
-        _pl.Player.getScore(p, undefined, false) -
-          _pl.Player.predictScore(p, dt, team)
+        _pl.getScore(p, undefined, false) - _pl.predictScore(p, dt, team)
       );
     const pls = poss.map((p) => new _pl.Player(p, dt, 18));
     const team2 = new Team("insert name");
@@ -373,50 +363,50 @@ describe("predictScore()", () => {
     const pls = poss.map((p) => new _pl.Player(p, dt, _pl.END_GROWTH_AGE - 2));
     team.scoutOffset = 0.5;
     pls.forEach((p) =>
-      expect(_pl.Player.predictScore(p, dt, team)).toBeGreaterThanOrEqual(
-        _pl.Player.getScore(p)
+      expect(_pl.predictScore(p, dt, team)).toBeGreaterThanOrEqual(
+        _pl.getScore(p)
       )
     );
   });
 });
 
-describe("Player.getHeightInCm()", () => {
+describe("getHeightInCm()", () => {
   const plr = new _pl.Player("am", new Date());
 
   test("should return 150 when height is 0", () => {
     plr.skills.height = 0;
-    expect(_pl.Player.getHeightInCm(plr)).toBe(150);
+    expect(_pl.getHeightInCm(plr)).toBe(150);
   });
 
   test("should return 205 when height is 99", () => {
     plr.skills.height = 99;
-    expect(_pl.Player.getHeightInCm(plr)).toBe(205);
+    expect(_pl.getHeightInCm(plr)).toBe(205);
   });
 });
 
-describe("Player.wantedWage()", () => {
+describe("wantedWage()", () => {
   const gs = _gs.GameState.init("ab".split(""));
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
   test("a very good player should ask for MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 90));
-    expect(_pl.Player.wantedWage(gs, plr)).toBe(_pl.MAX_WAGE);
+    expect(_pl.wantedWage(gs, plr)).toBe(_pl.MAX_WAGE);
   });
 
   test("a bad player should ask for MIN_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 20));
-    expect(_pl.Player.wantedWage(gs, plr)).toBe(_pl.MIN_WAGE);
+    expect(_pl.wantedWage(gs, plr)).toBe(_pl.MIN_WAGE);
   });
 
   test("a mid player should ask for between MIN_WAGE and MAX_WAGE", () => {
     Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
-    expect(_pl.Player.wantedWage(gs, plr)).toBeGreaterThan(_pl.MIN_WAGE);
-    expect(_pl.Player.wantedWage(gs, plr)).toBeLessThan(_pl.MAX_WAGE);
+    expect(_pl.wantedWage(gs, plr)).toBeGreaterThan(_pl.MIN_WAGE);
+    expect(_pl.wantedWage(gs, plr)).toBeLessThan(_pl.MAX_WAGE);
   });
 });
 
-describe("Player.approachable()", () => {
+describe("approachable()", () => {
   const gs = _gs.GameState.init("abcd".split(""));
   const team = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
@@ -433,9 +423,7 @@ describe("Player.approachable()", () => {
 
     test("should return true most of the time when the appeal is greater 3", () => {
       team.appeal = MAX_APPEAL;
-      const sample = cpPls.map((p) =>
-        _pl.Player.approachable({ p, gs, t: team })
-      );
+      const sample = cpPls.map((p) => _pl.approachable({ p, gs, t: team }));
       expect(sample.filter((r) => r).length).toBeGreaterThanOrEqual(
         sample.filter((r) => !r).length
       );
@@ -443,9 +431,7 @@ describe("Player.approachable()", () => {
 
     describe("for low appeal", () => {
       team.appeal = MAX_APPEAL / 5;
-      const sample = cpPls.map((p) =>
-        _pl.Player.approachable({ p, gs, t: team })
-      );
+      const sample = cpPls.map((p) => _pl.approachable({ p, gs, t: team }));
 
       test("should return true sometimes", () => {
         expect(sample.filter((v) => v).length).toBeGreaterThan(0);
@@ -465,14 +451,12 @@ describe("Player.approachable()", () => {
       Object.keys(p.skills).forEach((s) => (p.skills[s as _pl.Skill] = 60))
     );
     team.appeal = 1;
-    const sample = cpPls.map((p) =>
-      _pl.Player.approachable({ p, gs, t: team })
-    );
+    const sample = cpPls.map((p) => _pl.approachable({ p, gs, t: team }));
     expect(sample.filter((r) => r).length).toBeGreaterThan(sample.length / 2);
   });
 });
 
-describe("Player.wageRequest()", () => {
+describe("wageRequest()", () => {
   const gs = _gs.GameState.init("ab".split(""));
   const t = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
@@ -486,15 +470,13 @@ describe("Player.wageRequest()", () => {
 
     test("shouldn't overpay when the team appeal is 2.5 or higher", () => {
       t.appeal = 2.5;
-      expect(_pl.Player.wageRequest({ gs, p: pr, t })).toBe(
-        _pl.Player.wantedWage(gs, pr)
-      );
+      expect(_pl.wageRequest({ gs, p: pr, t })).toBe(_pl.wantedWage(gs, pr));
     });
 
     test("should overpay when the team appeal is less than 2.5", () => {
       t.appeal = 2;
-      expect(_pl.Player.wageRequest({ gs, p: pr, t })).toBeGreaterThan(
-        _pl.Player.wantedWage(gs, pr)
+      expect(_pl.wageRequest({ gs, p: pr, t })).toBeGreaterThan(
+        _pl.wantedWage(gs, pr)
       );
     });
 
@@ -502,8 +484,8 @@ describe("Player.wageRequest()", () => {
       const t2 = gs.teams.b;
       t.appeal = 1.25;
       t2.appeal = 0;
-      expect(_pl.Player.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
-        _pl.Player.wageRequest({ p: pr, t, gs })
+      expect(_pl.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
+        _pl.wageRequest({ p: pr, t, gs })
       );
     });
 
@@ -511,15 +493,15 @@ describe("Player.wageRequest()", () => {
       const t2 = gs.teams.b;
       t.appeal = 1.25;
       t2.appeal = 0;
-      expect(_pl.Player.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
-        _pl.Player.wageRequest({ p: pr, t, gs })
+      expect(_pl.wageRequest({ p: pr, t: t2, gs })).toBeGreaterThan(
+        _pl.wageRequest({ p: pr, t, gs })
       );
     });
 
     test("the wage shouldn't exceed the MAX_WAGE", () => {
       Object.keys(pr.skills).forEach((s) => (pr.skills[s as _pl.Skill] = 90));
       t.appeal = 0;
-      expect(_pl.Player.wageRequest({ p: pr, t, gs })).toBe(_pl.MAX_WAGE);
+      expect(_pl.wageRequest({ p: pr, t, gs })).toBe(_pl.MAX_WAGE);
     });
   });
 
@@ -527,9 +509,7 @@ describe("Player.wageRequest()", () => {
     test("shouldn't be overPaid when the team has a low appeal", () => {
       Object.keys(plr.skills).forEach((s) => (plr.skills[s as _pl.Skill] = 60));
       t.appeal = 1;
-      expect(_pl.Player.wageRequest({ p: plr, t, gs })).toBe(
-        _pl.Player.wantedWage(gs, plr)
-      );
+      expect(_pl.wageRequest({ p: plr, t, gs })).toBe(_pl.wantedWage(gs, plr));
     });
   });
 });
@@ -581,27 +561,27 @@ describe("createGrowthState()", () => {
   });
 });
 
-describe("Player.applyMonthlyGrowth()", () => {
+describe("applyMonthlyGrowth()", () => {
   const now = new Date();
 
   test("shouldn't change player.growthState after END_GROWTH_AGE", () => {
     const plr = new _pl.Player("rw", now, _pl.END_GROWTH_AGE);
     const oldGrowthState = plr.growthState;
-    _pl.Player.applyMonthlyGrowth(plr, now);
+    _pl.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBe(oldGrowthState);
   });
 
   test("should add plr.growthRate to player.growthState before END_GROWTH_AGE", () => {
     const plr = new _pl.Player("rw", now, _pl.END_GROWTH_AGE - 1);
     const oldGrowthState = (plr.growthState -= 10); // make sure the ceil is not reached
-    _pl.Player.applyMonthlyGrowth(plr, now);
+    _pl.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBeCloseTo(oldGrowthState + plr.growthRate);
   });
 
   test("shouldn't change player.growthState when the growthState is 1", () => {
     const plr = new _pl.Player("rw", now, 20);
     plr.growthState = 1;
-    _pl.Player.applyMonthlyGrowth(plr, now);
+    _pl.applyMonthlyGrowth(plr, now);
     expect(plr.growthState).toBe(1);
   });
 
@@ -610,7 +590,7 @@ describe("Player.applyMonthlyGrowth()", () => {
     const plr = new _pl.Player("lm", now, 16);
 
     while (getAgeAt(plr.birthday, now) < _pl.END_GROWTH_AGE) {
-      _pl.Player.applyMonthlyGrowth(plr, now);
+      _pl.applyMonthlyGrowth(plr, now);
       now.setMonth(now.getMonth() + 1);
     }
 
@@ -618,27 +598,27 @@ describe("Player.applyMonthlyGrowth()", () => {
   });
 });
 
-describe("Player.applyMonthlyDegrowth()", () => {
+describe("applyMonthlyDegrowth()", () => {
   const now = new Date();
 
   test("shouldn't change player.growthState before START_DEGROWTH_AGE", () => {
     const plr = new _pl.Player("rb", now, _pl.START_DEGROWTH_AGE - 1);
     const oldGrowthState = plr.growthState;
-    _pl.Player.applyMonthlyDegrowth(plr, now);
+    _pl.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBe(oldGrowthState);
   });
 
   test("should shrink player.growthState after START_DEGROWTH_AGE", () => {
     const plr = new _pl.Player("lb", now, _pl.START_DEGROWTH_AGE + 1);
     const oldGrowthState = plr.growthState; // make sure the ceil is not reached
-    _pl.Player.applyMonthlyDegrowth(plr, now);
+    _pl.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBeLessThan(oldGrowthState);
   });
 
   test("player.growthState shouldn't shrink more than 0.5", () => {
     const plr = new _pl.Player("rb", now, _pl.START_DEGROWTH_AGE - 1);
     plr.growthState = 0.5;
-    _pl.Player.applyMonthlyDegrowth(plr, now);
+    _pl.applyMonthlyDegrowth(plr, now);
     expect(plr.growthState).toBe(0.5);
   });
 });

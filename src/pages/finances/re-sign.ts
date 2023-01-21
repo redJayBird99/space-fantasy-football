@@ -1,5 +1,12 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
-import { macroSkills, Player, Team } from "../../game/game";
+import {
+  approachable,
+  getAge,
+  getMacroSkill,
+  macroSkills,
+  Player,
+  Team,
+} from "../../game/game";
 import style from "./re-sign.css";
 import { skillData } from "../players/player-page";
 import { goLink } from "../util/go-link";
@@ -85,7 +92,7 @@ function expiringPlayers(open: Negotiate): TemplateResult {
  * ( the user can go over the salary cap ) */
 function expiringPlayer(p: Player, open: Negotiate): TemplateResult {
   const gs = window.$game.state!;
-  const willing = Player.approachable({ gs, t: gs.teams[gs.userTeam], p });
+  const willing = approachable({ gs, t: gs.teams[gs.userTeam], p });
   const call = () => {
     console.log("hhs");
     open(p);
@@ -95,9 +102,9 @@ function expiringPlayer(p: Player, open: Negotiate): TemplateResult {
     <tr>
       <td>${goLink(`players/player?id=${p.id}`, p.name)}</td>
       <td class="small-col"><span class="plr-pos">${p.position}</span></td>
-      <td class="small-col">${Player.age(p, gs.date)}</td>
+      <td class="small-col">${getAge(p, gs.date)}</td>
       ${macroSkills.map((sk) =>
-        playersSkillScore(Math.round(Player.getMacroSkill(p, sk)))
+        playersSkillScore(Math.round(getMacroSkill(p, sk)))
       )}
       <td>
         <button

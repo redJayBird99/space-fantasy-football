@@ -5,7 +5,7 @@ import {
   SigningRecord,
   TradeRecord,
   TransRecord,
-  Player,
+  getAge,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
@@ -164,7 +164,7 @@ function playerInfo(plId: string, was: Date): TemplateResult {
       <span class="plr-pos" aria-label="position">${p.position}</span>
       ${goLink(`players/player?id=${p.id}`, p.name)}
       <span aria-label="age">
-        ${Player.age(p, was)} <abbr title="year">y.</abbr>
+        ${getAge(p, was)} <abbr title="year">y.</abbr>
         <abbr title="old">o.</abbr>
       </span>
     `;

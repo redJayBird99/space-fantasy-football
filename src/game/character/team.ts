@@ -7,6 +7,12 @@ import {
   MIN_WAGE,
   MAX_GROWTH_RATE,
   Position,
+  getAge,
+  wageRequest,
+  approachable,
+  wantedWage,
+  predictScore,
+  getScore,
 } from "./player";
 import { GameState } from "../game-state/game-state";
 import teamsJson from "../../asset/teams.json";
@@ -173,11 +179,11 @@ class Team {
     // start by trying to sign the best ranking players
     expiring.forEach((p) => {
       if (
-        Player.approachable({ gs, t, p }) &&
-        affordable(Player.wageRequest({ gs, p, t })) &&
+        approachable({ gs, t, p }) &&
+        affordable(wageRequest({ gs, p, t })) &&
         Team.shouldRenew({ gs, t, p }, rtgs, notExpiring.length)
       ) {
-        Team.signPlayer({ gs, t, p }, Player.wageRequest({ gs, p, t }));
+        Team.signPlayer({ gs, t, p }, wageRequest({ gs, p, t }));
         renewed.push(p);
         notExpiring.push(p);
         rtgs = new RatingAreaByNeed(notExpiring);
@@ -249,17 +255,12 @@ class Team {
     const rts = new RatingAreaByNeed(Team.getNotExpiringPlayers({ gs, t }));
     const affordable = Team.canAfford({ gs, t });
     const signables = free.filter(
-      (p) =>
-        Player.approachable({ gs, t, p }) &&
-        affordable(Player.wageRequest({ gs, p, t }))
+      (p) => approachable({ gs, t, p }) && affordable(wageRequest({ gs, p, t }))
     );
     const target = findBest(signables, { t, gs }, rts);
 
     if (target) {
-      Team.signPlayer(
-        { gs, t, p: target },
-        Player.wageRequest({ gs, p: target, t })
-      );
+      Team.signPlayer({ gs, t, p: target }, wageRequest({ gs, p: target, t }));
       return target;
     }
   }
@@ -271,11 +272,9 @@ class Team {
   static pickDraftPlayer({ gs, t }: GsTm, pls: Player[]): Player {
     // I think is the most sensible option to pick always the best prospect no matter the team needs
     const getBest = (p1: Player, p2: Player) =>
-      Player.predictScore(p2, gs.date, t) > Player.predictScore(p1, gs.date, t)
-        ? p2
-        : p1;
+      predictScore(p2, gs.date, t) > predictScore(p1, gs.date, t) ? p2 : p1;
     const target = pls.reduce((a, p) => getBest(a, p));
-    Team.signPlayer({ gs, t, p: target }, Player.wantedWage(gs, target), 4);
+    Team.signPlayer({ gs, t, p: target }, wantedWage(gs, target), 4);
     return target;
   }
 
@@ -301,7 +300,7 @@ class Team {
   // returns a weighted score of a player between the current score and the
   // peak predicted score (when young) by the team
   static evaluatePlayer({ gs, t, p }: GsTmPl): number {
-    return 0.7 * Player.predictScore(p, gs.date, t) + 0.3 * Player.getScore(p);
+    return 0.7 * predictScore(p, gs.date, t) + 0.3 * getScore(p);
   }
 
   /**
@@ -533,9 +532,9 @@ function selectCaptain(gs: GameState, squad: Player[]): Player | undefined {
   // older players are preferred
   const { meanScore: mean, standardDev: std } = gs.popStats;
   // get the quality score between 0 and 1
-  const qty = (p: Player) => within((Player.getScore(p) - mean) / std, 0, 1);
+  const qty = (p: Player) => within((getScore(p) - mean) / std, 0, 1);
   // get the experience score between 0 and 1
-  const age = (p: Player) => (Player.age(p, gs.date) - 25) / 7;
+  const age = (p: Player) => (getAge(p, gs.date) - 25) / 7;
   const captainScore = (p: Player) => qty(p) * 0.4 + age(p) * 0.6;
   squad.sort((p1, p2) => captainScore(p2) - captainScore(p1));
   return squad[0];

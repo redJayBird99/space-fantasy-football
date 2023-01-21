@@ -6,7 +6,15 @@ import {
 } from "../game-state/game-state";
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
-import { Player, MIN_AGE } from "../character/player";
+import {
+  Player,
+  MIN_AGE,
+  retire,
+  approachable,
+  applyMonthlyDegrowth,
+  applyMonthlyGrowth,
+  getScore,
+} from "../character/player";
 import {
   Team,
   MAX_SCOUTING_OFFSET,
@@ -383,7 +391,7 @@ function handleSignings(gs: GameState): EventRst {
 /** check which players is willing to retire and add them to the gs.retiring */
 function handleRetiring(gs: GameState): EventRst {
   gs.retiring = Object.values(gs.players)
-    .filter((p) => Player.retire(p, gs.date))
+    .filter((p) => retire(p, gs.date))
     .map((p) => p.id);
   GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "retire" });
   return { stop: endSimOnEvent.retiring ?? false, done: true };
@@ -652,17 +660,14 @@ function enqueueSimRoundEvent(gs: GameState, round: number): void {
 
 function simulateMatch(gs: GameState, matchId: string): void {
   const match = gs.matches[matchId];
-  const getScore = (l?: LineupSpot[]) =>
-    l?.reduce(
-      (a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos),
-      0
-    ) ?? 0;
+  const calcScore = (l?: LineupSpot[]) =>
+    l?.reduce((a, s) => a + getScore(gs.players[s.plID!], s.sp.pos), 0) ?? 0;
   const homeScore =
-    within(getScore(gs.teams[match.home]?.formation?.lineup!) - 700, 0, 100) /
+    within(calcScore(gs.teams[match.home]?.formation?.lineup!) - 700, 0, 100) /
       100 +
     0.1;
   const awayScore =
-    within(getScore(gs.teams[match.away]?.formation?.lineup!) - 700, 0, 100) /
+    within(calcScore(gs.teams[match.away]?.formation?.lineup!) - 700, 0, 100) /
       100 -
     0.1;
   const goals = Math.round(cubicBezierY(Math.random(), 0, 0.35, -0.2, 1) * 6);
@@ -692,8 +697,8 @@ function simulateMatch(gs: GameState, matchId: string): void {
 // applies the monthly growth and degrowth for every player stored in gs
 function updateSkills(gs: GameState): void {
   for (const id in gs.players) {
-    Player.applyMonthlyGrowth(gs.players[id], gs.date);
-    Player.applyMonthlyDegrowth(gs.players[id], gs.date);
+    applyMonthlyGrowth(gs.players[id], gs.date);
+    applyMonthlyDegrowth(gs.players[id], gs.date);
   }
 }
 
@@ -865,7 +870,7 @@ function updateRejections(gs: GameState): void {
 
   gs.rejections = {};
   Object.values(gs.players).forEach((p) => {
-    if (p.team === "free agent" && !Player.approachable({ gs, t, p })) {
+    if (p.team === "free agent" && !approachable({ gs, t, p })) {
       gs.rejections[p.id] = true;
     }
   });

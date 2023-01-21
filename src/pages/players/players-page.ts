@@ -10,6 +10,8 @@ import {
   util,
   user,
   GameState,
+  getAge,
+  getMacroSkill,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./players-page.css";
@@ -115,8 +117,8 @@ function getPlayers(f: PlayersFilters): Player[] {
       p.team !== "draft" &&
       (!f.team || p.team === f.team) &&
       (!f.pos || p.position === f.pos) &&
-      (!f.minAge || Player.age(p, gs.date) >= f.minAge) &&
-      (!f.maxAge || Player.age(p, gs.date) <= f.maxAge) &&
+      (!f.minAge || getAge(p, gs.date) >= f.minAge) &&
+      (!f.maxAge || getAge(p, gs.date) <= f.maxAge) &&
       (!rExp || rExp.test(p.name))
   );
 }
@@ -469,13 +471,11 @@ function renderRows(players: Player[]) {
         <td>${goLink(`players/player?id=${p.id}`, p.name)}</td>
         <td class="plr-pos">${p.position}</td>
         ${ratingCell(p, gs)}
-        <td>${Player.age(p, gs.date)}</td>
+        <td>${getAge(p, gs.date)}</td>
         ${improvabilityCell(p, gs)}
         ${Object.keys(MACRO_SKILLS).map(
           (sk) =>
-            html`<td>
-              ${Math.round(Player.getMacroSkill(p, sk as MacroSkill))}
-            </td>`
+            html`<td>${Math.round(getMacroSkill(p, sk as MacroSkill))}</td>`
         )}
       </tr>`
   );

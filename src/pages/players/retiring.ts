@@ -1,5 +1,5 @@
 import { html, render, TemplateResult } from "lit-html";
-import { Player } from "../../game/game";
+import { getAge } from "../../game/game";
 import style from "./retiring.css";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
@@ -55,7 +55,7 @@ function player(plId: string): TemplateResult {
       <h3>${goLink(`players/player?id=${p.id}`, p.name)}</h3>
       <div>
         <span>${teamPath ? goLink(teamPath, p.team) : p.team}</span>
-        <span>${Player.age(p, gs.date)} y.o.</span>
+        <span>${getAge(p, gs.date)} y.o.</span>
         <span>${Math.floor(randomGauss() * 450)} games</span>
       </div>
     </article>

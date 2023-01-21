@@ -1,4 +1,4 @@
-import { MAX_GROWTH_RATE, Player } from "../game/character/player";
+import { getScore, MAX_GROWTH_RATE, Player } from "../game/character/player";
 import { endSimOnEvent } from "../game/game-sim/game-simulation";
 import { GameState } from "../game/game-state/game-state";
 
@@ -18,9 +18,6 @@ export default {
   getScore(team: string) {
     const gs = window.$game.state!;
     const l = gs.teams[team].formation?.lineup!;
-    return l.reduce(
-      (a, s) => a + Player.getScore(gs.players[s.plID!], s.sp.pos),
-      0
-    );
+    return l.reduce((a, s) => a + getScore(gs.players[s.plID!], s.sp.pos), 0);
   },
 };

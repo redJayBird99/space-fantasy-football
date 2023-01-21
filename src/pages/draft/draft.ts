@@ -2,11 +2,11 @@ import { render, html, TemplateResult, nothing } from "lit-html";
 import style from "./draft.css";
 import {
   GameState,
-  Player,
   user,
   sim,
   type DraftPickRecord,
   type DraftRecord,
+  getAge,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import { HTMLSFFGameElement } from "../common/html-game-element";
@@ -121,7 +121,7 @@ function plrRow(rec: DraftPickRecord, when: Date): TemplateResult {
         p ? goLink(plLink, p.name) : `${gs.retirees[rec.plId]} (retired)`
       }</td>
       <td>${p ? p.position.toUpperCase() : ""}</td>
-      <td>${p ? Player.age(p, when) : ""}</td>
+      <td>${p ? getAge(p, when) : ""}</td>
       <td>${p ? improvabilitySymbol(rec.plId) : ""}</td>
       <td>${p ? PlayerRatingSymbol(rec.plId) : ""}</td></td>
       <td ?data-user=${rec.team === gs.userTeam}>${teamLink}</td>

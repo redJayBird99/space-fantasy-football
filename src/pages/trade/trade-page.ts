@@ -13,6 +13,8 @@ import {
   GameState,
   TradeRecord,
   tradeRequirements,
+  getAge,
+  getMacroSkill,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
@@ -503,7 +505,7 @@ function playerInfo(p: Player): TemplateResult {
         <div>
           <span class="plr-bio__pos">${p.position}</span>
           <span>
-            ${Player.age(p, gs.date)} <abbr title="years old">y.o.</abbr>
+            ${getAge(p, gs.date)} <abbr title="years old">y.o.</abbr>
           </span>
         </div>
       </div>
@@ -534,7 +536,7 @@ function playerSkills(p: Player): TemplateResult {
         userMod.estimateImprovabilityRating(p, user)
       )}
       ${mSkills.map((s) => {
-        const rating = Math.round(Player.getMacroSkill(p, s));
+        const rating = Math.round(getMacroSkill(p, s));
         return playerSkill(s, rating.toString(), rating / MAX_SKILL);
       })}
     </div>

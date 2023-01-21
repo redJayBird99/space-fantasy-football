@@ -9,8 +9,9 @@ jest.mock("../../../src/game/character/player");
 /* eslint-disable no-import-assign */
 // @ts-ignore
 _p.Player = jest.fn((p) => ({ position: p, name: Math.random().toString(36) }));
-_p.Player.getScore = jest.fn();
-const mockPlrGetScore = _p.Player.getScore as jest.Mock;
+// @ts-ignore
+_p.getScore = jest.fn();
+const mockPlrGetScore = _p.getScore as jest.Mock;
 /* eslint-enable no-import-assign */
 
 afterEach(() => {

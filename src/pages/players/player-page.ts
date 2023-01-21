@@ -7,6 +7,11 @@ import {
   MAX_SKILL,
   Skill,
   user,
+  getAge,
+  wageRequest,
+  getHeightInCm,
+  getMacroSkill,
+  getSkill,
 } from "../../game/game";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
@@ -107,9 +112,9 @@ function playerBio(p: Player): TemplateResult {
     </div>
     <div class="plr-bio text-sm">
       <div>
-        ${Player.age(p, gs.date)} y. o. ${new Date(p.birthday).toDateString()}
+        ${getAge(p, gs.date)} y. o. ${new Date(p.birthday).toDateString()}
       </div>
-      <div>${Player.getHeightInCm(p)} cm</div>
+      <div>${getHeightInCm(p)} cm</div>
       <div>Preferred foot ${p.foot}</div>
       <div>wage: ${wage}₡</div>
       <div>contract: ${seasons ? `length ${seasons} seasons` : "free"}</div>
@@ -145,7 +150,7 @@ class SignNewPlayer extends HTMLSFFGameElement {
     // 3 quarters so there is some margin to start the negotiation
     const sign = user.canSignPlayer(
       gs,
-      (3 * Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) / 4,
+      (3 * wageRequest({ gs, t: gs.teams[gs.userTeam], p })) / 4,
       p
     );
     console.log(sign, p.team);
@@ -189,12 +194,12 @@ function playersMacroSkills(p: Player): TemplateResult[] {
 function playerMacroSkill(p: Player, m: MacroSkill): TemplateResult {
   return html`
     <ul>
-      <li>${playersSkillScore(Player.getMacroSkill(p, m))} ${m}</li>
+      <li>${playersSkillScore(getMacroSkill(p, m))} ${m}</li>
       <ul>
         ${MACRO_SKILLS[m].map(
           (s) =>
             html`<li>
-              ${playersSkillScore(Player.getSkill(p, s))} ${skillString(s)}
+              ${playersSkillScore(getSkill(p, s))} ${skillString(s)}
             </li>`
         )}
       </ul>

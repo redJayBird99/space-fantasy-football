@@ -45,11 +45,11 @@ describe("simulate 10 seasons", () => {
   });
 
   test(`should have under age 20 players`, () => {
-    expect(pls!.some((p) => _pl.Player.age(p, cp.date) < 20)).toBe(true);
+    expect(pls!.some((p) => _pl.getAge(p, cp.date) < 20)).toBe(true);
   });
 
   test(`should have under age 30 players`, () => {
-    expect(pls!.some((p) => _pl.Player.age(p, cp.date) < 30)).toBe(true);
+    expect(pls!.some((p) => _pl.getAge(p, cp.date) < 30)).toBe(true);
   });
 
   test("every team should have at least 21 players", () => {

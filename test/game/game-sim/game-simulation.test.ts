@@ -340,8 +340,8 @@ describe("createDraftPlayers()", () => {
   test("all players generated should be teens", () => {
     _sm.createDraftPlayers(st);
     Object.values(st.players).forEach((p) => {
-      expect(_pl.Player.age(p, st.date)).toBeGreaterThanOrEqual(_pl.MIN_AGE);
-      expect(_pl.Player.age(p, st.date)).toBeLessThan(20);
+      expect(_pl.getAge(p, st.date)).toBeGreaterThanOrEqual(_pl.MIN_AGE);
+      expect(_pl.getAge(p, st.date)).toBeLessThan(20);
     });
   });
 });
@@ -1048,11 +1048,12 @@ describe("draftPlayer()", () => {
 
 describe("updateRejections", () => {
   const st = _gs.GameState.init(["a", "b", "c", "d"], "a");
-  const fn = _pl.Player.approachable;
+  const fn = _pl.approachable;
 
   test("some players should be added to the rejections list", () => {
     // @ts-ignore
-    _pl.Player.approachable = jest.fn((_, i) => i % 2 === 0);
+    // eslint-disable-next-line no-import-assign
+    _pl.approachable = jest.fn((_, i) => i % 2 === 0);
     _sm.updateRejections(st);
     expect(Object.keys(st.rejections).length).toBeGreaterThan(0);
   });
@@ -1063,7 +1064,9 @@ describe("updateRejections", () => {
         (id) => st.players[id].team !== "free agent"
       )
     ).toBe(false);
-    _pl.Player.approachable = fn;
+    // @ts-ignore
+    // eslint-disable-next-line no-import-assign
+    _pl.approachable = fn;
   });
 });
 

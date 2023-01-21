@@ -9,19 +9,25 @@ import {
   sortByInfo,
   bestAtPos,
 } from "../../../src/game/character/util";
-import { Player } from "../../../src/game/character/player";
+import * as _p from "../../../src/game/character/player";
 import { GameState } from "../../../src/game/game-state/game-state";
 jest.mock("../../../src/pages/util/router");
 jest.mock("../../../src/game/game-sim/sim-worker-interface");
 
-Player.getScore = jest.fn();
-const mockPlrGetScore = Player.getScore as jest.Mock;
+// @ts-ignore
+// eslint-disable-next-line no-import-assign
+_p.getScore = jest.fn();
+const mockPlrGetScore = _p.getScore as jest.Mock;
 const sample = _u.createPlayers("forward", 10);
 
 describe("bestAtPos()", () => {
   test("should select the best player", () => {
     const d = new Date();
-    const pls = [new Player("am", d), new Player("cb", d), new Player("rb", d)];
+    const pls = [
+      new _p.Player("am", d),
+      new _p.Player("cb", d),
+      new _p.Player("rb", d),
+    ];
     mockPlrGetScore.mockImplementation((p) => (pls[0] === p ? 90 : 0));
     expect(bestAtPos(pls, "am")).toBe(pls[0]);
   });
@@ -50,8 +56,7 @@ describe("sortBySkill()", () => {
     const sml = sample
       .slice()
       .sort(
-        (p1, p2) =>
-          Player.getSkill(p1, "agility") - Player.getSkill(p2, "agility")
+        (p1, p2) => _p.getSkill(p1, "agility") - _p.getSkill(p2, "agility")
       );
     sortBySkill("agility", sample, true);
     expect(sample).toEqual(sml);
@@ -63,8 +68,7 @@ describe("sortBySkill()", () => {
     const sml = sample
       .slice()
       .sort(
-        (p1, p2) =>
-          Player.getSkill(p1, "agility") - Player.getSkill(p2, "agility")
+        (p1, p2) => _p.getSkill(p1, "agility") - _p.getSkill(p2, "agility")
       );
     sortBySkill("agility", sample, true);
     expect(sample).toEqual(sml);

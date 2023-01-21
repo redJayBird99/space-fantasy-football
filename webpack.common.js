@@ -6,7 +6,7 @@ module.exports = {
     "sim-worker": "./src/game/game-sim/sim-worker.ts",
   },
   output: {
-    publicPath: "/space-fantasy-football/",
+    publicPath: "/fg/",
   },
   experiments: {
     topLevelAwait: true,

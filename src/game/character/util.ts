@@ -17,7 +17,7 @@ export function bestAtPos(
   let bestPlayer: _p.Player | undefined;
 
   for (const player of pls) {
-    const pScore = _p.Player.getScore(player, pos);
+    const pScore = _p.getScore(player, pos);
 
     if (bestScore < pScore) {
       bestPlayer = player;
@@ -37,15 +37,11 @@ export function bestWithSkill(
     return pls[0];
   }
 
-  return pls.reduce((a, b) =>
-    _p.Player.getSkill(a, s) >= _p.Player.getSkill(b, s) ? a : b
-  );
+  return pls.reduce((a, b) => (_p.getSkill(a, s) >= _p.getSkill(b, s) ? a : b));
 }
 
 function createPlayers(a: _p.PositionArea, n: number): _p.Player[] {
-  return Array.from({ length: n }, () =>
-    _p.Player.createPlayerAt(new Date(), a)
-  );
+  return Array.from({ length: n }, () => _p.createPlayerAt(new Date(), a));
 }
 
 function rdmArea(): _p.PositionArea {
@@ -54,7 +50,7 @@ function rdmArea(): _p.PositionArea {
 
 function rdmPlayers(n: number) {
   return Array.from({ length: n }, () =>
-    _p.Player.createPlayerAt(new Date(), rdmArea())
+    _p.createPlayerAt(new Date(), rdmArea())
   );
 }
 
@@ -92,8 +88,8 @@ export function sortBySkill(
 ): void {
   pls.sort((p1, p2) =>
     ascending
-      ? _p.Player.getSkill(p1, s) - _p.Player.getSkill(p2, s)
-      : _p.Player.getSkill(p2, s) - _p.Player.getSkill(p1, s)
+      ? _p.getSkill(p1, s) - _p.getSkill(p2, s)
+      : _p.getSkill(p2, s) - _p.getSkill(p1, s)
   );
 }
 
@@ -104,8 +100,8 @@ export function sortByMacroSkill(
 ) {
   pls.sort((p1, p2) =>
     ascending
-      ? _p.Player.getMacroSkill(p1, m) - _p.Player.getMacroSkill(p2, m)
-      : _p.Player.getMacroSkill(p2, m) - _p.Player.getMacroSkill(p1, m)
+      ? _p.getMacroSkill(p1, m) - _p.getMacroSkill(p2, m)
+      : _p.getMacroSkill(p2, m) - _p.getMacroSkill(p1, m)
   );
   return pls;
 }

@@ -1,5 +1,5 @@
 # Space Fantasy Football
-[Space fantasy football](https://redandblu.github.io/space-fantasy-football/) is a football (soccer) management game running entirely on the client-side.
+[Space fantasy football](https://redandblu.github.io/fg/) is a football (soccer) management game running entirely on the client-side.
 This game has some major differences from the conventional rules, Some of these differences are taken from the NBA system.
 The idea is to add some nice features from other sport like the NBA into a football game, and remove some others, so in this game the contractual system is more akin to the NBA, and there is a draft.
 The promotion and relegation systems is not yet part of the game, but it will be, instead the loaning out players to other clubs is one of the removed features.

@@ -1,6 +1,6 @@
 import { Formation, Formations } from "../character/formation";
 import { fillFormation, getFormation } from "../character/formation-finder";
-import { Player } from "../character/player";
+import { type Player } from "../character/player";
 
 type FormRes = { team: string; f: Formation };
 type FormReq = { team: string; pls: Player[]; f?: Formations };

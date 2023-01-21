@@ -24,6 +24,8 @@ import {
   SALARY_CAP,
   MAX_GROWTH_RATE,
   MAX_WAGE,
+  wageRequest,
+  getScore,
 } from "./player";
 import {
   MAX_TEAM_SIZE,
@@ -57,7 +59,7 @@ export function getPlayerRating(p: Player, gs: GameState): number {
   const start = gs.popStats.meanScore - 3 * gs.popStats.standardDev;
   const end = gs.popStats.meanScore + 3 * gs.popStats.standardDev;
   const range = end - start;
-  return within((Player.getScore(p) - start) / range, 0, 1);
+  return within((getScore(p) - start) / range, 0, 1);
 }
 
 /** returns a rating value between F (bad) to A+ (great) about how good the given player is */
@@ -122,7 +124,7 @@ function transactionsHistoryOf(plId: string): TransRecord {
 export function fakeWageRequest(p: Player) {
   const gs = window.$game.state!;
   const user = gs.teams[gs.userTeam];
-  const wage = Player.wageRequest({ gs, t: user, p });
+  const wage = wageRequest({ gs, t: user, p });
 
   if (wage === MIN_WAGE) {
     return wage;
@@ -180,7 +182,7 @@ export function canPlayerAcceptOffer(
   wage: number,
   p: Player
 ): { can: boolean; why: string } {
-  if (wage < Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
+  if (wage < wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
     return { can: false, why: "The offer was rejected" };
   }
 
@@ -233,7 +235,7 @@ export function tryReSignPlayer(
 ): boolean {
   const gs = window.$game.state!;
 
-  if (wage >= Player.wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
+  if (wage >= wageRequest({ gs, t: gs.teams[gs.userTeam], p })) {
     gs.transactions.now.renewals.push(signPlayer(p, wage, length));
     window.$game.state = gs; // mutation notification
     return true;

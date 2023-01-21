@@ -1,4 +1,4 @@
-import { Player } from "../character/player";
+import { getScore, Player } from "../character/player";
 import { mean, variance } from "../../util/math";
 
 // player population statistics
@@ -15,7 +15,7 @@ interface PopStats {
  * get the statistics from the current players skills state
  */
 function getPopStats(players: Player[]): PopStats {
-  const scores = players.map((p) => Player.getScore(p)).sort((a, b) => a - b);
+  const scores = players.map((p) => getScore(p)).sort((a, b) => a - b);
   const meanScore = mean(scores);
 
   return {

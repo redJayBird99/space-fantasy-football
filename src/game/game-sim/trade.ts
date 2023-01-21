@@ -1,4 +1,4 @@
-import { Player, SALARY_CAP } from "../character/player";
+import { getAge, Player, SALARY_CAP } from "../character/player";
 import {
   GsTm,
   GsTmPl,
@@ -20,7 +20,7 @@ const MAX_EXCHANGE_SIZE = 3; // only for the non user teams, it makes the findOf
 /** estimate the trade value of given player, when the player is over 29 a progressive penalty get applied */
 function estimatePlayerVal(g: GsTmPl): number {
   const daysAge = dayFromLastBirthday(g.p.birthday, g.gs.date) / 365;
-  const pAge = Player.age(g.p, g.gs.date) + daysAge;
+  const pAge = getAge(g.p, g.gs.date) + daysAge;
   // the penalty can't be too much aggressive otherwise would penalize too much the entire trade offer value
   const agePenalty = within(1 - (pAge - 29) / 33, 0.8, 1);
   return Team.evaluatePlayer(g) * agePenalty;
