@@ -66,18 +66,11 @@ function initScoutOffset(t: Team): number {
 }
 
 // note instances of this class are saved as JSON on the user machine
-class Contract {
+interface Contract {
   teamName: string;
   playerId: string;
   wage: number;
   duration: number; // in seasons
-
-  constructor(t: Team, p: Player, wage: number, duration: number) {
-    this.teamName = t.name;
-    this.playerId = p.id;
-    this.wage = wage;
-    this.duration = duration;
-  }
 }
 
 interface Finances {
@@ -114,217 +107,228 @@ class Team {
       facilities: initMoneyAmount(this.fanBase, SALARY_CAP / 20),
     };
   }
+}
 
-  /** add the player to the team and the signed contract to the gameState, returns the signed Contract
-   * the player will receive a squad number */
-  static signPlayer(g: GsTmPl, wage: number, duration?: number): Contract {
-    const { gs, t, p } = g;
-    duration = duration ?? Math.floor(Math.random() * 4) + 1;
-    p.team = t.name;
-    t.playerIds.includes(p.id) || t.playerIds.push(p.id);
-    const contract = new Contract(t, p, wage, duration);
-    GameState.saveContract(gs, contract);
-    updateSquadNumber(GameState.getTeamPlayers(gs, t.name));
-    return contract;
+/** add the player to the team and the signed contract to the gameState, returns the signed Contract
+ * the player will receive a squad number */
+export function signPlayer(
+  g: GsTmPl,
+  wage: number,
+  duration?: number
+): Contract {
+  const { gs, t, p } = g;
+  duration = duration ?? Math.floor(Math.random() * 4) + 1;
+  p.team = t.name;
+  t.playerIds.includes(p.id) || t.playerIds.push(p.id);
+  const contract = { teamName: g.t.name, playerId: g.p.id, wage, duration };
+  GameState.saveContract(gs, contract);
+  updateSquadNumber(GameState.getTeamPlayers(gs, t.name));
+  return contract;
+}
+
+/** remove the player from the team and delete the contract from the gameState,
+ * and update some player fields like number and team */
+export function unSignPlayer(gs: GameState, c: Contract): void {
+  const team = gs.teams[c.teamName];
+  const player = gs.players[c.playerId];
+  player.team = "free agent";
+  delete player.number;
+  team.playerIds = team.playerIds.filter((id) => id !== player.id);
+  GameState.deleteContract(gs, c);
+
+  if (c.playerId === gs.teams[c.teamName].captain) {
+    gs.teams[c.teamName].captain = undefined;
   }
+}
 
-  /** remove the player from the team and delete the contract from the gameState,
-   * and update some player fields like number and team */
-  static unSignPlayer(gs: GameState, c: Contract): void {
-    const team = gs.teams[c.teamName];
-    const player = gs.players[c.playerId];
-    player.team = "free agent";
-    delete player.number;
-    team.playerIds = team.playerIds.filter((id) => id !== player.id);
-    GameState.deleteContract(gs, c);
+/** moves the contracted player to the new team, the contract has the same conditions */
+export function transferPlayer(gs: GameState, c: Contract, to: Team): void {
+  const p = gs.players[c.playerId];
+  unSignPlayer(gs, c);
+  signPlayer({ gs, p, t: to }, c.wage, c.duration);
+}
 
-    if (c.playerId === gs.teams[c.teamName].captain) {
-      gs.teams[c.teamName].captain = undefined;
+/** returns players with contract duration of 0 */
+export function getExpiringPlayers({ gs, t }: GsTm): Player[] {
+  return GameState.getTeamPlayers(gs, t.name).filter(
+    (p) => GameState.getContract(gs, p)?.duration === 0
+  );
+}
+
+// returns players with contract duration greater than 0
+export function getNotExpiringPlayers({ gs, t }: GsTm): Player[] {
+  return GameState.getTeamPlayers(gs, t.name).filter(
+    (p) => GameState.getContract(gs, p)?.duration !== 0
+  );
+}
+
+/** try to resign the expiring players according to the team needs and player scores */
+export function renewExpiringContracts({ gs, t }: GsTm): Player[] {
+  const renewed: Player[] = [];
+  const notExpiring = getNotExpiringPlayers({ gs, t });
+  let rtgs = new RatingAreaByNeed(notExpiring);
+  let affordable = canAfford({ gs, t });
+  const expiring = getExpiringPlayers({ gs, t }).sort(
+    (a, b) =>
+      ratingPlayerByNeed({ p: b, t, gs }, rtgs) -
+      ratingPlayerByNeed({ p: a, t, gs }, rtgs)
+  );
+
+  // start by trying to sign the best ranking players
+  expiring.forEach((p) => {
+    if (
+      approachable({ gs, t, p }) &&
+      affordable(wageRequest({ gs, p, t })) &&
+      shouldRenew({ gs, t, p }, rtgs, notExpiring.length)
+    ) {
+      signPlayer({ gs, t, p }, wageRequest({ gs, p, t }));
+      renewed.push(p);
+      notExpiring.push(p);
+      rtgs = new RatingAreaByNeed(notExpiring);
+      affordable = canAfford({ gs, t });
     }
-  }
+  });
 
-  // moves the contracted player to the new team, the contract has the same conditions
-  static transferPlayer(gs: GameState, c: Contract, to: Team): void {
-    const p = gs.players[c.playerId];
-    Team.unSignPlayer(gs, c);
-    Team.signPlayer({ gs, p, t: to }, c.wage, c.duration);
-  }
+  return renewed;
+}
 
-  // returns players with contract duration of 0
-  static getExpiringPlayers({ gs, t }: GsTm): Player[] {
-    return GameState.getTeamPlayers(gs, t.name).filter(
-      (p) => GameState.getContract(gs, p)?.duration === 0
-    );
-  }
+/** returns the wages sum of every not expiring team player */
+export function getWagesAmount({ gs, t }: GsTm): number {
+  return sumWages(gs, getNotExpiringPlayers({ gs, t }));
+}
 
-  // returns players with contract duration greater than 0
-  static getNotExpiringPlayers({ gs, t }: GsTm): Player[] {
-    return GameState.getTeamPlayers(gs, t.name).filter(
-      (p) => GameState.getContract(gs, p)?.duration !== 0
-    );
-  }
+/** returns the sum of all the monthly expenses wages and luxuryTax included */
+export function getMonthlyExpenses({ gs, t }: GsTm): number {
+  const { health: hth, facilities: fts, scouting: sct } = t.finances;
+  const ws = getWagesAmount({ gs, t });
+  return ws + luxuryTax(ws) + minSalaryTax(ws) + hth + fts + sct;
+}
 
-  // try to resign the expiring players according to the team needs and player scores
-  static renewExpiringContracts({ gs, t }: GsTm): Player[] {
-    const renewed: Player[] = [];
-    const notExpiring = Team.getNotExpiringPlayers({ gs, t });
-    let rtgs = new RatingAreaByNeed(notExpiring);
-    let affordable = Team.canAfford({ gs, t });
-    const expiring = Team.getExpiringPlayers({ gs, t }).sort(
-      (a, b) =>
-        Team.ratingPlayerByNeed({ p: b, t, gs }, rtgs) -
-        Team.ratingPlayerByNeed({ p: a, t, gs }, rtgs)
-    );
+// returns true when the team can afford the given wage for one year, min wage
+// is always affordable no matter team expenses
+export function canAfford(g: GsTm): Affordable {
+  const { health, facilities, scouting, budget, revenue } = g.t.finances;
+  const wages = getWagesAmount(g); // prevents calling it for every check
 
-    // start by trying to sign the best ranking players
-    expiring.forEach((p) => {
-      if (
-        approachable({ gs, t, p }) &&
-        affordable(wageRequest({ gs, p, t })) &&
-        Team.shouldRenew({ gs, t, p }, rtgs, notExpiring.length)
-      ) {
-        Team.signPlayer({ gs, t, p }, wageRequest({ gs, p, t }));
-        renewed.push(p);
-        notExpiring.push(p);
-        rtgs = new RatingAreaByNeed(notExpiring);
-        affordable = Team.canAfford({ gs, t });
-      }
-    });
-
-    return renewed;
-  }
-
-  /** returns the wages sum of every not expiring team player */
-  static getWagesAmount({ gs, t }: GsTm): number {
-    return sumWages(gs, Team.getNotExpiringPlayers({ gs, t }));
-  }
-
-  /** returns the sum of all the monthly expenses wages and luxuryTax included */
-  static getMonthlyExpenses({ gs, t }: GsTm): number {
-    const { health: hth, facilities: fts, scouting: sct } = t.finances;
-    const ws = Team.getWagesAmount({ gs, t });
-    return ws + luxuryTax(ws) + minSalaryTax(ws) + hth + fts + sct;
-  }
-
-  // returns true when the team can afford the given wage for one year, min wage
-  // is always affordable no matter team expenses
-  static canAfford(g: GsTm): Affordable {
-    const { health, facilities, scouting, budget, revenue } = g.t.finances;
-    const wages = Team.getWagesAmount(g); // prevents calling it for every check
-
-    return (wage) => {
-      if (wage <= MIN_WAGE || wages <= MIN_SALARY_CAP) {
-        return true;
-      }
-
-      const wgs = wages + wage;
-      const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
-      const extra = budget > 0 ? budget / 12 : budget / 48; // 12 months when positive and 4 years otherwise
-      return revenue + extra - expenses > 0;
-    };
-  }
-
-  // return true when the team need a new player
-  static needPlayer(g: GsTm): boolean {
-    // TODO: take in consideration the quality of the teamPlayers
-    const players = Team.getNotExpiringPlayers(g);
-    const rgs = new RatingAreaByNeed(players);
-    return (
-      players.length < MAX_TEAM_SIZE && Object.values(rgs).some((v) => v > 0)
-    );
-  }
-
-  /**
-  if the team more than 29 players and it doesn't need the player position returns always false
-  when the player are more than 25 returning true is less probable
-  @param players - the number of team players
-  */
-  static shouldRenew(g: GsTmPl, r: RatingAreaByNeed, players: number): boolean {
-    if (players <= 25 || r[getArea(g.p.position)] !== 0) {
-      return renewalProbability(g, r) > Math.random();
-    } else if (players < MAX_TEAM_SIZE) {
-      return renewalProbability(g, r) / 3 > Math.random();
+  return (wage) => {
+    if (wage <= MIN_WAGE || wages <= MIN_SALARY_CAP) {
+      return true;
     }
 
-    return false;
+    const wgs = wages + wage;
+    const expenses = wgs + luxuryTax(wgs) + health + facilities + scouting;
+    const extra = budget > 0 ? budget / 12 : budget / 48; // 12 months when positive and 4 years otherwise
+    return revenue + extra - expenses > 0;
+  };
+}
+
+/** return true when the team need a new player */
+export function needPlayer(g: GsTm): boolean {
+  // TODO: take in consideration the quality of the teamPlayers
+  const players = getNotExpiringPlayers(g);
+  const rgs = new RatingAreaByNeed(players);
+  return (
+    players.length < MAX_TEAM_SIZE && Object.values(rgs).some((v) => v > 0)
+  );
+}
+
+/**
+if the team more than 29 players and it doesn't need the player position returns always false
+when the player are more than 25 returning true is less probable
+@param players - the number of team players
+*/
+export function shouldRenew(
+  g: GsTmPl,
+  r: RatingAreaByNeed,
+  players: number
+): boolean {
+  if (players <= 25 || r[getArea(g.p.position)] !== 0) {
+    return renewalProbability(g, r) > Math.random();
+  } else if (players < MAX_TEAM_SIZE) {
+    return renewalProbability(g, r) / 3 > Math.random();
   }
 
-  // sign the best (by rating) affordable willing to sign player between the
-  // given free agents returns the signed player
-  static signFreeAgent({ gs, t }: GsTm, free: Player[]): Player | void {
-    const rts = new RatingAreaByNeed(Team.getNotExpiringPlayers({ gs, t }));
-    const affordable = Team.canAfford({ gs, t });
-    const signables = free.filter(
-      (p) => approachable({ gs, t, p }) && affordable(wageRequest({ gs, p, t }))
-    );
-    const target = findBest(signables, { t, gs }, rts);
+  return false;
+}
 
-    if (target) {
-      Team.signPlayer({ gs, t, p: target }, wageRequest({ gs, p: target, t }));
-      return target;
-    }
-  }
+/**  sign the best (by rating) affordable willing to sign player between the
+ given free agents returns the signed player */
+export function signFreeAgent({ gs, t }: GsTm, free: Player[]): Player | void {
+  const rts = new RatingAreaByNeed(getNotExpiringPlayers({ gs, t }));
+  const affordable = canAfford({ gs, t });
+  const signables = free.filter(
+    (p) => approachable({ gs, t, p }) && affordable(wageRequest({ gs, p, t }))
+  );
+  const target = findBest(signables, { t, gs }, rts);
 
-  /** pick and sign for 4 seasons a player from the given ones, return the signed one
-   * the signed player is always the one with the highest predicted score
-   * according to the team
-   */
-  static pickDraftPlayer({ gs, t }: GsTm, pls: Player[]): Player {
-    // I think is the most sensible option to pick always the best prospect no matter the team needs
-    const getBest = (p1: Player, p2: Player) =>
-      predictScore(p2, gs.date, t) > predictScore(p1, gs.date, t) ? p2 : p1;
-    const target = pls.reduce((a, p) => getBest(a, p));
-    Team.signPlayer({ gs, t, p: target }, wantedWage(gs, target), 4);
+  if (target) {
+    signPlayer({ gs, t, p: target }, wageRequest({ gs, p: target, t }));
     return target;
   }
+}
 
-  // monthly update the budget subtracting expenses and adding revenues
-  static updateFinances(g: GsTm): void {
-    g.t.finances.budget += g.t.finances.revenue - Team.getMonthlyExpenses(g);
-  }
+/** pick and sign for 4 seasons a player from the given ones, return the signed one
+ * the signed player is always the one with the highest predicted score
+ * according to the team
+ */
+export function pickDraftPlayer({ gs, t }: GsTm, pls: Player[]): Player {
+  // I think is the most sensible option to pick always the best prospect no matter the team needs
+  const getBest = (p1: Player, p2: Player) =>
+    predictScore(p2, gs.date, t) > predictScore(p1, gs.date, t) ? p2 : p1;
+  const target = pls.reduce((a, p) => getBest(a, p));
+  signPlayer({ gs, t, p: target }, wantedWage(gs, target), 4);
+  return target;
+}
 
-  // returns a team appeal score between 0 and 5
-  // 3 points for the position in ranking ( the order of the array is the ranking )
-  // 1 point for the fanBase
-  // 1 point for the position in facilityRanking ( the order of the array is the ranking )
-  static calcAppeal(t: Team, ranking: Team[], facilityRanking: Team[]): number {
-    const frAppeal = MAX_APPEAL / 5;
-    const teams = ranking.length - 1;
-    const rankPts = 3 * frAppeal * ((teams - ranking.indexOf(t)) / teams);
-    const fanPts = (fanBaseScore[t.fanBase] / fanBaseScore.huge) * frAppeal;
-    const facilityPts =
-      ((teams - facilityRanking.indexOf(t)) / teams) * frAppeal;
-    return within(fanPts + rankPts + facilityPts, MIN_APPEAL, MAX_APPEAL);
-  }
+/**  monthly update the budget subtracting expenses and adding revenues */
+export function updateFinances(g: GsTm): void {
+  g.t.finances.budget += g.t.finances.revenue - getMonthlyExpenses(g);
+}
 
-  // returns a weighted score of a player between the current score and the
-  // peak predicted score (when young) by the team
-  static evaluatePlayer({ gs, t, p }: GsTmPl): number {
-    return 0.7 * predictScore(p, gs.date, t) + 0.3 * getScore(p);
-  }
+/** returns a team appeal score between 0 and 5
+ 3 points for the position in ranking ( the order of the array is the ranking )
+ 1 point for the fanBase
+ 1 point for the position in facilityRanking ( the order of the array is the ranking ) */
+export function calcAppeal(
+  t: Team,
+  ranking: Team[],
+  facilityRanking: Team[]
+): number {
+  const frAppeal = MAX_APPEAL / 5;
+  const teams = ranking.length - 1;
+  const rankPts = 3 * frAppeal * ((teams - ranking.indexOf(t)) / teams);
+  const fanPts = (fanBaseScore[t.fanBase] / fanBaseScore.huge) * frAppeal;
+  const facilityPts = ((teams - facilityRanking.indexOf(t)) / teams) * frAppeal;
+  return within(fanPts + rankPts + facilityPts, MIN_APPEAL, MAX_APPEAL);
+}
 
-  /**
-   * a rating of how match a player is needed by a team
-   * one point for position needs, 4 on the score of the player
-   * @returns a value between 0 and 5
-   */
-  static ratingPlayerByNeed(g: GsTmPl, r: RatingAreaByNeed): number {
-    return 4 * (Team.evaluatePlayer(g) / MAX_SKILL) + r[getArea(g.p.position)];
-  }
+/** returns a weighted score of a player between the current score and the
+peak predicted score (when young) by the team */
+export function evaluatePlayer({ gs, t, p }: GsTmPl): number {
+  return 0.7 * predictScore(p, gs.date, t) + 0.3 * getScore(p);
+}
 
-  /** this method is meant for the user, it returns a prediction of the player
-   * growth rate by the team scouting,
-   * the max offset from the real growth rate is 2 * MAX_SCOUTING_OFFSET * MAX_GROWTH_RATE,
-   * but never less than 0 or greater than MAX_GROWTH_RATE */
-  static estimateGrowthRate(t: Team, p: Player): number {
-    // the hash it used to get a deterministic value for each player and team without storing anything extra
-    const h = (hash(p.id + t.name, 200) - 100) / 100;
-    return within(
-      h * 2 * t.scoutOffset * MAX_GROWTH_RATE + p.growthRate,
-      0,
-      MAX_GROWTH_RATE
-    );
-  }
+/**
+ * a rating of how match a player is needed by a team
+ * one point for position needs, 4 on the score of the player
+ * @returns a value between 0 and 5
+ */
+export function ratingPlayerByNeed(g: GsTmPl, r: RatingAreaByNeed): number {
+  return 4 * (evaluatePlayer(g) / MAX_SKILL) + r[getArea(g.p.position)];
+}
+
+/** this method is meant for the user, it returns a prediction of the player
+ * growth rate by the team scouting,
+ * the max offset from the real growth rate is 2 * MAX_SCOUTING_OFFSET * MAX_GROWTH_RATE,
+ * but never less than 0 or greater than MAX_GROWTH_RATE */
+export function estimateGrowthRate(t: Team, p: Player): number {
+  // the hash it used to get a deterministic value for each player and team without storing anything extra
+  const h = (hash(p.id + t.name, 200) - 100) / 100;
+  return within(
+    h * 2 * t.scoutOffset * MAX_GROWTH_RATE + p.growthRate,
+    0,
+    MAX_GROWTH_RATE
+  );
 }
 
 /** remove all players not in the team anymore (retired, traded and ect),
@@ -416,11 +420,11 @@ class RatingAreaByNeed {
 function renewalProbability(g: GsTmPl, need: RatingAreaByNeed): number {
   const { meanScore: mean, standardDev: stdDev } = g.gs.popStats;
 
-  if (Team.evaluatePlayer(g) <= mean - 1.5 * stdDev) {
+  if (evaluatePlayer(g) <= mean - 1.5 * stdDev) {
     return 0;
   }
 
-  let scoreFct = (Team.evaluatePlayer(g) - (mean - 2 * stdDev)) / (4 * stdDev);
+  let scoreFct = (evaluatePlayer(g) - (mean - 2 * stdDev)) / (4 * stdDev);
   scoreFct = within(scoreFct, 0, 1);
   const areaFct = Math.min(0.2, 1 - scoreFct) * need[getArea(g.p.position)];
   const probability = scoreFct + areaFct;
@@ -443,8 +447,8 @@ function minSalaryTax(payroll: number): number {
 function findBest(ps: Player[], { t, gs }: GsTm, r: RatingAreaByNeed) {
   if (ps.length > 1) {
     return ps.reduce((a, b) =>
-      Team.ratingPlayerByNeed({ p: b, t, gs }, r) >
-      Team.ratingPlayerByNeed({ p: a, t, gs }, r)
+      ratingPlayerByNeed({ p: b, t, gs }, r) >
+      ratingPlayerByNeed({ p: a, t, gs }, r)
         ? b
         : a
     );
@@ -454,7 +458,7 @@ function findBest(ps: Player[], { t, gs }: GsTm, r: RatingAreaByNeed) {
 }
 
 /**
- * returns the best (according to team.evaluatePlayer score) n players
+ * returns the best (according to evaluatePlayer score) n players
  * @param n amount of player to pick, when n > players.length throw an error
  */
 function pickBest(g: GsTm, players: Player[], n: number): Player[] {
@@ -465,8 +469,7 @@ function pickBest(g: GsTm, players: Player[], n: number): Player[] {
   return players
     .sort(
       (p1, p2) =>
-        Team.evaluatePlayer({ ...g, p: p2 }) -
-        Team.evaluatePlayer({ ...g, p: p1 })
+        evaluatePlayer({ ...g, p: p2 }) - evaluatePlayer({ ...g, p: p1 })
     )
     .slice(0, n);
 }

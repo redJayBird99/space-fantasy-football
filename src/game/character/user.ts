@@ -28,9 +28,12 @@ import {
   getScore,
 } from "./player";
 import {
+  estimateGrowthRate,
+  getWagesAmount,
   MAX_TEAM_SIZE,
   removeLineupDepartures,
   setFormation,
+  signPlayer as teamSignPlayer,
   Team,
 } from "./team";
 
@@ -42,7 +45,7 @@ type TransferHistory = { draft?: DraftHistory; transactions: TransRecord };
  * @Returns a value between 0 and 1 inclusive
  */
 export function estimateImprovabilityRating(p: Player, t: Team): number {
-  return Team.estimateGrowthRate(t, p) / MAX_GROWTH_RATE;
+  return estimateGrowthRate(t, p) / MAX_GROWTH_RATE;
 }
 
 /** returns an estimation rating between F (bad) to A+ (great) about the player improvability */
@@ -146,7 +149,7 @@ export function canSignPlayer(
   p: Player
 ): { can: boolean; why: string } {
   const user = gs.teams[gs.userTeam];
-  const payroll = Team.getWagesAmount({ gs, t: user });
+  const payroll = getWagesAmount({ gs, t: user });
 
   if (!gs.flags.openFreeSigningWindow) {
     return { can: false, why: "The signing window is close" };
@@ -196,7 +199,7 @@ export function canPlayerAcceptOffer(
 function signPlayer(p: Player, wage: number, length: number): SigningRecord {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
-  Team.signPlayer({ gs, t, p }, wage, length);
+  teamSignPlayer({ gs, t, p }, wage, length);
   return {
     when: toISODateString(gs.date),
     plId: p.id,

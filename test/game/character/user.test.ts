@@ -11,7 +11,7 @@ import {
 } from "../../../src/game/character/user";
 import * as _gs from "../../../src/game/game-state/game-state";
 import * as _p from "../../../src/game/character/player";
-import { Team } from "../../../src/game/character/team";
+import * as _t from "../../../src/game/character/team";
 jest.mock("../../../src/pages/util/router");
 jest.mock("../../../src/game/game-sim/sim-worker-interface");
 jest.mock("../../../src/game/game-sim/trade");
@@ -25,13 +25,15 @@ const mockTradeAcceptable = _trd.acceptable as jest.Mock;
 // eslint-disable-next-line no-import-assign
 _p.getScore = jest.fn();
 const mockPlrGetScore = _p.getScore as jest.Mock;
-Team.estimateGrowthRate = jest.fn();
-const mockEstimateGrowthRate = Team.estimateGrowthRate as jest.Mock;
+// @ts-ignore
+// eslint-disable-next-line no-import-assign
+_t.estimateGrowthRate = jest.fn();
+const mockEstimateGrowthRate = _t.estimateGrowthRate as jest.Mock;
 
 describe("improvabilityRatingSymbol()", () => {
   const gs = new _gs.GameState(new Date("2000-10-10"));
   const p = new _p.Player("am", gs.date);
-  const t = new Team("a");
+  const t = new _t.Team("a");
 
   test("should return C when a player growth rate is half MAX_GROWTH_RATE", () => {
     mockEstimateGrowthRate.mockImplementation(() => _p.MAX_GROWTH_RATE / 2);

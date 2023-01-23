@@ -200,7 +200,7 @@ describe("teamsSignFreeAgents()", () => {
 
   test("should only sign one player per team", () => {
     const st = _gs.GameState.init("ab".split(""));
-    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.teamsSignFreeAgents(st);
     expect(st.teams.a.playerIds.length).toBe(1);
     expect(st.teams.b.playerIds.length).toBe(1);
@@ -209,7 +209,7 @@ describe("teamsSignFreeAgents()", () => {
   test("should only sign free agents", () => {
     const st = _gs.GameState.init("ab".split(""));
     Object.values(st.contracts).forEach(
-      (c) => Math.random() > 0.6 && _t.Team.unSignPlayer(st, c)
+      (c) => Math.random() > 0.6 && _t.unSignPlayer(st, c)
     );
     const oldFree = getFreeAgents(st);
     _sm.teamsSignFreeAgents(st);
@@ -219,7 +219,7 @@ describe("teamsSignFreeAgents()", () => {
   test("when skipUser is true the user team shouldn't sign any player", () => {
     const st = _gs.GameState.init(["a", "b"]);
     st.userTeam = "a";
-    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.teamsSignFreeAgents(st, true);
     expect(st.teams[st.userTeam].playerIds.length).toBe(0);
   });
@@ -713,7 +713,7 @@ describe("handleSignings()", () => {
   test("should sign one new players per team when players are needed and the free signing window is open", () => {
     const st = _gs.GameState.init("abcd".split(""));
     st.flags.openFreeSigningWindow = true;
-    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.handleSignings(st);
     expect(st.teams.a.playerIds.length).toBe(1);
     expect(st.teams.b.playerIds.length).toBe(1);
@@ -722,7 +722,7 @@ describe("handleSignings()", () => {
   test("should not sign any players when the free signing window is closed", () => {
     const st = _gs.GameState.init("abcd".split(""));
     st.flags.openFreeSigningWindow = false;
-    Object.values(st.contracts).forEach((c) => _t.Team.unSignPlayer(st, c));
+    Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.handleSignings(st);
     expect(st.teams.a.playerIds.length).toBe(0);
     expect(st.teams.b.playerIds.length).toBe(0);

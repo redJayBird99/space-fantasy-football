@@ -5,7 +5,14 @@ import {
   PositionArea,
   wantedWage,
 } from "../character/player";
-import { Team, Contract, pickBest } from "../character/team";
+import {
+  Team,
+  Contract,
+  pickBest,
+  calcAppeal,
+  getWagesAmount,
+  signPlayer,
+} from "../character/team";
 import { Schedule, Match } from "../game-sim/tournament-scheduler";
 import {
   GameEvent,
@@ -455,9 +462,7 @@ function initTeams(gs: GameState, names: string[]): Team[] {
     const team = new Team(name);
     GameState.saveTeam(gs, team);
     const signPlayers = (pls: Player[]) =>
-      pls.forEach((p) =>
-        Team.signPlayer({ gs, t: team, p }, wantedWage(gs, p))
-      );
+      pls.forEach((p) => signPlayer({ gs, t: team, p }, wantedWage(gs, p)));
 
     const arg = { gs, t: team };
     signPlayers(pickBest(arg, createPlayers(gs, "goalkeeper", 4), 3));
@@ -486,13 +491,12 @@ function initGameEvents(gs: GameState): void {
 // and facilities expenses etc
 function initTeamsAppeal(gs: GameState): void {
   const ranking = Object.values(gs.teams).sort(
-    (a, b) =>
-      Team.getWagesAmount({ gs, t: b }) - Team.getWagesAmount({ gs, t: a })
+    (a, b) => getWagesAmount({ gs, t: b }) - getWagesAmount({ gs, t: a })
   );
   const facilities = Object.values(gs.teams).sort(
     (a, b) => b.finances.facilities - a.finances.facilities
   );
-  ranking.forEach((t) => (t.appeal = Team.calcAppeal(t, ranking, facilities)));
+  ranking.forEach((t) => (t.appeal = calcAppeal(t, ranking, facilities)));
 }
 
 export {

@@ -2,10 +2,10 @@ import { render, html, TemplateResult, nothing } from "lit-html";
 import {
   approachable,
   getAge,
+  getExpiringPlayers,
   getMacroSkill,
   macroSkills,
   Player,
-  Team,
 } from "../../game/game";
 import style from "./re-sign.css";
 import { skillData } from "../players/player-page";
@@ -64,7 +64,7 @@ class ReSign extends HTMLSFFGameElement {
 /** table the players re-signing request */
 function expiringPlayers(open: Negotiate): TemplateResult {
   const gs = window.$game.state!;
-  const expiring = Team.getExpiringPlayers({ gs, t: gs.teams[gs.userTeam] });
+  const expiring = getExpiringPlayers({ gs, t: gs.teams[gs.userTeam] });
 
   return html`
     <table>

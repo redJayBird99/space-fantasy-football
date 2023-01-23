@@ -6,6 +6,10 @@ import {
   MAX_TEAM_SIZE,
   sumWages,
   Team,
+  evaluatePlayer,
+  getWagesAmount,
+  getNotExpiringPlayers,
+  transferPlayer,
 } from "../character/team";
 import { GameState, toTradeRecord } from "../game-state/game-state";
 import { shuffle } from "../../util/generator";
@@ -23,7 +27,7 @@ function estimatePlayerVal(g: GsTmPl): number {
   const pAge = getAge(g.p, g.gs.date) + daysAge;
   // the penalty can't be too much aggressive otherwise would penalize too much the entire trade offer value
   const agePenalty = within(1 - (pAge - 29) / 33, 0.8, 1);
-  return Team.evaluatePlayer(g) * agePenalty;
+  return evaluatePlayer(g) * agePenalty;
 }
 
 /**
@@ -103,7 +107,7 @@ function offerAppeal({ gs }: GsTm, plsScores: number[]): number {
  * or it is reduced when exchanging the getting and leaving players
  */
 function affordable(g: GsTm): (get: Player[], give: Player[]) => boolean {
-  const payroll = Team.getWagesAmount(g);
+  const payroll = getWagesAmount(g);
 
   return (get, give) => {
     const newPayroll = payroll + sumWages(g.gs, get) - sumWages(g.gs, give);
@@ -144,7 +148,7 @@ function acceptable({ gs, t }: GsTm, get: Player[], give: Player[]): boolean {
 function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
   // ToFIX: this is the subset sum problem we uses a brute force solution (find combinations)
   // shuffle to make it undeterministic and slice for performance
-  const pls = shuffle(Team.getNotExpiringPlayers({ gs, t })).slice(0, 20);
+  const pls = shuffle(getNotExpiringPlayers({ gs, t })).slice(0, 20);
   const _affordable = affordable({ gs, t });
   const plsAppeal = new Map<Player, number>();
   pls.forEach((p) => plsAppeal.set(p, estimatePlayerVal({ gs, t, p })));
@@ -191,7 +195,7 @@ function findOffer({ gs, t }: GsTm, get: Player[]): Player[] {
  */
 function searchTrade({ gs, t }: GsTm, other: Team): Trade | void {
   // ToFIX it is a temp solution
-  const get = shuffle(Team.getNotExpiringPlayers({ gs, t: other })).slice(
+  const get = shuffle(getNotExpiringPlayers({ gs, t: other })).slice(
     0,
     Math.floor(MAX_EXCHANGE_SIZE * Math.random()) + 1
   );
@@ -211,7 +215,7 @@ function searchTrade({ gs, t }: GsTm, other: Team): Trade | void {
 function transferPlayers(gs: GameState, pls: Player[], to: Team): void {
   pls.forEach((p) => {
     const c = GameState.getContract(gs, p);
-    c && Team.transferPlayer(gs, c, to);
+    c && transferPlayer(gs, c, to);
   });
 }
 

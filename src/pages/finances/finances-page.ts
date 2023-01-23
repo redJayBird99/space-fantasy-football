@@ -11,6 +11,9 @@ import {
   Team,
   util,
   GameState,
+  getMonthlyExpenses,
+  getWagesAmount,
+  getNotExpiringPlayers,
 } from "../../game/game";
 import defineReSign from "./re-sign";
 import style from "./finances-page.css";
@@ -66,8 +69,8 @@ function main(team: string): TemplateResult {
 function teamFinances(t: Team): TemplateResult {
   const gs = window.$game.state!; // in game we always have a state
   const ts = { all: Object.values(gs.teams), t };
-  const mExpenses = t ? Team.getMonthlyExpenses({ gs, t }) : 0;
-  const wages = t ? Team.getWagesAmount({ gs, t }) : 0;
+  const mExpenses = t ? getMonthlyExpenses({ gs, t }) : 0;
+  const wages = t ? getWagesAmount({ gs, t }) : 0;
   const balance = (t.finances.revenue ?? 0) - mExpenses;
   const budget = finInfo(ts, "budget");
   const revenue = finInfo(ts, "revenue");
@@ -206,7 +209,7 @@ function teamGeneralInfo(ts: Teams): TemplateResult {
 /** table with all team players wages */
 function contractsTable(t: Team): TemplateResult {
   const gs = window.$game.state!;
-  const pls = Team.getNotExpiringPlayers({ gs, t });
+  const pls = getNotExpiringPlayers({ gs, t });
   const years = Array.from(
     { length: SEASONS },
     (_, i) => gs.date.getFullYear() + i

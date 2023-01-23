@@ -1,10 +1,10 @@
 import { html, render } from "lit-html";
 import {
+  getWagesAmount,
   MAX_WAGE,
   MIN_WAGE,
   Player,
   SALARY_CAP,
-  Team,
   user,
 } from "../../game/game";
 import { within } from "../../util/math";
@@ -27,7 +27,7 @@ class NegotiateContract extends HTMLElement {
   // this component is inside a modal we don't need to worry about stale references
   gs = window.$game.state!;
   user = this.gs.teams[this.gs.userTeam];
-  userPayroll = Team.getWagesAmount({ gs: this.gs, t: this.user });
+  userPayroll = getWagesAmount({ gs: this.gs, t: this.user });
   // passed by the caller component
   props?: {
     plr: Player;

@@ -16,7 +16,6 @@ import {
   getScore,
 } from "../character/player";
 import {
-  Team,
   MAX_SCOUTING_OFFSET,
   setFormation,
   MIN_TEAM_SIZE,
@@ -25,6 +24,13 @@ import {
   completeLineup,
   updateSquadNumber,
   updateCaptain,
+  calcAppeal,
+  updateFinances,
+  pickDraftPlayer,
+  signFreeAgent,
+  needPlayer,
+  renewExpiringContracts,
+  unSignPlayer,
 } from "../character/team";
 import { shuffle } from "../../util/generator";
 import { within } from "../../util/math";
@@ -361,14 +367,14 @@ function handleUpdateContracts(gs: GameState): EventRst {
 /** re-sign some expiring contract, expire all others and remove departures from the lineups */
 function handleRenewals(gs: GameState): EventRst {
   // TODO: check the auto re-sign option instead of a bool
-  renewExpiringContracts(gs, true);
+  teamsRenewExpiringContracts(gs, true);
   removeExpiredContracts(gs);
   Object.values(gs.teams).forEach((t) => removeLineupDepartures({ gs, t }));
   return { stop: endSimOnEvent.renewals ?? false, done: true };
 }
 
 function handleUpdateFinances(gs: GameState): EventRst {
-  Object.values(gs.teams).forEach((t) => Team.updateFinances({ gs, t }));
+  Object.values(gs.teams).forEach((t) => updateFinances({ gs, t }));
   enqueueUpdateFinancesEvent(gs);
   return { stop: endSimOnEvent.updateFinances ?? false, done: true };
 }
@@ -408,7 +414,7 @@ function handleRetire(gs: GameState): EventRst {
 
 function retirePlayer(gs: GameState, p: Player): void {
   const c = GameState.getContract(gs, p);
-  c && Team.unSignPlayer(gs, c);
+  c && unSignPlayer(gs, c);
   delete gs.players[p.id];
   gs.retirees[p.id] = { name: p.name };
 }
@@ -593,11 +599,11 @@ function updateContracts(gs: GameState): void {
  * every team try to re-sign expiring players according to their needs
  * @param skipUser when true the user team is skipped
  */
-function renewExpiringContracts(gs: GameState, skipUser = false): void {
+function teamsRenewExpiringContracts(gs: GameState, skipUser = false): void {
   const when = toISODateString(gs.date);
   Object.values(gs.teams).forEach((t) => {
     if (!skipUser || t.name !== gs.userTeam) {
-      Team.renewExpiringContracts({ gs, t }).forEach((p) =>
+      renewExpiringContracts({ gs, t }).forEach((p) =>
         gs.transactions.now.renewals.push({ team: t.name, plId: p.id, when })
       );
     }
@@ -607,7 +613,7 @@ function renewExpiringContracts(gs: GameState, skipUser = false): void {
 function removeExpiredContracts(gs: GameState): void {
   Object.values(gs.contracts).forEach((c) => {
     if (c.duration === 0) {
-      Team.unSignPlayer(gs, c);
+      unSignPlayer(gs, c);
     }
   });
 }
@@ -628,7 +634,7 @@ function updateTeamsAppeal(gs: GameState): void {
     (a, b) => b.finances.facilities - a.finances.facilities
   );
   ranking.forEach((t) => {
-    const newAppeal = Team.calcAppeal(t, ranking, facilities);
+    const newAppeal = calcAppeal(t, ranking, facilities);
     t.appeal += within(newAppeal - t.appeal, -1, 1);
   });
 }
@@ -706,12 +712,12 @@ function updateSkills(gs: GameState): void {
  * only if the team needs it, when the skipUser is true skip the user */
 function teamsSignFreeAgents(gs: GameState, skipUser = false): void {
   const teams = Object.values(gs.teams).filter(
-    (t) => (!skipUser || t.name !== gs.userTeam) && Team.needPlayer({ gs, t })
+    (t) => (!skipUser || t.name !== gs.userTeam) && needPlayer({ gs, t })
   );
   let free = Object.values(gs.players).filter((p) => p.team === "free agent");
 
   shuffle(teams).forEach((team) => {
-    const signed = Team.signFreeAgent({ gs, t: team }, free);
+    const signed = signFreeAgent({ gs, t: team }, free);
 
     if (signed) {
       free = free.filter((p) => p !== signed);
@@ -854,7 +860,7 @@ export function draftPlayer(gs: GameState, pick?: Player): void {
     : gs.drafts.now.picks.map((p) => gs.players[p.plId]);
   const n = gs.drafts.now.picked.length + 1;
   const tName = gs.drafts.now.lottery.shift()!;
-  const plr = Team.pickDraftPlayer({ gs, t: gs.teams[tName] }, players);
+  const plr = pickDraftPlayer({ gs, t: gs.teams[tName] }, players);
   const iPick = gs.drafts.now.picks.findIndex((p) => p.plId === plr.id);
   gs.drafts.now.picks.splice(iPick, 1);
   gs.drafts.now.picked.push({ team: tName, n, plId: plr.id });
@@ -972,7 +978,7 @@ export const exportedForTesting = {
   teamsSignFreeAgents,
   updateTeamsAppeal,
   updateTeamsScouting,
-  renewExpiringContracts,
+  renewExpiringContracts: teamsRenewExpiringContracts,
   removeExpiredContracts,
   enqueueSimRoundEvent,
   enqueueSkillUpdateEvent,

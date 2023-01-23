@@ -15,6 +15,7 @@ import {
   tradeRequirements,
   getAge,
   getMacroSkill,
+  getWagesAmount,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
@@ -409,7 +410,7 @@ function finance({ team, get, give }: TradeSide): TemplateResult {
   const gs = window.$game.state!;
   const incoming = sumWages(gs, get);
   const outgoing = sumWages(gs, give);
-  const wages = Team.getWagesAmount({ gs, t: team }) + incoming - outgoing;
+  const wages = getWagesAmount({ gs, t: team }) + incoming - outgoing;
   const capSpace = SALARY_CAP - wages;
   const nFm = new Intl.NumberFormat("en-GB");
   const color =

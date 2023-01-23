@@ -13,7 +13,7 @@ jest.mock("../../../src/pages/util/router");
 
 // guarantee findOffer
 const getSampleOffer = (gs: _gs.GameState, by: _t.Team, to: _t.Team) => {
-  const pls = _t.Team.getNotExpiringPlayers({ gs, t: to });
+  const pls = _t.getNotExpiringPlayers({ gs, t: to });
   let get = [pls[0], pls[1]];
   let offer = _tde.findOffer({ gs, t: by }, get);
 
@@ -29,8 +29,8 @@ describe("underMinTeamSize", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
-  const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-  const tm2Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 });
+  const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
+  const tm2Pls = _t.getNotExpiringPlayers({ gs: st, t: team2 });
 
   test("when stay over the min team size return false", () => {
     expect(_tde.underMinTeamSize(team, [tm2Pls[0]], [tm1Pls[0]])).toBe(false);
@@ -47,8 +47,8 @@ describe("overMaxTeamSize", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
-  const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-  const tm2Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 });
+  const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
+  const tm2Pls = _t.getNotExpiringPlayers({ gs: st, t: team2 });
 
   test("when stay under the max team size return false", () => {
     expect(_tde.overMaxTeamSize(team, [tm2Pls[0]], [tm1Pls[0]])).toBe(false);
@@ -67,50 +67,46 @@ describe("validTeamSize", () => {
   const team2 = st.teams.other;
 
   test("when is over the team max size but the team size is reduced return true", () => {
-    const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+    const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
       _gs.GameState.savePlayer(st, p);
-      _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+      _t.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     });
-    const gv = _t.Team.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
-    const gt = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 1);
+    const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
+    const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 1);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(true);
   });
 
   test("when is over the max team size return false", () => {
-    const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+    const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
       _gs.GameState.savePlayer(st, p);
-      _t.Team.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
+      _t.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     });
-    const gv = _t.Team.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
-    const gt = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 2);
+    const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
+    const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 2);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(false);
   });
 
   test("when is under the team min size but the team size is increased return true", () => {
-    const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+    const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
       .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
-      .forEach((p) =>
-        _t.Team.unSignPlayer(st, _gs.GameState.getContract(st, p)!)
-      );
-    const gv = _t.Team.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
-    const gt = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 2);
+      .forEach((p) => _t.unSignPlayer(st, _gs.GameState.getContract(st, p)!));
+    const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
+    const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 2);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(true);
   });
 
   test("when is under the team min size return false", () => {
-    const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
+    const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
       .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
-      .forEach((p) =>
-        _t.Team.unSignPlayer(st, _gs.GameState.getContract(st, p)!)
-      );
-    const gv = _t.Team.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
-    const gt = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 1);
+      .forEach((p) => _t.unSignPlayer(st, _gs.GameState.getContract(st, p)!));
+    const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
+    const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 1);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(false);
   });
 });
@@ -151,17 +147,17 @@ describe("transferPlayers", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
-  const mvPls = _t.Team.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 3);
+  const mvPls = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 3);
   _tde.transferPlayers(st, mvPls, team2);
 
   test("should move the players to the new team", () => {
-    expect(_t.Team.getNotExpiringPlayers({ gs: st, t: team2 })).toEqual(
+    expect(_t.getNotExpiringPlayers({ gs: st, t: team2 })).toEqual(
       expect.arrayContaining(mvPls)
     );
   });
 
   test("should remove the players from the old team", () => {
-    expect(_t.Team.getNotExpiringPlayers({ gs: st, t: team })).not.toEqual(
+    expect(_t.getNotExpiringPlayers({ gs: st, t: team })).not.toEqual(
       expect.arrayContaining(mvPls)
     );
   });
@@ -171,8 +167,8 @@ describe("affordable()", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
-  const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-  const tm2Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 });
+  const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
+  const tm2Pls = _t.getNotExpiringPlayers({ gs: st, t: team2 });
 
   describe("team payroll is over salary cap", () => {
     test("when get wages are greater than out wages should return false", () => {
@@ -215,8 +211,8 @@ describe("acceptable()", () => {
   const st = _gs.GameState.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
-  const tm1Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team });
-  const tm2Pls = _t.Team.getNotExpiringPlayers({ gs: st, t: team2 });
+  const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
+  const tm2Pls = _t.getNotExpiringPlayers({ gs: st, t: team2 });
 
   test("when get offer is an empty array should return false", () => {
     const give = tm1Pls.slice(0, 5);
@@ -290,10 +286,9 @@ describe("findOffer()", () => {
 
   test("when no offer was found return a empty array", () => {
     // assuming that the get offer is unmatchable
-    const get = _t.Team.getNotExpiringPlayers({ gs, t: team }).slice(
-      0,
-      _tde.MAX_EXCHANGE_SIZE
-    );
+    const get = _t
+      .getNotExpiringPlayers({ gs, t: team })
+      .slice(0, _tde.MAX_EXCHANGE_SIZE);
     get.forEach((p) => _u.setSkillsTo(p, _p.MAX_SKILL));
     expect(_tde.findOffer({ gs, t: team2 }, get)).toEqual([]);
   });
@@ -340,10 +335,10 @@ describe("findTrades and commitTrade", () => {
     test("the traded players should switch team", () => {
       trades.forEach((trade) => {
         const { side1, side2 } = trade;
-        expect(_t.Team.getNotExpiringPlayers({ gs, t: side2.by })).toEqual(
+        expect(_t.getNotExpiringPlayers({ gs, t: side2.by })).toEqual(
           expect.arrayContaining(side1.content)
         );
-        expect(_t.Team.getNotExpiringPlayers({ gs, t: side1.by })).toEqual(
+        expect(_t.getNotExpiringPlayers({ gs, t: side1.by })).toEqual(
           expect.arrayContaining(side2.content)
         );
       });
@@ -352,12 +347,14 @@ describe("findTrades and commitTrade", () => {
 });
 
 describe("estimatePlayerVal()", () => {
-  const original = _t.Team.evaluatePlayer;
+  const original = _t.evaluatePlayer;
   const gs = _gs.GameState.init(["a", "b"]);
   const t = gs.teams.a;
 
   test("when a player is younger than 29 years old shouldn't have a age penalty", () => {
-    _t.Team.evaluatePlayer = jest.fn(() => 50);
+    // @ts-ignore
+    // eslint-disable-next-line no-import-assign
+    _t.evaluatePlayer = jest.fn(() => 50);
     const p = new _p.Player("gk", gs.date, 25);
     expect(_trdTest.estimatePlayerVal({ gs, t, p })).toBe(50);
   });
@@ -365,6 +362,8 @@ describe("estimatePlayerVal()", () => {
   test("when a player is older than 29 years old a age penalty should be applied", () => {
     const p = new _p.Player("gk", gs.date, 30);
     expect(_trdTest.estimatePlayerVal({ gs, t, p })).toBeLessThan(50);
-    _t.Team.evaluatePlayer = original;
+    // @ts-ignore
+    // eslint-disable-next-line no-import-assign
+    _t.evaluatePlayer = original;
   });
 });
