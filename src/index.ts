@@ -1,6 +1,6 @@
 import appState from "./app-state/app-state";
 import script from "./util/script";
-import { GameStateHandle } from "./game/game-state/game-state";
+import { GameStateHandle } from "./game/game-state/game-handle";
 import initPages from "./pages/initPages";
 
 declare global {
