@@ -14,7 +14,13 @@ import {
   predictScore,
   getScore,
 } from "./player";
-import { GameState } from "../game-state/game-state";
+import {
+  deleteContract,
+  GameState,
+  getContract,
+  getTeamPlayers,
+  saveContract,
+} from "../game-state/game-state";
 import teamsJson from "../../asset/teams.json";
 import { hash } from "../../util/generator";
 import { within } from "../../util/math";
@@ -121,8 +127,8 @@ export function signPlayer(
   p.team = t.name;
   t.playerIds.includes(p.id) || t.playerIds.push(p.id);
   const contract = { teamName: g.t.name, playerId: g.p.id, wage, duration };
-  GameState.saveContract(gs, contract);
-  updateSquadNumber(GameState.getTeamPlayers(gs, t.name));
+  saveContract(gs, contract);
+  updateSquadNumber(getTeamPlayers(gs, t.name));
   return contract;
 }
 
@@ -134,7 +140,7 @@ export function unSignPlayer(gs: GameState, c: Contract): void {
   player.team = "free agent";
   delete player.number;
   team.playerIds = team.playerIds.filter((id) => id !== player.id);
-  GameState.deleteContract(gs, c);
+  deleteContract(gs, c);
 
   if (c.playerId === gs.teams[c.teamName].captain) {
     gs.teams[c.teamName].captain = undefined;
@@ -150,15 +156,15 @@ export function transferPlayer(gs: GameState, c: Contract, to: Team): void {
 
 /** returns players with contract duration of 0 */
 export function getExpiringPlayers({ gs, t }: GsTm): Player[] {
-  return GameState.getTeamPlayers(gs, t.name).filter(
-    (p) => GameState.getContract(gs, p)?.duration === 0
+  return getTeamPlayers(gs, t.name).filter(
+    (p) => getContract(gs, p)?.duration === 0
   );
 }
 
 // returns players with contract duration greater than 0
 export function getNotExpiringPlayers({ gs, t }: GsTm): Player[] {
-  return GameState.getTeamPlayers(gs, t.name).filter(
-    (p) => GameState.getContract(gs, p)?.duration !== 0
+  return getTeamPlayers(gs, t.name).filter(
+    (p) => getContract(gs, p)?.duration !== 0
   );
 }
 
@@ -388,7 +394,7 @@ export function getFormation(g: GsTm): Formation | void {
  * @returns sum of the players wages
  */
 function sumWages(gs: GameState, pls: Player[]): number {
-  return pls.reduce((a, p) => a + (GameState.getContract(gs, p)?.wage ?? 0), 0);
+  return pls.reduce((a, p) => a + (getContract(gs, p)?.wage ?? 0), 0);
 }
 
 // a rating of how match the player area is needed by a team with the given
@@ -523,7 +529,7 @@ export function updateSquadNumber(squad: Player[]) {
 
 /** set the team captain, only if it doesn't exist  */
 export function updateCaptain(gs: GameState, t: Team) {
-  t.captain = selectCaptain(gs, GameState.getTeamPlayers(gs, t.name))?.id;
+  t.captain = selectCaptain(gs, getTeamPlayers(gs, t.name))?.id;
 }
 
 /**

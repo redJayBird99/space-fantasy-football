@@ -10,10 +10,10 @@ import {
   minSalaryTax,
   Team,
   util,
-  GameState,
   getMonthlyExpenses,
   getWagesAmount,
   getNotExpiringPlayers,
+  getContract,
 } from "../../game/game";
 import defineReSign from "./re-sign";
 import style from "./finances-page.css";
@@ -232,7 +232,7 @@ function contractsTable(t: Team): TemplateResult {
 /** get the player row about its yearly wages table */
 function plWageRow(p: Player): TemplateResult {
   const gs = window.$game.state!;
-  const c = GameState.getContract(gs, p);
+  const c = getContract(gs, p);
   const plLink = `players/player?id=${p.id}`;
   const yWages = Array.from({ length: SEASONS }, (_, i) =>
     (c?.duration ?? 0) - i > 0 ? c?.wage : ""
@@ -248,7 +248,7 @@ function plWageRow(p: Player): TemplateResult {
 /** the summary rows about the wages expenses for the given players and the salary cap space */
 function wagesSummary(pls: Player[]): TemplateResult {
   const gs = window.$game.state!;
-  const cs = pls.map((p) => GameState.getContract(gs, p));
+  const cs = pls.map((p) => getContract(gs, p));
   const yearWage = (y: number, c: Contract | void) =>
     c && c.duration - y > 0 ? c.wage : 0;
   const plsWagesSum = Array.from({ length: SEASONS }, (_, i) =>

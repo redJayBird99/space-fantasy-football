@@ -1,5 +1,11 @@
 import { html, render, TemplateResult } from "lit-html";
-import { GameState, tour, table } from "../../game/game";
+import {
+  tour,
+  table,
+  getSeasonMatches,
+  getRound,
+  getNextRound,
+} from "../../game/game";
 import { daysBetween } from "../../util/math";
 import { HTMLSFFGameElement } from "../common/html-game-element";
 import style from "./dashboard.css";
@@ -88,9 +94,7 @@ class NextMatch extends HTMLSFFGameElement {
     const gs = window.$game.state!;
     const home = next?.home ?? "";
     const away = next?.away ?? "";
-    const matches = GameState.getSeasonMatches(gs, "now").filter(
-      (m) => m.result
-    );
+    const matches = getSeasonMatches(gs, "now").filter((m) => m.result);
     const homeHistory = matches.filter((m) => tour.playing(m, home)).slice(-5);
     const awayHistory = matches.filter((m) => tour.playing(m, away)).slice(-5);
     const days = next ? `(${daysBetween(next.date, gs.date)} days)` : "";
@@ -111,13 +115,11 @@ class NextMatch extends HTMLSFFGameElement {
 
   private renderUserNextMatch(): TemplateResult {
     const gs = window.$game.state!;
-    const rnd = GameState.getNextRound(gs);
+    const rnd = getNextRound(gs);
 
     if (rnd !== undefined) {
       return this.renderNextMarch(
-        GameState.getRound(gs, rnd, "now")?.find((m) =>
-          tour.playing(m, gs.userTeam)
-        )
+        getRound(gs, rnd, "now")?.find((m) => tour.playing(m, gs.userTeam))
       );
     }
 

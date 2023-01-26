@@ -20,12 +20,12 @@ async function sim10Years(st: _gs.GameState): Promise<_gs.GameState> {
     await _sm.process(st);
   }
 
-  return _gs.GameState.parse(JSON.stringify(st));
+  return _gs.parse(JSON.stringify(st));
 }
 
 // TODO: speed up this one will take a while...
 describe("simulate 10 seasons", () => {
-  const st = _gs.GameState.init();
+  const st = _gs.init();
   jest.setTimeout(20000);
   let cp = st;
   let pls: _pl.Player[] | undefined;

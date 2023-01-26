@@ -26,7 +26,7 @@ const getSampleOffer = (gs: _gs.GameState, by: _t.Team, to: _t.Team) => {
 };
 
 describe("underMinTeamSize", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
   const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
@@ -44,7 +44,7 @@ describe("underMinTeamSize", () => {
 });
 
 describe("overMaxTeamSize", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
   const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
@@ -62,7 +62,7 @@ describe("overMaxTeamSize", () => {
 });
 
 describe("validTeamSize", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
 
@@ -70,7 +70,7 @@ describe("validTeamSize", () => {
     const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
-      _gs.GameState.savePlayer(st, p);
+      _gs.savePlayer(st, p);
       _t.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     });
     const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
@@ -82,7 +82,7 @@ describe("validTeamSize", () => {
     const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     const pls = _u.rdmPlayers(_t.MAX_TEAM_SIZE - tm1Pls.length + 3);
     pls.forEach((p) => {
-      _gs.GameState.savePlayer(st, p);
+      _gs.savePlayer(st, p);
       _t.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
     });
     const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
@@ -94,7 +94,7 @@ describe("validTeamSize", () => {
     const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
       .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
-      .forEach((p) => _t.unSignPlayer(st, _gs.GameState.getContract(st, p)!));
+      .forEach((p) => _t.unSignPlayer(st, _gs.getContract(st, p)!));
     const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 1);
     const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 2);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(true);
@@ -104,7 +104,7 @@ describe("validTeamSize", () => {
     const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
     tm1Pls
       .slice(0, tm1Pls.length + 2 - _t.MIN_TEAM_SIZE)
-      .forEach((p) => _t.unSignPlayer(st, _gs.GameState.getContract(st, p)!));
+      .forEach((p) => _t.unSignPlayer(st, _gs.getContract(st, p)!));
     const gv = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 2);
     const gt = _t.getNotExpiringPlayers({ gs: st, t: team2 }).slice(0, 1);
     expect(_tde.validTeamSize(team, gt, gv)).toBe(false);
@@ -144,7 +144,7 @@ describe("skewMean", () => {
 });
 
 describe("transferPlayers", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
   const mvPls = _t.getNotExpiringPlayers({ gs: st, t: team }).slice(0, 3);
@@ -164,7 +164,7 @@ describe("transferPlayers", () => {
 });
 
 describe("affordable()", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
   const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
@@ -208,7 +208,7 @@ describe("affordable()", () => {
 });
 
 describe("acceptable()", () => {
-  const st = _gs.GameState.init(["someName", "other"]);
+  const st = _gs.init(["someName", "other"]);
   const team = st.teams.someName;
   const team2 = st.teams.other;
   const tm1Pls = _t.getNotExpiringPlayers({ gs: st, t: team });
@@ -256,13 +256,13 @@ describe("acceptable()", () => {
     const get = [tm2Pls[0]];
     _u.setSkillsTo(give[0], _p.MAX_SKILL);
     _u.setSkillsTo(get[0], _p.MIN_SKILL);
-    _gs.GameState.getContract(st, get[0])!.wage = _p.SALARY_CAP;
+    _gs.getContract(st, get[0])!.wage = _p.SALARY_CAP;
     expect(_tde.acceptable({ gs: st, t: team }, get, give)).toBe(false);
   });
 });
 
 describe("findOffer()", () => {
-  const gs = _gs.GameState.init(["someName", "other"]);
+  const gs = _gs.init(["someName", "other"]);
   const team = gs.teams.someName;
   const team2 = gs.teams.other;
   // for most of the tests we want a successful findOffer call
@@ -296,11 +296,11 @@ describe("findOffer()", () => {
 
 describe("searchTrade", () => {
   describe("when is able to find a trade", () => {
-    let gs = _gs.GameState.init(["a", "b"]);
+    let gs = _gs.init(["a", "b"]);
     let trade = _tde.searchTrade({ gs, t: gs.teams.a }, gs.teams.b);
 
     while (!trade) {
-      gs = _gs.GameState.init(["a", "b"]);
+      gs = _gs.init(["a", "b"]);
       // make them more probable to agree
       gs.teams.a.scoutOffset = 0;
       gs.teams.b.scoutOffset = 0;
@@ -322,12 +322,12 @@ describe("searchTrade", () => {
 
 describe("findTrades and commitTrade", () => {
   describe("when some trade was made", () => {
-    let gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
+    let gs = _gs.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
     let trades = _tde.findTrades(gs);
     trades.forEach((t) => _tde.commitTrade(gs, t));
 
     while (trades.length !== 0) {
-      gs = _gs.GameState.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
+      gs = _gs.init(["a", "b", "c", "d", "e", "f", "g", "h"]);
       trades = _tde.findTrades(gs);
       trades.forEach((t) => _tde.commitTrade(gs, t));
     }
@@ -348,7 +348,7 @@ describe("findTrades and commitTrade", () => {
 
 describe("estimatePlayerVal()", () => {
   const original = _t.evaluatePlayer;
-  const gs = _gs.GameState.init(["a", "b"]);
+  const gs = _gs.init(["a", "b"]);
   const t = gs.teams.a;
 
   test("when a player is younger than 29 years old shouldn't have a age penalty", () => {

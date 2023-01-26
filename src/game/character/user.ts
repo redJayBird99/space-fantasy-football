@@ -9,6 +9,7 @@ import {
   addMail,
   DraftPickRecord,
   GameState,
+  getSeasonMatches,
   SigningRecord,
   TradeRecord,
   TransRecord,
@@ -370,7 +371,7 @@ export async function updateFormation(gs: GameState, t: Team) {
 export function getNextFixtures() {
   const gs = window.$game.state!;
   const user = gs.userTeam;
-  return GameState.getSeasonMatches(gs, "now").filter(
+  return getSeasonMatches(gs, "now").filter(
     (m) => (m.away === user || m.home === user) && !m.result
   );
 }

@@ -37,47 +37,47 @@ describe("GameState handle contracts", () => {
   const plr = new _pl.Player("cf", startD);
   const c = { teamName: team.name, playerId: plr.id, duration: 12, wage: 5000 };
 
-  describe("GameState.saveContract()", () => {
+  describe("saveContract()", () => {
     test("should save a contract to the gameState", () => {
-      _gs.GameState.saveContract(st, c);
-      expect(_gs.GameState.getContract(st, plr)).toBeDefined();
+      _gs.saveContract(st, c);
+      expect(_gs.getContract(st, plr)).toBeDefined();
     });
   });
 
-  describe("GameState.deleteContract()", () => {
+  describe("deleteContract()", () => {
     test("should delete a contract to the gameState", () => {
-      _gs.GameState.saveContract(st, c);
-      _gs.GameState.deleteContract(st, c);
-      expect(_gs.GameState.getContract(st, plr)).not.toBeDefined();
+      _gs.saveContract(st, c);
+      _gs.deleteContract(st, c);
+      expect(_gs.getContract(st, plr)).not.toBeDefined();
     });
   });
 
-  describe("GameState.getContract()", () => {
+  describe("getContract()", () => {
     test("should get undefined when the player contract doesn't exists", () => {
-      expect(_gs.GameState.getContract(st, plr)).not.toBeDefined();
+      expect(_gs.getContract(st, plr)).not.toBeDefined();
     });
 
     test("should get the contract of the player when exists", () => {
-      _gs.GameState.saveContract(st, c);
-      expect(_gs.GameState.getContract(st, plr)).toBeDefined();
+      _gs.saveContract(st, c);
+      expect(_gs.getContract(st, plr)).toBeDefined();
     });
   });
 });
 
-describe("GameState.savePlayer()", () => {
+describe("savePlayer()", () => {
   const plr = new _pl.Player("cf", startD);
 
   test("should save the player on the gameState", () => {
-    _gs.GameState.savePlayer(st, plr);
+    _gs.savePlayer(st, plr);
     expect(st.players[plr.id]).toBeDefined();
   });
 });
 
-describe("GameState.saveTeam()", () => {
+describe("saveTeam()", () => {
   const team = new _tm.Team("next");
 
   test("should save the team on the gameState", () => {
-    _gs.GameState.saveTeam(st, team);
+    _gs.saveTeam(st, team);
     expect(st.teams[team.name]).toBeDefined();
   });
 });
@@ -136,32 +136,32 @@ describe("initTeams()", () => {
 
   test("should have at least 3 goalkeepers for each team", () => {
     _gs.initTeams(st, [teamNames[0]]);
-    const pls = _gs.GameState.getTeamPlayers(st, teamNames[0]);
+    const pls = _gs.getTeamPlayers(st, teamNames[0]);
     expect(pls.filter(plrInPosArea("goalkeeper")).length).toBeGreaterThan(2);
   });
 
   test("should have at least 7 defender for each team", () => {
     _gs.initTeams(st, [teamNames[0]]);
-    const pls = _gs.GameState.getTeamPlayers(st, teamNames[0]);
+    const pls = _gs.getTeamPlayers(st, teamNames[0]);
     expect(pls.filter(plrInPosArea("defender")).length).toBeGreaterThan(6);
   });
 
   test("should have at least 7 midfielder for each team", () => {
     _gs.initTeams(st, [teamNames[0]]);
-    const pls = _gs.GameState.getTeamPlayers(st, teamNames[0]);
+    const pls = _gs.getTeamPlayers(st, teamNames[0]);
     expect(pls.filter(plrInPosArea("midfielder")).length).toBeGreaterThan(6);
   });
 
   test("should have at least 5 forward for each team", () => {
     _gs.initTeams(st, [teamNames[0]]);
-    const pls = _gs.GameState.getTeamPlayers(st, teamNames[0]);
+    const pls = _gs.getTeamPlayers(st, teamNames[0]);
     expect(pls.filter(plrInPosArea("forward")).length).toBeGreaterThan(4);
   });
 
   test("should add a contract from every team player", () => {
     _gs.initTeams(st, [teamNames[0]]);
-    _gs.GameState.getTeamPlayers(st, teamNames[0]).forEach((p) => {
-      expect(_gs.GameState.getContract(st, p)).toBeDefined();
+    _gs.getTeamPlayers(st, teamNames[0]).forEach((p) => {
+      expect(_gs.getContract(st, p)).toBeDefined();
     });
   });
 });
@@ -204,7 +204,7 @@ describe("GameState.saveSchedule()", () => {
   const date = new Date(2010, 8, 1);
   const schedule = new Schedule(teamsJson.eng.names, date);
   const gState: _gs.GameState = new _gs.GameState(date);
-  _gs.GameState.saveSchedule(gState, schedule, "now");
+  _gs.saveSchedule(gState, schedule, "now");
 
   test("should save every match of the schedule in gameState.matches", () => {
     schedule.rounds.forEach((round) =>
@@ -269,25 +269,25 @@ describe("initGameEvents", () => {
   });
 });
 
-describe("GameState.getTeamPlayers()", () => {
+describe("getTeamPlayers()", () => {
   test("should return an array of players when the team exist", () => {
     _gs.initTeams(st, teamNames);
     teamNames.forEach((name) => {
-      const players = _gs.GameState.getTeamPlayers(st, name);
+      const players = _gs.getTeamPlayers(st, name);
       expect(players.length).toBeGreaterThan(0);
       expect(players.some((p) => !(p instanceof _pl.Player))).toBe(false);
     });
   });
 
   test("should return a empty array when the team doesn't exist", () => {
-    expect(_gs.GameState.getTeamPlayers(st, "no-name")).toEqual([]);
+    expect(_gs.getTeamPlayers(st, "no-name")).toEqual([]);
   });
 });
 
-describe("GameState.enqueueGameEvent()", () => {
+describe("enqueueGameEvent()", () => {
   test("should able to add a event to the queue when empty", () => {
     const evt: _sm.GameEvent = { date: startD, type: "simRound" };
-    _gs.GameState.enqueueGameEvent(st, evt);
+    _gs.enqueueGameEvent(st, evt);
     expect(st.eventQueue[0]).toEqual(evt);
   });
 
@@ -298,14 +298,14 @@ describe("GameState.enqueueGameEvent()", () => {
       { date: new Date(2021, 1, 1), type: "simRound" },
       { date: new Date(2022, 5, 23), type: "simRound" },
     ];
-    evts.forEach((e) => _gs.GameState.enqueueGameEvent(st, e));
+    evts.forEach((e) => _gs.enqueueGameEvent(st, e));
     evts = evts.sort((e1, e2) => e1.date.getTime() - e2.date.getTime());
     expect(st.eventQueue).toEqual(evts);
   });
 });
 
-describe("GameState.init()", () => {
-  const game = _gs.GameState.init();
+describe("init()", () => {
+  const game = _gs.init();
 
   test("should create a gameState with all team-names.json names", () => {
     expect(Object.keys(game.teams)).toEqual(
@@ -321,7 +321,7 @@ describe("GameState.init()", () => {
 
   test("for every team player there is a contract", () => {
     const teamPlayers = Object.keys(game.teams)
-      .map((name) => _gs.GameState.getTeamPlayers(game, name))
+      .map((name) => _gs.getTeamPlayers(game, name))
       .flat();
     teamPlayers.forEach((p) => expect(game.contracts[p.id]).toBeDefined());
   });
@@ -331,7 +331,7 @@ describe("GameState.init()", () => {
   });
 
   test("should not set userTeam when the team doesn't exist", () => {
-    const game = _gs.GameState.init(["fox", "cats"], "hawks");
+    const game = _gs.init(["fox", "cats"], "hawks");
     expect(game.userTeam).toBe("");
   });
 
@@ -353,39 +353,39 @@ describe("GameState.init()", () => {
 describe("GameState.getSeasonRounds", () => {
   test("should return all rounds of the season when it was scheduled", () => {
     const scd = new Schedule(teamNames, st.date);
-    _gs.GameState.saveSchedule(st, scd, "now");
-    expect(_gs.GameState.getSeasonRounds(st, "now")).toHaveLength(6);
+    _gs.saveSchedule(st, scd, "now");
+    expect(_gs.getSeasonRounds(st, "now")).toHaveLength(6);
   });
 
   test("should return nothing when there is no season schedule", () => {
-    expect(_gs.GameState.getSeasonRounds(st, "now")).toBeUndefined();
+    expect(_gs.getSeasonRounds(st, "now")).toBeUndefined();
   });
 });
 
-describe("GameState.getNextRound", () => {
+describe("getNextRound", () => {
   test("should return the closest next nth round in schedule", () => {
     const days7 = new Date(st.date);
     days7.setDate(days7.getDate() + 7);
     const rd1 = { type: "simRound", date: st.date, detail: { round: 3 } };
     const rd2 = { type: "simRound", date: days7, detail: { round: 4 } };
-    _gs.GameState.enqueueGameEvent(st, rd1 as _sm.GameEvent);
-    _gs.GameState.enqueueGameEvent(st, rd2 as _sm.GameEvent);
-    expect(_gs.GameState.getNextRound(st)).toBe(rd1.detail.round);
+    _gs.enqueueGameEvent(st, rd1 as _sm.GameEvent);
+    _gs.enqueueGameEvent(st, rd2 as _sm.GameEvent);
+    expect(_gs.getNextRound(st)).toBe(rd1.detail.round);
   });
 
   test("should return nothing when there is no round in schedule", () => {
-    expect(_gs.GameState.getNextRound(st)).toBeUndefined();
+    expect(_gs.getNextRound(st)).toBeUndefined();
   });
 });
 
-describe("GameState.getRound", () => {
+describe("getRound", () => {
   test("should return the nth round when exists", () => {
     const scd = new Schedule(teamNames, st.date);
-    _gs.GameState.saveSchedule(st, scd, "now");
-    expect(_gs.GameState.getRound(st, 1, "now")).toEqual(scd.rounds[1].matches);
+    _gs.saveSchedule(st, scd, "now");
+    expect(_gs.getRound(st, 1, "now")).toEqual(scd.rounds[1].matches);
   });
 
   test("should return nothing when the round doesn't exist", () => {
-    expect(_gs.GameState.getRound(st, 1, "now")).toBeUndefined();
+    expect(_gs.getRound(st, 1, "now")).toBeUndefined();
   });
 });

@@ -12,7 +12,6 @@ import {
   MacroSkill,
   MACRO_SKILLS,
   Player,
-  GameState,
   util,
   Formations,
   FORMATIONS,
@@ -26,6 +25,7 @@ import {
   Team,
   user,
   getMacroSkill,
+  getTeamPlayers,
 } from "../../game/game";
 import style from "./team-page.css";
 import { skillData } from "../players/player-page";
@@ -125,7 +125,7 @@ function teamMain(
   openUpdateLineup?: (id: string) => void
 ): TemplateResult | typeof nothing {
   const gs = window.$game.state!;
-  const pls = GameState.getTeamPlayers(gs, t.name);
+  const pls = getTeamPlayers(gs, t.name);
 
   // lazily filling empty spots (sometimes when not needed the formation is incomplete)
   if (

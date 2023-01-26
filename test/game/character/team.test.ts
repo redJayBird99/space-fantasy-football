@@ -16,11 +16,11 @@ jest.mock("../../../src/game/game-sim/sim-worker-interface");
 const mockBestAtPos = ((utl.bestAtPos as jest.Mock) = jest.fn());
 const mockBestWithSkill = ((utl.bestWithSkill as jest.Mock) = jest.fn());
 
-let st = _gs.GameState.init("abcd".split(""));
+let st = _gs.init("abcd".split(""));
 let team = st.teams.a;
 
 beforeEach(() => {
-  st = _gs.GameState.init("abcd".split(""));
+  st = _gs.init("abcd".split(""));
   team = st.teams.a;
   team.appeal = 5; // init it
 });
@@ -40,7 +40,7 @@ describe("signPlayer()", () => {
 
   test("should add the contract to the gameState", () => {
     const c = _t.signPlayer({ gs: st, t: team, p }, _p.MIN_WAGE);
-    expect(_gs.GameState.getContract(st, p)).toEqual(c);
+    expect(_gs.getContract(st, p)).toEqual(c);
   });
 
   test("when called twice shouldn't duplicate the player id stored", () => {
@@ -65,8 +65,8 @@ describe("unSignPlayer()", () => {
   const st = new _gs.GameState(new Date());
   const pl = new _p.Player("lm", new Date());
   const team = new _t.Team("Smokers");
-  _gs.GameState.saveTeam(st, team);
-  _gs.GameState.savePlayer(st, pl);
+  _gs.saveTeam(st, team);
+  _gs.savePlayer(st, pl);
   _t.unSignPlayer(st, _t.signPlayer({ gs: st, t: team, p: pl }, _p.MIN_WAGE));
 
   test("should remove the player id from the team", () => {
@@ -78,7 +78,7 @@ describe("unSignPlayer()", () => {
   });
 
   test("should remove the contract from the gameState", () => {
-    expect(_gs.GameState.getContract(st, pl)).not.toBeDefined();
+    expect(_gs.getContract(st, pl)).not.toBeDefined();
   });
 });
 
@@ -87,9 +87,9 @@ describe("transferPlayer()", () => {
   const p = new _p.Player("lm", new Date());
   const team = new _t.Team("old");
   const newTeam = new _t.Team("new");
-  _gs.GameState.saveTeam(gs, team);
-  _gs.GameState.saveTeam(gs, newTeam);
-  _gs.GameState.savePlayer(gs, p);
+  _gs.saveTeam(gs, team);
+  _gs.saveTeam(gs, newTeam);
+  _gs.savePlayer(gs, p);
   const c = _t.signPlayer({ gs, t: team, p }, _p.MIN_WAGE);
   _t.transferPlayer(gs, c, newTeam);
 
@@ -102,7 +102,7 @@ describe("transferPlayer()", () => {
   });
 
   test("the contract should have the new team name", () => {
-    expect(_gs.GameState.getContract(gs, p)?.teamName).toBe(newTeam.name);
+    expect(_gs.getContract(gs, p)?.teamName).toBe(newTeam.name);
   });
 
   test("the player team should be the new team", () => {
@@ -110,11 +110,11 @@ describe("transferPlayer()", () => {
   });
 
   test("the contract duration should be preserved", () => {
-    expect(_gs.GameState.getContract(gs, p)?.duration).toBe(c.duration);
+    expect(_gs.getContract(gs, p)?.duration).toBe(c.duration);
   });
 
   test("the contract wage should be preserved", () => {
-    expect(_gs.GameState.getContract(gs, p)?.wage).toBe(c.wage);
+    expect(_gs.getContract(gs, p)?.wage).toBe(c.wage);
   });
 });
 
@@ -197,7 +197,7 @@ describe("RatingAreaByNeed", () => {
 });
 
 describe("renewalProbability()", () => {
-  const st = _gs.GameState.init("abcd".split(""));
+  const st = _gs.init("abcd".split(""));
   st.popStats.meanScore = 62;
   st.popStats.standardDev = 5.5;
   const pl = new _p.Player("am", new Date(), 28);
@@ -343,7 +343,7 @@ describe("getExpiringPlayers()", () => {
   test("should return all expiring players", () => {
     _u.getContracts(st, team).forEach((c) => (c.duration = 0));
     expect(_t.getExpiringPlayers({ gs: st, t: team })).toEqual(
-      _gs.GameState.getTeamPlayers(st, team.name)
+      _gs.getTeamPlayers(st, team.name)
     );
   });
 
@@ -357,7 +357,7 @@ describe("getNotExpiringPlayers()", () => {
   test("should return all not expiring players", () => {
     _u.getContracts(st, team).forEach((c) => (c.duration = 1));
     expect(_t.getNotExpiringPlayers({ gs: st, t: team })).toEqual(
-      _gs.GameState.getTeamPlayers(st, team.name)
+      _gs.getTeamPlayers(st, team.name)
     );
   });
 
@@ -608,7 +608,7 @@ describe("needPlayer()", () => {
 });
 
 describe("signFreeAgent()", () => {
-  const st = _gs.GameState.init("abcd".split(""));
+  const st = _gs.init("abcd".split(""));
   const team = st.teams.a;
   const pls = _u
     .rdmPlayers(30)
@@ -617,7 +617,7 @@ describe("signFreeAgent()", () => {
         _t.evaluatePlayer({ t: team, p: b, gs: st }) -
         _t.evaluatePlayer({ t: team, p: a, gs: st })
     );
-  pls.forEach((p) => _gs.GameState.savePlayer(st, p));
+  pls.forEach((p) => _gs.savePlayer(st, p));
 
   test("should sign a player when can afford it and return it", () => {
     team.finances.revenue = 10 * _p.SALARY_CAP;
@@ -650,7 +650,7 @@ describe("pickDraftPlayer()", () => {
 
   test("the picked player should sign a 4 seasons contracts", () => {
     const sign = _t.pickDraftPlayer({ gs: st, t: team }, pls);
-    expect(_gs.GameState.getContract(st, sign)?.duration).toBe(4);
+    expect(_gs.getContract(st, sign)?.duration).toBe(4);
   });
 
   test("should the player with the highest score prediction", () => {
@@ -677,7 +677,7 @@ describe("updateFinances()", () => {
 });
 
 describe("calcAppeal()", () => {
-  const st = _gs.GameState.init();
+  const st = _gs.init();
   const teams = Object.values(st.teams);
   const first = teams[0];
   const last = teams[teams.length - 1];

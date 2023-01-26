@@ -1,6 +1,6 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { goTo } from "../util/router";
-import { db, GameState } from "../../game/game";
+import { db, parse as gsParse } from "../../game/game";
 import style from "./home.css";
 import teams from "../../asset/teams.json";
 import { forkMe } from "../common/fork-me";
@@ -190,7 +190,7 @@ class LoadFile extends HTMLElement {
 
   private openSave = (json: string): void => {
     // TODO check if state is a valid GameState
-    const gs = GameState.parse(json);
+    const gs = gsParse(json);
     const name = gs.name.substring(db.SAVES_PREFIX.length);
     const warning = `are you sure do you want to open this file?, any other autosave with the name ${name} will be overridden`;
 

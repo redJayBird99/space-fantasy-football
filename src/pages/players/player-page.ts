@@ -1,6 +1,5 @@
 import { render, html, TemplateResult, nothing } from "lit-html";
 import {
-  GameState,
   Player,
   MACRO_SKILLS,
   MacroSkill,
@@ -12,6 +11,7 @@ import {
   getHeightInCm,
   getMacroSkill,
   getSkill,
+  getContract,
 } from "../../game/game";
 import style from "./player-page.css";
 import pImg from "../../asset/player.svg";
@@ -74,7 +74,7 @@ function playerCtn(p: Player): TemplateResult {
 function playerBio(p: Player): TemplateResult {
   const gs = window.$game.state!;
   const t = gs.teams[gs.userTeam];
-  const c = GameState.getContract(window.$game.state!, p);
+  const c = getContract(window.$game.state!, p);
   const wage = new Intl.NumberFormat("en-GB").format(c?.wage ?? 0);
   const seasons = c?.duration;
   const bgColor = (c: string) => `background-color: ${c}`;

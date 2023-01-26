@@ -62,9 +62,7 @@ function setSkillsTo(p: _p.Player, v: number): void {
 }
 
 function getContracts(st: _gs.GameState, team: _t.Team): _t.Contract[] {
-  return _gs.GameState.getTeamPlayers(st, team.name).map(
-    (p) => _gs.GameState.getContract(st, p)!
-  );
+  return _gs.getTeamPlayers(st, team.name).map((p) => _gs.getContract(st, p)!);
 }
 
 /** keep track of the sorting position, by is the key and ascending the orientation */

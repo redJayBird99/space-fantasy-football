@@ -3,6 +3,11 @@ import {
   createPlayers,
   toTradeRecord,
   addMail,
+  getSeasonMatches,
+  saveSchedule,
+  getContract,
+  getTeamPlayers,
+  enqueueGameEvent,
 } from "../game-state/game-state";
 import { LeagueTable } from "../game-state/league-table";
 import { Schedule } from "./tournament-scheduler";
@@ -350,7 +355,7 @@ export function prepareSeasonStart(gs: GameState): void {
   // remove and resign the squad number every time a season start
   Object.values(gs.players).forEach((p) => delete p.number);
   Object.values(gs.teams).forEach((t) => {
-    updateSquadNumber(GameState.getTeamPlayers(gs, t.name));
+    updateSquadNumber(getTeamPlayers(gs, t.name));
     updateCaptain(gs, gs.teams[t.name]);
   });
 }
@@ -358,7 +363,7 @@ export function prepareSeasonStart(gs: GameState): void {
 /** update the contracts length and add re-signing requests for the user team */
 function handleUpdateContracts(gs: GameState): EventRst {
   updateContracts(gs);
-  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "renewals" });
+  enqueueGameEvent(gs, { date: new Date(gs.date), type: "renewals" });
   // return endSimOnEvent.updateContracts ?? false;
   // TODO: until auto re-sign flags is done we need always to stop here
   return { stop: true, done: true };
@@ -399,7 +404,7 @@ function handleRetiring(gs: GameState): EventRst {
   gs.retiring = Object.values(gs.players)
     .filter((p) => retire(p, gs.date))
     .map((p) => p.id);
-  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "retire" });
+  enqueueGameEvent(gs, { date: new Date(gs.date), type: "retire" });
   return { stop: endSimOnEvent.retiring ?? false, done: true };
 }
 
@@ -413,14 +418,14 @@ function handleRetire(gs: GameState): EventRst {
 }
 
 function retirePlayer(gs: GameState, p: Player): void {
-  const c = GameState.getContract(gs, p);
+  const c = getContract(gs, p);
   c && unSignPlayer(gs, c);
   delete gs.players[p.id];
   gs.retirees[p.id] = { name: p.name };
 }
 
 function handleDraftStart(gs: GameState): EventRst {
-  GameState.enqueueGameEvent(gs, { date: new Date(gs.date), type: "draft" });
+  enqueueGameEvent(gs, { date: new Date(gs.date), type: "draft" });
   return { stop: endSimOnEvent.draftStart ?? false, done: true };
 }
 
@@ -627,7 +632,7 @@ function simulateRound(gs: GameState, round: number): void {
 // change the teams appeal according to the season results (and maybe some facilities change).
 // the max magnitude change is of 1 point (the parameter should be stable over time)
 function updateTeamsAppeal(gs: GameState): void {
-  const ranking = new LeagueTable(GameState.getSeasonMatches(gs, "now"))
+  const ranking = new LeagueTable(getSeasonMatches(gs, "now"))
     .getSortedTable()
     .map((e) => gs.teams[e.teamName]);
   const facilities = Object.values(gs.teams).sort(
@@ -656,7 +661,7 @@ function updateTeamsScouting(gs: GameState): void {
 // enqueue in the gameState a new gameEvent for the given current season round if it exists
 function enqueueSimRoundEvent(gs: GameState, round: number): void {
   if (gs.schedules.now?.[round]) {
-    GameState.enqueueGameEvent(gs, {
+    enqueueGameEvent(gs, {
       date: gs.schedules.now[round].date,
       type: "simRound",
       detail: { round },
@@ -732,7 +737,7 @@ function teamsSignFreeAgents(gs: GameState, skipUser = false): void {
 export function enqueueSkillUpdateEvent(gs: GameState): void {
   const d = gs.date;
   const date = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-  GameState.enqueueGameEvent(gs, { date, type: "skillUpdate" });
+  enqueueGameEvent(gs, { date, type: "skillUpdate" });
 }
 
 /**
@@ -743,7 +748,7 @@ function enqueueSeasonEndEvent(gs: GameState): GameEvent {
   const year = gs.date.getFullYear() + 1;
   const date = new Date(year, SEASON_END_MONTH, SEASON_END_DATE);
   const evt: GameEvent = { date, type: "seasonEnd" };
-  GameState.enqueueGameEvent(gs, evt);
+  enqueueGameEvent(gs, evt);
   return evt;
 }
 
@@ -751,7 +756,7 @@ function enqueueSeasonEndEvent(gs: GameState): GameEvent {
 function enqueueSeasonStartEvent(gs: GameState): void {
   const y = gs.date.getFullYear();
   const date = new Date(y, SEASON_START_MONTH, SEASON_START_DATE);
-  GameState.enqueueGameEvent(gs, { date, type: "seasonStart" });
+  enqueueGameEvent(gs, { date, type: "seasonStart" });
 }
 
 /**
@@ -778,14 +783,14 @@ export function enqueueEventFor(
     return false;
   }
 
-  GameState.enqueueGameEvent(gs, { date, type: t });
+  enqueueGameEvent(gs, { date, type: t });
   return true;
 }
 
 // enqueues a updateFinances type GameEvent on gs.eventQueue for the last day of the next month
 function enqueueUpdateFinancesEvent(gs: GameState): void {
   const date = new Date(gs.date.getFullYear(), gs.date.getMonth() + 2, 0);
-  GameState.enqueueGameEvent(gs, { date, type: "updateFinances" });
+  enqueueGameEvent(gs, { date, type: "updateFinances" });
 }
 
 // save a new schedule for the current season to the gameState, should be called
@@ -803,7 +808,7 @@ function newSeasonSchedule(gs: GameState, teams: string[]): void {
 
   const daysToSunday = (7 - start.getDay()) % 7;
   start.setDate(start.getDate() + daysToSunday);
-  GameState.saveSchedule(gs, new Schedule(teams, start), "now");
+  saveSchedule(gs, new Schedule(teams, start), "now");
 }
 
 /**

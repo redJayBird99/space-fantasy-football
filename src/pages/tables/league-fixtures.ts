@@ -1,6 +1,6 @@
 import { html, nothing, render, TemplateResult } from "lit-html";
 import { ref } from "lit-html/directives/ref.js";
-import { tour, GameState } from "../../game/game";
+import { tour, getNextRound, getSeasonRounds } from "../../game/game";
 import { mainStyleSheet } from "../style-sheets";
 import style from "./league-fixtures.css";
 
@@ -34,8 +34,8 @@ class LeagueFixtures extends HTMLElement {
   };
 
   render(): void {
-    const shd = GameState.getSeasonRounds(window.$game.state!, "now");
-    const at = GameState.getNextRound(window.$game.state!);
+    const shd = getSeasonRounds(window.$game.state!, "now");
+    const at = getNextRound(window.$game.state!);
 
     render(
       html`

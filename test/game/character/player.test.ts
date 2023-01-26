@@ -385,7 +385,7 @@ describe("getHeightInCm()", () => {
 });
 
 describe("wantedWage()", () => {
-  const gs = _gs.GameState.init("ab".split(""));
+  const gs = _gs.init("ab".split(""));
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);
 
@@ -407,7 +407,7 @@ describe("wantedWage()", () => {
 });
 
 describe("approachable()", () => {
-  const gs = _gs.GameState.init("abcd".split(""));
+  const gs = _gs.init("abcd".split(""));
   const team = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
   const pls = Array.from(
@@ -457,7 +457,7 @@ describe("approachable()", () => {
 });
 
 describe("wageRequest()", () => {
-  const gs = _gs.GameState.init("ab".split(""));
+  const gs = _gs.init("ab".split(""));
   const t = gs.teams.a;
   const p = poss[Math.floor(Math.random() * poss.length)];
   const plr = new _pl.Player(p, new Date(), 28);

@@ -107,7 +107,7 @@ describe("getPlayerRatingSymbol()", () => {
 });
 
 describe("tradeOfferIsStillValid()", () => {
-  const gs = _gs.GameState.init(["a", "b"]);
+  const gs = _gs.init(["a", "b"]);
   gs.tradeOffers.push({
     when: "",
     sides: [
@@ -118,13 +118,13 @@ describe("tradeOfferIsStillValid()", () => {
   gs.flags.openTradeWindow = true;
 
   test("when the player are still available should return true", () => {
-    const mockGs = _gs.GameState.parse(JSON.stringify(gs));
+    const mockGs = _gs.parse(JSON.stringify(gs));
     (window.$game as any) = { state: mockGs };
     expect(tradeOfferIsStillValid(mockGs, mockGs.tradeOffers[0])).toBe(true);
   });
 
   test("when the player aren't available should return false", () => {
-    const mockGs = _gs.GameState.parse(JSON.stringify(gs));
+    const mockGs = _gs.parse(JSON.stringify(gs));
     mockGs.teams.a.playerIds = [];
     (window.$game as any) = { state: mockGs };
     expect(tradeOfferIsStillValid(mockGs, mockGs.tradeOffers[0])).toBe(false);
@@ -132,7 +132,7 @@ describe("tradeOfferIsStillValid()", () => {
 });
 
 describe("canTrade()", () => {
-  const gs = _gs.GameState.init(["a", "b"]);
+  const gs = _gs.init(["a", "b"]);
   gs.userTeam = "a";
   const user = gs.teams.a;
   const other = gs.teams.b;

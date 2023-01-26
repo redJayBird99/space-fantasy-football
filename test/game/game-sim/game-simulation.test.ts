@@ -175,31 +175,31 @@ describe("removeExpiredContracts()", () => {
 
   test("team shouldn't have expired player", () => {
     const pls = [
-      ..._gs.GameState.getTeamPlayers(st, "a"),
-      ..._gs.GameState.getTeamPlayers(st, "b"),
+      ..._gs.getTeamPlayers(st, "a"),
+      ..._gs.getTeamPlayers(st, "b"),
     ];
-    pls.forEach((p) => expect(_gs.GameState.getContract(st, p)).toBeDefined());
+    pls.forEach((p) => expect(_gs.getContract(st, p)).toBeDefined());
   });
 
   test("should set player.team to free agent for expired contract", () => {
     Object.values(st.players)
       .filter((p) => p.team !== "free agent")
       .forEach((p) => {
-        expect(_gs.GameState.getContract(st, p)).toBeDefined();
+        expect(_gs.getContract(st, p)).toBeDefined();
       });
   });
 });
 
 describe("teamsSignFreeAgents()", () => {
   test("shouldn't sign new players when not needed", () => {
-    const st = _gs.GameState.init("ab".split(""));
+    const st = _gs.init("ab".split(""));
     const oldFree = getFreeAgents(st);
     _sm.teamsSignFreeAgents(st);
     expect(getFreeAgents(st).length).toBe(oldFree.length);
   });
 
   test("should only sign one player per team", () => {
-    const st = _gs.GameState.init("ab".split(""));
+    const st = _gs.init("ab".split(""));
     Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.teamsSignFreeAgents(st);
     expect(st.teams.a.playerIds.length).toBe(1);
@@ -207,7 +207,7 @@ describe("teamsSignFreeAgents()", () => {
   });
 
   test("should only sign free agents", () => {
-    const st = _gs.GameState.init("ab".split(""));
+    const st = _gs.init("ab".split(""));
     Object.values(st.contracts).forEach(
       (c) => Math.random() > 0.6 && _t.unSignPlayer(st, c)
     );
@@ -217,7 +217,7 @@ describe("teamsSignFreeAgents()", () => {
   });
 
   test("when skipUser is true the user team shouldn't sign any player", () => {
-    const st = _gs.GameState.init(["a", "b"]);
+    const st = _gs.init(["a", "b"]);
     st.userTeam = "a";
     Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.teamsSignFreeAgents(st, true);
@@ -226,9 +226,9 @@ describe("teamsSignFreeAgents()", () => {
 });
 
 describe("updateTeamsAppeal()", () => {
-  const st = _gs.GameState.init();
+  const st = _gs.init();
   const old: _t.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
-  const table = new LeagueTable(_gs.GameState.getSeasonMatches(st, "now"))
+  const table = new LeagueTable(_gs.getSeasonMatches(st, "now"))
     .getSortedTable()
     .map((e) => e.teamName);
   _sm.updateTeamsAppeal(st);
@@ -263,7 +263,7 @@ describe("updateTeamsAppeal()", () => {
 });
 
 describe("updateTeamsScouting()", () => {
-  const st = _gs.GameState.init();
+  const st = _gs.init();
   const old: _t.Team[] = JSON.parse(JSON.stringify(Object.values(st.teams)));
   _sm.updateTeamsScouting(st);
 
@@ -441,7 +441,7 @@ describe("handleSkillUpdate()", () => {
   });
 
   test("should update the population stats", () => {
-    _gs.GameState.savePlayer(st, new _pl.Player("am", new Date(), 18));
+    _gs.savePlayer(st, new _pl.Player("am", new Date(), 18));
     const old = getPopStats(Object.values(st.players));
     st.popStats = old;
     _sm.handleSkillUpdate(st);
@@ -566,7 +566,7 @@ describe("handleRetiring()", () => {
     .filter((_, i) => i % 3 === 0)
     .map((p) => p.id);
   st.retiring = retiring;
-  const gs = _gs.GameState.parse(JSON.stringify(st));
+  const gs = _gs.parse(JSON.stringify(st));
   _sm.handleRetire(gs);
 
   test("should remove all retiring players from the game.players", () => {
@@ -583,12 +583,12 @@ describe("handleRetiring()", () => {
 });
 
 describe("handleDraft()", () => {
-  const mockSt = _gs.GameState.parse(JSON.stringify(st));
+  const mockSt = _gs.parse(JSON.stringify(st));
   _gs.initTeams(mockSt, ["a", "b", "c", "d"]);
   mockSt.eventQueue = [{ date: endD, type: "draftStart" }];
 
   test("every team should sign one players", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    const gs = _gs.parse(JSON.stringify(mockSt));
     const teams = Object.values(gs.teams);
     const cp = JSON.parse(JSON.stringify(teams));
     _sm.prepareDraft(gs); // we need to create the players
@@ -599,7 +599,7 @@ describe("handleDraft()", () => {
   });
 
   test("should stop on the user team when one exists", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    const gs = _gs.parse(JSON.stringify(mockSt));
     _sm.prepareDraft(gs); // we need to create the players
     const user = (gs.userTeam = gs.drafts.now.lottery[2]);
     _sm.handleDraft(gs);
@@ -607,7 +607,7 @@ describe("handleDraft()", () => {
   });
 
   test("after the draft no picks should draftable anymore", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mockSt));
+    const gs = _gs.parse(JSON.stringify(mockSt));
     _sm.prepareDraft(gs); // we need to create the players
     const picks = gs.drafts.now.picks.map((p) => gs.players[p.plId]);
     _sm.handleDraft(gs);
@@ -616,7 +616,7 @@ describe("handleDraft()", () => {
 });
 
 describe("handleUpdateContracts()", () => {
-  const st = _gs.GameState.init("ab".split(""));
+  const st = _gs.init("ab".split(""));
   const cts = JSON.parse(JSON.stringify(st.contracts));
   st.userTeam = "a";
   _sm.handleUpdateContracts(st);
@@ -630,7 +630,7 @@ describe("handleUpdateContracts()", () => {
 });
 
 describe("handleRenewals()", () => {
-  const st = _gs.GameState.init("abcd".split(""));
+  const st = _gs.init("abcd".split(""));
   const cts = Object.values(st.contracts);
   cts.forEach((c) => (c.duration = 0));
   _sm.handleRenewals(st);
@@ -693,7 +693,7 @@ describe("handleSignings()", () => {
       st.flags.openFreeSigningWindow = true;
       const start = new Date(endD);
       start.setMonth(start.getMonth() + 1);
-      _gs.GameState.enqueueGameEvent(st, { date: start, type: "seasonStart" });
+      _gs.enqueueGameEvent(st, { date: start, type: "seasonStart" });
       _sm.handleSignings(st);
       expect(
         st.eventQueue.find((e) => e.type === "signings")?.date.getTime()
@@ -711,7 +711,7 @@ describe("handleSignings()", () => {
   });
 
   test("should sign one new players per team when players are needed and the free signing window is open", () => {
-    const st = _gs.GameState.init("abcd".split(""));
+    const st = _gs.init("abcd".split(""));
     st.flags.openFreeSigningWindow = true;
     Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.handleSignings(st);
@@ -720,7 +720,7 @@ describe("handleSignings()", () => {
   });
 
   test("should not sign any players when the free signing window is closed", () => {
-    const st = _gs.GameState.init("abcd".split(""));
+    const st = _gs.init("abcd".split(""));
     st.flags.openFreeSigningWindow = false;
     Object.values(st.contracts).forEach((c) => _t.unSignPlayer(st, c));
     _sm.handleSignings(st);
@@ -789,7 +789,7 @@ describe("handleTrade", () => {
 
     test("should not trade players", () => {
       // cSpell:ignore abcdefghijklmnopqrst
-      const st = _gs.GameState.init("abcdefghijklmnopqrst".split(""));
+      const st = _gs.init("abcdefghijklmnopqrst".split(""));
       st.flags.openTradeWindow = false;
       const old = Object.values(st.teams).map((t) => t.playerIds);
       _sm.handleTrade(st);
@@ -807,7 +807,7 @@ describe("handleTrade", () => {
     });
 
     test("should be able to trade players", () => {
-      const st = _gs.GameState.init("abcdefghijklmnopqrst".split(""));
+      const st = _gs.init("abcdefghijklmnopqrst".split(""));
       st.flags.openTradeWindow = true;
       const old = Object.values(st.teams).map((t) => t.playerIds);
 
@@ -910,7 +910,7 @@ describe("simulate()", () => {
   const teams = ["a", "b", "c", "d"];
 
   test("should run until an event stop it", () => {
-    const st = _gs.GameState.init(teams);
+    const st = _gs.init(teams);
     const start = st.date.getTime();
     return new Promise<_gs.GameState>((resolve) => {
       _sm.simulate(
@@ -922,7 +922,7 @@ describe("simulate()", () => {
   });
 
   test("the onEnd callback should be called after the simulation was ended", () => {
-    const st = _gs.GameState.init(teams);
+    const st = _gs.init(teams);
     return new Promise<_gs.GameState>((resolve) => {
       _sm.simulate(
         st,
@@ -934,7 +934,7 @@ describe("simulate()", () => {
   });
 
   test("should not elapse more than the given until", () => {
-    const st = _gs.GameState.init(teams);
+    const st = _gs.init(teams);
     const start = st.date.getTime();
 
     return new Promise<_gs.GameState>((resolve) => {
@@ -952,7 +952,7 @@ describe("simulate()", () => {
   });
 
   test("when the returned function is called should stop the simulation", () => {
-    const st = _gs.GameState.init(teams);
+    const st = _gs.init(teams);
     const start = st.date.getTime();
 
     return new Promise<_gs.GameState>((resolve) => {
@@ -969,7 +969,7 @@ describe("simulate()", () => {
   });
 
   test("an ended simulation returned function should not be able to stop a new simulation", async () => {
-    const st = _gs.GameState.init(teams);
+    const st = _gs.init(teams);
     let stop: ReturnType<typeof _sm.simulate> | undefined;
 
     let gs = await new Promise<_gs.GameState>((resolve) => {
@@ -999,12 +999,12 @@ describe("simulate()", () => {
 });
 
 describe("prepareDraft()", () => {
-  const mocksSt = _gs.GameState.parse(JSON.stringify(st));
+  const mocksSt = _gs.parse(JSON.stringify(st));
   mocksSt.drafts = { now: { when: "", picks: [], picked: [], lottery: [] } };
   _gs.initTeams(mocksSt, ["a", "b", "c", "d"]);
 
   test("should fill the draft properties when a draft event is enqueued", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    const gs = _gs.parse(JSON.stringify(mocksSt));
     gs.eventQueue.push({ date: endD, type: "draftStart" });
     _sm.prepareDraft(gs);
     expect(gs.drafts.now.picks.length).toBeGreaterThan(0);
@@ -1013,7 +1013,7 @@ describe("prepareDraft()", () => {
   });
 
   test("should not modify the draft property if a draft event isn't enqueued", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    const gs = _gs.parse(JSON.stringify(mocksSt));
     delete gs.drafts.now;
     _sm.prepareDraft(gs);
     expect(gs.drafts.now).toBeUndefined();
@@ -1021,13 +1021,13 @@ describe("prepareDraft()", () => {
 });
 
 describe("draftPlayer()", () => {
-  const mocksSt = _gs.GameState.parse(JSON.stringify(st));
+  const mocksSt = _gs.parse(JSON.stringify(st));
   mocksSt.drafts = { now: { when: "", picks: [], picked: [], lottery: [] } };
   mocksSt.eventQueue.push({ date: endD, type: "draftStart" });
   _gs.initTeams(mocksSt, ["a", "b", "c", "d"]);
 
   test("the first of the lottery should pick one draftable player and be removed", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    const gs = _gs.parse(JSON.stringify(mocksSt));
     _sm.prepareDraft(gs);
     const first = gs.drafts.now.lottery[0];
     draftPlayer(gs);
@@ -1037,7 +1037,7 @@ describe("draftPlayer()", () => {
   });
 
   test("when a pick is given that one should be drafted and removed from the picks", () => {
-    const gs = _gs.GameState.parse(JSON.stringify(mocksSt));
+    const gs = _gs.parse(JSON.stringify(mocksSt));
     _sm.prepareDraft(gs);
     const p = gs.players[gs.drafts.now.picks[0].plId];
     draftPlayer(gs, p);
@@ -1047,7 +1047,7 @@ describe("draftPlayer()", () => {
 });
 
 describe("updateRejections", () => {
-  const st = _gs.GameState.init(["a", "b", "c", "d"], "a");
+  const st = _gs.init(["a", "b", "c", "d"], "a");
   const fn = _pl.approachable;
 
   test("some players should be added to the rejections list", () => {
@@ -1091,7 +1091,7 @@ describe("recoverInjuredPlayers", () => {
 
 describe("InjurePlayers", () => {
   _gs.initTeams(st, ["a", "b"]);
-  const mockGs = _gs.GameState.parse(JSON.stringify(st));
+  const mockGs = _gs.parse(JSON.stringify(st));
 
   for (let i = 0; i < 4; i++) {
     _sm.injurePlayers(mockGs);

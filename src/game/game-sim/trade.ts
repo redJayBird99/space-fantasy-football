@@ -11,7 +11,11 @@ import {
   getNotExpiringPlayers,
   transferPlayer,
 } from "../character/team";
-import { GameState, toTradeRecord } from "../game-state/game-state";
+import {
+  GameState,
+  getContract,
+  toTradeRecord,
+} from "../game-state/game-state";
 import { shuffle } from "../../util/generator";
 import { dayFromLastBirthday, dist, within } from "../../util/math";
 
@@ -214,7 +218,7 @@ function searchTrade({ gs, t }: GsTm, other: Team): Trade | void {
  */
 function transferPlayers(gs: GameState, pls: Player[], to: Team): void {
   pls.forEach((p) => {
-    const c = GameState.getContract(gs, p);
+    const c = getContract(gs, p);
     c && transferPlayer(gs, c, to);
   });
 }

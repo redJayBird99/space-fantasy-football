@@ -1,4 +1,4 @@
-import { GameState, table } from "../../game/game";
+import { getSeasonMatches, table } from "../../game/game";
 import { html, render, TemplateResult } from "lit-html";
 import style from "./league-table.css";
 import { goLink } from "../util/go-link";
@@ -103,9 +103,7 @@ class LeagueTable extends HTMLElement {
         <td>${i + 1}</td>
         ${this.renderData(e)}
       </tr>`;
-    return new table.LeagueTable(
-      GameState.getSeasonMatches(window.$game.state!, season)
-    )
+    return new table.LeagueTable(getSeasonMatches(window.$game.state!, season))
       .getSortedTable()
       .map(renderRow);
   }

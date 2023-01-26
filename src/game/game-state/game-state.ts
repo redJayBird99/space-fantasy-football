@@ -117,128 +117,135 @@ class GameState {
     this.name = name;
     this.date = new Date(date.getTime());
   }
+}
 
-  /**
-   * init a new game state filling it with players, team and all the necessary,
-   * the returned state is not complete right away, some not essential data is
-   * added asynchronously (formations)
-   * not essential data don't get saved in the JSON file
-   * @param teams part of the game
-   * @param uTeam the user team name
-   * @param gName the game name
-   * @param onComplete called when the game state is fully complete
-   * @returns a new not complete game state util onComplete is called
-   */
-  static init(
-    teams = Object.keys(teamsJson),
-    uTeam = "",
-    gName = "",
-    onComplete?: () => unknown
-  ): GameState {
-    const s = new GameState(
-      new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR),
-      teams.find((t) => t === uTeam) ? uTeam : "",
-      gName
-    );
-    initTeams(s, teams);
-    initGameEvents(s);
-    initTeamsAppeal(s);
-    s.mails = [welcome(uTeam, s.date)];
-    s.popStats = getPopStats(Object.values(s.players));
-    setNewFormations(s).then(() => onComplete); // no need to wait for not essential data
-    // NOTE: rejections isn't inited because most of the starting free agent aren't great...
-    return s;
-  }
+/**
+ * init a new game state filling it with players, team and all the necessary,
+ * the returned state is not complete right away, some not essential data is
+ * added asynchronously (formations)
+ * not essential data don't get saved in the JSON file
+ * @param teams part of the game
+ * @param uTeam the user team name
+ * @param gName the game name
+ * @param onComplete called when the game state is fully complete
+ * @returns a new not complete game state util onComplete is called
+ */
+export function init(
+  teams = Object.keys(teamsJson),
+  uTeam = "",
+  gName = "",
+  onComplete?: () => unknown
+): GameState {
+  const s = new GameState(
+    new Date(new Date().getFullYear(), INIT_MONTH, INIT_DATE, INIT_HOUR),
+    teams.find((t) => t === uTeam) ? uTeam : "",
+    gName
+  );
+  initTeams(s, teams);
+  initGameEvents(s);
+  initTeamsAppeal(s);
+  s.mails = [welcome(uTeam, s.date)];
+  s.popStats = getPopStats(Object.values(s.players));
+  setNewFormations(s).then(() => onComplete); // no need to wait for not essential data
+  // NOTE: rejections isn't inited because most of the starting free agent aren't great...
+  return s;
+}
 
-  // rehydrate the given gameState JSON
-  static parse(gameState: string): GameState {
-    return JSON.parse(gameState, (k, v) => (k === "date" ? new Date(v) : v));
-  }
+// rehydrate the given gameState JSON
+export function parse(gameState: string): GameState {
+  return JSON.parse(gameState, (k, v) => (k === "date" ? new Date(v) : v));
+}
 
-  // add a new game event preserving the order by date of the queue
-  static enqueueGameEvent(s: GameState, e: GameEvent): void {
-    // TODO: use binary search or a priority queue...
-    const findOlder = (evt: GameEvent) => evt.date.getTime() > e.date.getTime();
-    const i = s.eventQueue.findIndex(findOlder);
-    i !== -1 ? s.eventQueue.splice(i, 0, e) : s.eventQueue.push(e);
-  }
+// add a new game event preserving the order by date of the queue
+export function enqueueGameEvent(s: GameState, e: GameEvent): void {
+  // TODO: use binary search or a priority queue...
+  const findOlder = (evt: GameEvent) => evt.date.getTime() > e.date.getTime();
+  const i = s.eventQueue.findIndex(findOlder);
+  i !== -1 ? s.eventQueue.splice(i, 0, e) : s.eventQueue.push(e);
+}
 
-  // get all team players or an empty array when the then doesn't exist
-  static getTeamPlayers(s: GameState, team: string): Player[] {
-    return s.teams[team]?.playerIds.map((id) => s.players[id]) ?? [];
-  }
+// get all team players or an empty array when the then doesn't exist
+export function getTeamPlayers(s: GameState, team: string): Player[] {
+  return s.teams[team]?.playerIds.map((id) => s.players[id]) ?? [];
+}
 
-  static saveContract(s: GameState, c: Contract): void {
-    s.contracts[c.playerId] = c;
-  }
+export function saveContract(s: GameState, c: Contract): void {
+  s.contracts[c.playerId] = c;
+}
 
-  static deleteContract(s: GameState, c: Contract): void {
-    delete s.contracts[c.playerId];
-  }
+export function deleteContract(s: GameState, c: Contract): void {
+  delete s.contracts[c.playerId];
+}
 
-  static getContract(s: GameState, p: Player): Contract | void {
-    return s.contracts[p.id];
-  }
+export function getContract(s: GameState, p: Player): Contract | void {
+  return s.contracts[p.id];
+}
 
-  // overrides the old player contract
-  static savePlayer(s: GameState, p: Player): void {
-    s.players[p.id] = p;
-  }
+// overrides the old player contract
+export function savePlayer(s: GameState, p: Player): void {
+  s.players[p.id] = p;
+}
 
-  static saveTeam(s: GameState, t: Team): void {
-    s.teams[t.name] = t;
-  }
+export function saveTeam(s: GameState, t: Team): void {
+  s.teams[t.name] = t;
+}
 
-  /**
-   * the saved schedule is flatten in two object schedules and matches
-   * key is used as index for the schedule, for the current season use the "now" as key
-   */
-  static saveSchedule(s: GameState, scd: Schedule, key: string): void {
-    s.schedules[key] = [];
+/**
+ * the saved schedule is flatten in two object schedules and matches
+ * key is used as index for the schedule, for the current season use the "now" as key
+ */
+export function saveSchedule(s: GameState, scd: Schedule, key: string): void {
+  s.schedules[key] = [];
 
-    scd.rounds.forEach((round) => {
-      s.schedules[key].push({
-        date: round.date,
-        matchIds: round.matches.map((m) => m.id),
-      });
-
-      round.matches.forEach((m) => {
-        s.matches[m.id] = m;
-      });
+  scd.rounds.forEach((round) => {
+    s.schedules[key].push({
+      date: round.date,
+      matchIds: round.matches.map((m) => m.id),
     });
-  }
 
-  /**
-   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
-   * @returns all the round of the given season
-   */
-  static getSeasonRounds(s: GameState, season: string): Match[][] | void {
-    return s.schedules[season]?.map((rnd) =>
-      rnd.matchIds.map((id) => s.matches[id])
-    );
-  }
+    round.matches.forEach((m) => {
+      s.matches[m.id] = m;
+    });
+  });
+}
 
-  /** get the next round (0 included) of the current season */
-  static getNextRound(s: GameState): number | void {
-    return s.eventQueue.find((e: GameEvent) => e.type === "simRound")?.detail
-      ?.round;
-  }
+/**
+ * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+ * @returns all the round of the given season
+ */
+export function getSeasonRounds(
+  s: GameState,
+  season: string
+): Match[][] | void {
+  return s.schedules[season]?.map((rnd) =>
+    rnd.matchIds.map((id) => s.matches[id])
+  );
+}
 
-  /**
-   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
-   * @returns the n round of the the current season
-   */
-  static getRound(s: GameState, n: number, season: string): Match[] | void {
-    return s.schedules?.[season]?.[n].matchIds.map((id) => s.matches[id]);
-  }
+/** get the next round (0 included) of the current season */
+export function getNextRound(s: GameState): number | void {
+  return s.eventQueue.find((e: GameEvent) => e.type === "simRound")?.detail
+    ?.round;
+}
 
-  /**
-   * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
-   * @returns all the matches of the given season (in order) or an empty array otherwise
-   */
-  static getSeasonMatches(s: GameState, season: string): Match[] {
-    return GameState.getSeasonRounds(s, season)?.flat() ?? [];
-  }
+/**
+ * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+ * @returns the n round of the the current season
+ */
+export function getRound(
+  s: GameState,
+  n: number,
+  season: string
+): Match[] | void {
+  return s.schedules?.[season]?.[n].matchIds.map((id) => s.matches[id]);
+}
+
+/**
+ * @param season key for the current seasons: "now" any other season key: {startYear}-{endYear}
+ * @returns all the matches of the given season (in order) or an empty array otherwise
+ */
+export function getSeasonMatches(s: GameState, season: string): Match[] {
+  return getSeasonRounds(s, season)?.flat() ?? [];
 }
 
 /** convert the given trade to a tradeRecord */
@@ -274,7 +281,7 @@ function createPlayers(
 ): Player[] {
   return Array.from({ length: n }, () => {
     const p = createPlayerAt(s.date, at, genAge ? genAge() : undefined);
-    GameState.savePlayer(s, p);
+    savePlayer(s, p);
     return p;
   });
 }
@@ -284,7 +291,7 @@ function createPlayers(
 function initTeams(gs: GameState, names: string[]): Team[] {
   return names.map((name) => {
     const team = new Team(name);
-    GameState.saveTeam(gs, team);
+    saveTeam(gs, team);
     const signPlayers = (pls: Player[]) =>
       pls.forEach((p) => signPlayer({ gs, t: team, p }, wantedWage(gs, p)));
 
@@ -305,7 +312,7 @@ function initGameEvents(gs: GameState): void {
   prepareSeasonStart(gs);
   enqueueSkillUpdateEvent(gs);
   enqueueEventFor(gs, gs.date, "injuriesUpdate", { days: 1 });
-  GameState.enqueueGameEvent(gs, {
+  enqueueGameEvent(gs, {
     date: new Date(gs.date.getFullYear(), gs.date.getMonth() + 1, 0),
     type: "updateFinances",
   });

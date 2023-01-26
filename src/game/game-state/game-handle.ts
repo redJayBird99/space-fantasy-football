@@ -1,5 +1,5 @@
 import { onStateUpdate, setNewFormations } from "../game-sim/game-simulation";
-import { GameState } from "./game-state";
+import { GameState, init as gsInit } from "./game-state";
 import { sendSyncUpdatedGame } from "./game-sync";
 import * as db from "./game-db";
 
@@ -92,7 +92,7 @@ export class GameStateHandle {
 
   /** init a new gameSate and try to save it on the db */
   newGame(userTeam?: string, gameName?: string): void {
-    this.state = GameState.init(
+    this.state = gsInit(
       undefined,
       userTeam,
       gameName,

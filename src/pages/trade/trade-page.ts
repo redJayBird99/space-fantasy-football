@@ -16,6 +16,7 @@ import {
   getAge,
   getMacroSkill,
   getWagesAmount,
+  getContract,
 } from "../../game/game";
 import { goLink } from "../util/go-link";
 import style from "./trade-page.css";
@@ -496,7 +497,7 @@ function player(
 /** render bio and some financial info about the give player */
 function playerInfo(p: Player): TemplateResult {
   const gs = window.$game.state!;
-  const c = GameState.getContract(gs, p);
+  const c = getContract(gs, p);
   const wage = c?.wage ? new Intl.NumberFormat("en-GB").format(c?.wage) : 0;
 
   return html`

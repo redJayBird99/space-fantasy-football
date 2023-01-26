@@ -1,6 +1,6 @@
 import { type Formation, type Formations } from "../character/formation";
 import { type Player } from "../character/player";
-import { GameState } from "../game-state/game-state";
+import { GameState, getTeamPlayers } from "../game-state/game-state";
 
 type FormRes = { team: string; f: Formation };
 type FormReq = { team: string; pls: Player[]; f?: Formations };
@@ -41,7 +41,7 @@ export function fetchUpdatedFormations(r: ReqFor): Promise<FormRes[]> {
 function toFormReqs(r: ReqFor, type: "update" | "new"): FormReq[] {
   return r.teams.map((t) => ({
     team: t,
-    pls: GameState.getTeamPlayers(r.gs, t).filter((p) => !r.gs.injuries[p.id]),
+    pls: getTeamPlayers(r.gs, t).filter((p) => !r.gs.injuries[p.id]),
     f: type === "update" ? r.gs.teams[t].formation?.name : undefined,
   }));
 }
